@@ -64,8 +64,9 @@ export const loadConfig = (): Config => ({
 
   embedding: {
     // bge-m3: multilingual (some job descriptions are in Polish) and an 8192
-    // token window, which a 2-page CV needs. Verify the exact ONNX repo id
-    // before first run - see docs/porting-notes.md.
+    // token window, which a 2-page CV needs. Repo id verified 2026-08-04 to
+    // exist with ONNX weights. NOTE: nothing loads this yet - the worker's
+    // model load is still a TODO and VectorSimilarity is not implemented.
     model: str('EMBEDDING_MODEL', 'Xenova/bge-m3'),
     dimensions: num('EMBEDDING_DIMENSIONS', 0),
     maxInputTokens: num('EMBEDDING_MAX_INPUT_TOKENS', 8192),
