@@ -1,0 +1,45 @@
+{
+  "name": "cv-optimizer",
+  "version": "0.0.1",
+  "description": "Tailors a CV to a job description, then grades its own output until it passes.",
+  "keywords": [
+    "ats",
+    "cli",
+    "cv",
+    "llm",
+    "resume"
+  ],
+  "license": "MIT",
+  "bin": {
+    "cv-optimizer": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "typecheck": "tsc --noEmit",
+    "start": "node src/cli.ts",
+    "dev": "node --watch src/cli.ts",
+    "test": "node --test test/*.test.ts",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt --check ."
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "oxfmt": "^0.62.0",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}
