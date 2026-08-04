@@ -17,7 +17,7 @@ export const localEmbeddings = (config: Config): EmbeddingProvider => {
   let nextId = 1;
   const pending = new Map<
     number,
-    { resolve: (v: number[][] | number) => void; reject: (e: Error) => void }
+    { resolve: (v: number[][] | number | null) => void; reject: (e: Error) => void }
   >();
 
   const start = (): Worker => {
@@ -47,7 +47,7 @@ export const localEmbeddings = (config: Config): EmbeddingProvider => {
     return w;
   };
 
-  const send = (req: UnsentRequest): Promise<number[][] | number> => {
+  const send = (req: UnsentRequest): Promise<number[][] | number | null> => {
     const w = start();
     const id = nextId++;
     return new Promise((resolve, reject) => {
@@ -58,6 +58,10 @@ export const localEmbeddings = (config: Config): EmbeddingProvider => {
 
   return {
     model,
+
+    prefetch: async () => {
+      await send({ type: 'prefetch' });
+    },
 
     dimensions: async () => {
       const d = await send({ type: 'dims' });

@@ -54,7 +54,14 @@ here.
   document and return a plausible number. Some job descriptions are in Polish,
   so the model must be multilingual. Hence `bge-m3` (multilingual, 8192) as the
   default over the smaller English-only options.
-- First run downloads model weights; after that it is fully offline.
+- **The model is downloaded as an explicit step, never lazily mid-run.**
+  `pnpm model:pull` (`cv-optimizer pull-model`) loads the model without
+  embedding anything, so the weights are fetched and cached up front. bge-m3 is
+  a ~560M parameter model; paying for that download inside the first optimize
+  run would look like a hang, and would happen while an iteration is already
+  part-way through. After the pull, operation is fully offline.
+  Implemented as a `prefetch` message on the worker protocol, so it exercises
+  exactly the same load path the real embedding calls use.
 - Recalibration is now a required step whenever the embedding model changes.
   That is a feature — it was the absence of this discipline that let the Python
   filter ship broken.

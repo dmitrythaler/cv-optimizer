@@ -29,6 +29,7 @@
     "build": "tsc -p .",
     "typecheck": "tsc --noEmit",
     "start": "node src/cli.ts",
+    "model:pull": "node src/cli.ts pull-model",
     "dev": "node --watch src/cli.ts",
     "test": "node --test test/*.test.ts",
     "fmt": "oxfmt .",

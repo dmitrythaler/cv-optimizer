@@ -37,6 +37,13 @@ const embed = (_texts: readonly string[]): number[][] => {
   );
 };
 
+/** Force the model to load (and download, first time) without embedding anything. */
+const prefetch = (): null => {
+  throw new Error(
+    `embedding model '${init.model}' not loaded yet - see TODO in embedding.worker.ts`,
+  );
+};
+
 const dimensions = (): number => {
   throw new Error(
     `embedding model '${init.model}' not loaded yet - see TODO in embedding.worker.ts`,
@@ -46,10 +53,17 @@ const dimensions = (): number => {
 port.on('message', (req: WorkerRequest) => {
   let res: WorkerResponse;
   try {
-    res =
-      req.type === 'embed'
-        ? { id: req.id, ok: true, data: embed(req.texts) }
-        : { id: req.id, ok: true, data: dimensions() };
+    switch (req.type) {
+      case 'embed':
+        res = { id: req.id, ok: true, data: embed(req.texts) };
+        break;
+      case 'dims':
+        res = { id: req.id, ok: true, data: dimensions() };
+        break;
+      case 'prefetch':
+        res = { id: req.id, ok: true, data: prefetch() };
+        break;
+    }
   } catch (err: unknown) {
     res = { id: req.id, ok: false, error: err instanceof Error ? err.message : String(err) };
   }

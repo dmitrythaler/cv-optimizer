@@ -10,8 +10,14 @@ const USAGE = `cv-optimizer - tailor a CV to a job description
 
 USAGE
   cv-optimizer optimize <cv-file> <jd-file> [options]
+  cv-optimizer pull-model
   cv-optimizer filters
   cv-optimizer --help | --version
+
+COMMANDS
+  optimize      tailor <cv-file> to <jd-file>
+  pull-model    download the local embedding model ahead of the first run
+  filters       list registered filters
 
 OPTIONS
   -o, --out <path>        where to write the PDF        (default: ./output)
@@ -57,6 +63,19 @@ const main = async (argv: string[]): Promise<number> => {
     case undefined:
       process.stdout.write(USAGE);
       return 1;
+
+    case 'pull-model': {
+      const { localEmbeddings } = await import('./providers/local-embeddings.ts');
+      const provider = localEmbeddings(config);
+      logger.info(`downloading embedding model ${config.embedding.model} ...`);
+      try {
+        await provider.prefetch();
+        logger.info('model ready - cached locally, no network needed at run time');
+        return 0;
+      } finally {
+        await provider.close();
+      }
+    }
 
     case 'filters': {
       const { all } = await import('./filters/index.ts');

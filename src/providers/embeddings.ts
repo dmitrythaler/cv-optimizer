@@ -13,6 +13,13 @@ export interface EmbeddingProvider {
   readonly model: string;
   /** Vector length actually produced. Known only after the model loads. */
   dimensions(): Promise<number>;
+  /**
+   * Download and load the model without embedding anything.
+   *
+   * Run this before the first optimize: bge-m3 is a substantial download, and
+   * paying for it mid-run looks like a hang. Exposed as `cv-optimizer pull-model`.
+   */
+  prefetch(): Promise<void>;
   embed(texts: readonly string[]): Promise<number[][]>;
   close(): Promise<void>;
 }

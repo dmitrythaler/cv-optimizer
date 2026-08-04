@@ -11,18 +11,28 @@ export interface DimsRequest {
   readonly type: 'dims';
 }
 
-export type WorkerRequest = EmbedRequest | DimsRequest;
+/**
+ * Load the model without embedding anything, so the download happens as an
+ * explicit step rather than stalling the first optimize run.
+ */
+export interface PrefetchRequest {
+  readonly id: number;
+  readonly type: 'prefetch';
+}
+
+export type WorkerRequest = EmbedRequest | DimsRequest | PrefetchRequest;
 
 /** A request before the host assigns it a correlation id. */
 export type UnsentRequest =
   | { readonly type: 'embed'; readonly texts: readonly string[] }
-  | { readonly type: 'dims' };
+  | { readonly type: 'dims' }
+  | { readonly type: 'prefetch' };
 
 export interface WorkerOk {
   readonly id: number;
   readonly ok: true;
-  /** Vectors for 'embed', or a single-element [dimensions] for 'dims'. */
-  readonly data: number[][] | number;
+  /** Vectors for 'embed', the dimension count for 'dims', null for 'prefetch'. */
+  readonly data: number[][] | number | null;
 }
 
 export interface WorkerErr {

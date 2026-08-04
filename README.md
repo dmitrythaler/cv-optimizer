@@ -16,7 +16,12 @@ TypeScript re-implementation of [`../hr-breaker`](../hr-breaker).
 
 ```bash
 pnpm install
+pnpm model:pull   # download the local embedding model before the first run
 ```
+
+`model:pull` fetches and caches the model named by `EMBEDDING_MODEL`. Do this
+up front - it is a large download, and paying for it inside the first optimize
+run looks like a hang.
 
 ## Use
 
