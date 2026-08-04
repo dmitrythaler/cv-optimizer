@@ -79,7 +79,10 @@ export const aiSdkChat = (spec: string): ChatProvider => {
           role: 'user' as const,
           content: [
             { type: 'text' as const, text: req.prompt },
-            { type: 'image' as const, image: req.image },
+            // A `file` part, not the deprecated `image` part. This is the
+            // path that carried the page image, and it was broken for weeks in
+            // hr-breaker. Keep it on a supported API.
+            { type: 'file' as const, data: req.image, mediaType: 'image/png' },
           ],
         },
       ],

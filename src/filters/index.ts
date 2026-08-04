@@ -19,7 +19,7 @@ register(visionChecker);
 register(vectorSimilarity);
 register(aiGenerated);
 
-export { register, all } from './registry.ts';
+export { register, all, runAll } from './registry.ts';
 export { skipped } from './base.ts';
 export { contentLength } from './content-length.ts';
 export { dataValidator, validateHtml } from './data-validator.ts';

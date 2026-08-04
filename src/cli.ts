@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import process from 'node:process';
 import { loadConfig } from './config.ts';
 import { logger } from './logger.ts';
@@ -119,6 +120,12 @@ const main = async (argv: string[]): Promise<number> => {
         process.stdout.write(USAGE);
         return 1;
       }
+      const rawMax = values['max-iterations'];
+      const maxIterations = rawMax === undefined ? null : Number(rawMax);
+      if (maxIterations !== null && !Number.isFinite(maxIterations)) {
+        logger.error(`--max-iterations must be a number, got ${JSON.stringify(rawMax)}`);
+        return 1;
+      }
       const [cv, jd] = await Promise.all([readFile(cvPath, 'utf8'), readFile(jdPath, 'utf8')]);
       logger.info(`cv: ${cvPath} (${cv.length} chars)`);
       logger.info(`jd: ${jdPath} (${jd.length} chars)`);
@@ -131,8 +138,68 @@ const main = async (argv: string[]): Promise<number> => {
         return 0;
       }
 
-      logger.error('pipeline not wired up yet - see docs/architecture.md');
-      return 2;
+      const [
+        { optimize },
+        { generate },
+        { playwrightRenderer },
+        { aiSdkProviders },
+        { localEmbeddings },
+      ] = await Promise.all([
+        import('./pipeline/orchestrator.ts'),
+        import('./generator.ts'),
+        import('./render/playwright.ts'),
+        import('./providers/ai-sdk.ts'),
+        import('./providers/local-embeddings.ts'),
+      ]);
+      await import('./filters/index.ts');
+
+      const renderer = playwrightRenderer();
+      const embeddings = localEmbeddings(config);
+      const runConfig = maxIterations === null ? config : { ...config, maxIterations };
+
+      try {
+        // There is no job parser yet, so the whole file is the description.
+        const job = {
+          title: '',
+          company: '',
+          description: jd,
+          requirements: [],
+          keywords: [],
+          language: 'en',
+        };
+        const source = { text: cv, path: cvPath, instructions: values.instructions ?? null };
+
+        const outcome = await optimize(source, job, {
+          generate: (i) => generate(i, { renderer, config: runConfig }),
+          renderer,
+          chat: aiSdkProviders(config.models),
+          embeddings,
+          config: runConfig,
+          sequential: values.seq === true,
+        });
+
+        const outDir = values.out ?? 'output';
+        await mkdir(outDir, { recursive: true });
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const pdfPath = join(outDir, `${stamp}-cv.pdf`);
+        const rendered = await renderer.render(outcome.filed.resume.html);
+        await writeFile(pdfPath, rendered.pdf);
+
+        logger.info(`iterations: ${outcome.iterations.length}`);
+        logger.info(`pdf: ${pdfPath} (${rendered.pageCount} page(s))`);
+        if (outcome.passed) {
+          logger.info('PASSED - every filter agreed');
+          return 0;
+        }
+        // A PDF exists either way. Never read a file's existence as success.
+        logger.error(`FAILED filters: ${outcome.failedFilters.join(', ')}`);
+        for (const r of outcome.filed.results.filter((x) => !x.passed)) {
+          for (const issue of r.issues) logger.error(`  ${r.filterName}: ${issue}`);
+        }
+        return 2;
+      } finally {
+        await Promise.all([renderer.close(), embeddings.close()]);
+      }
     }
 
     default:

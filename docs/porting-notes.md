@@ -456,11 +456,11 @@ no model in its control flow.
 
 Tools ported:
 
-| tool                   | required | notes                                    |
-| ---------------------- | -------- | ---------------------------------------- |
-| `check_content_length` | yes      | renders, returns the real page count      |
-| `check_keywords_tool`  | no       | uses KeywordMatcher                       |
-| `validate_structure`   | no       | uses DataValidator                        |
+| tool                   | required | notes                                |
+| ---------------------- | -------- | ------------------------------------ |
+| `check_content_length` | yes      | renders, returns the real page count |
+| `check_keywords_tool`  | no       | uses KeywordMatcher                  |
+| `validate_structure`   | no       | uses DataValidator                   |
 
 `preview_resume` is NOT ported. It returns a page image for the model to look
 at, and the pro model is DeepSeek, which cannot accept images at all (section
@@ -487,3 +487,52 @@ guards against.
 Both files are restored. `templates/**` is now in `ignorePatterns` in
 `.oxfmtrc.json`. The SHA test on the guide would have caught it on any future
 run; it is what caught it this time.
+
+## 11. The loop
+
+Port of `optimize_for_job()` and `run_filters()` in hr-breaker
+`orchestration.py`.
+
+- Each round: generate, render, extract, grade with every filter. Stop on the
+  first fully passing round. Otherwise feed the failures back.
+- **`filed` is the LAST iteration, not the best one.** That is what the Python
+  returns; it does not choose. Every iteration is returned so a caller can look
+  back, which is what the manual step in hr-breaker's `task.md` does by hand.
+  An earlier draft of this port invented a "fewest failures" heuristic. It was
+  removed - that is a decision for the operator, not the loop.
+- A generator failure ends the run cleanly and records a synthetic `Optimizer`
+  result. A render failure records a synthetic `PDFRender` result and the loop
+  continues. Both mirror the Python.
+- **A filter that throws becomes a FAILURE, not a skip.** A throw is a bug in
+  the filter, and a bug must not read as approval. This is different from
+  `skipped()`, which a filter returns on purpose when it knows it cannot judge.
+
+NOT ported: the Python skips filters with `priority >= 100` once something has
+failed, and never early-exits on them. No such filter exists - the highest is 7
+- so the branch is dead code.
+
+### First end-to-end run, 2026-08-04
+
+Against `../applications/.../inuits/jd.txt`, DeepSeek v4-pro generating, Gemini
+3.5-flash seeing, bge-m3 embedding locally. Passed on iteration 1:
+
+| filter                  | score | threshold |
+| ----------------------- | ----- | --------- |
+| ContentLengthChecker    | 1.00  | 1.00      |
+| DataValidator           | 1.00  | 1.00      |
+| HallucinationChecker    | 0.98  | 0.90      |
+| KeywordMatcher          | 0.50  | 0.25      |
+| **VisionChecker**       | 0.94  | 0.70      |
+| VectorSimilarityMatcher | 0.87  | 0.67      |
+| AiGeneratedChecker      | 0.90  | 0.40      |
+
+**VisionChecker actually worked.** It is the filter that never once produced a
+real judgement in hr-breaker. Compare hr-breaker's own Inuits run: LLMChecker
+0.82, Keyword 0.42, Hallucination 0.94, AIGenerated 0.75.
+
+The produced PDF was checked, not assumed: one page, letter size, the name
+extracts as `DMITRY THALER`, both phone numbers present, no em dash, and the
+contact block is the two lines the `-i` instruction demands. It also avoided
+the two inflations recorded in the cv.md notes - it wrote `ArangoDB/Postgres`
+rather than claiming a migration, and `handled legacy data migration` rather
+than "led".
