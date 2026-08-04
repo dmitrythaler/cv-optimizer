@@ -27,6 +27,8 @@ const HRB = join(ROOT, 'hr-breaker');
 const APPS = join(ROOT, 'applications');
 const RESULTS = join(CVOPT, 'docs/parity-results.json');
 const REPORT = join(CVOPT, 'docs/parity-report.md');
+// Generated CVs land here so they can be opened after the run. Gitignored.
+const OUT = join(CVOPT, 'output/parity');
 
 const INSTRUCTIONS =
   "use same structure for the Contact info EXACTLY as in the source - 2 lines: 1st line ONLY " +
@@ -51,25 +53,15 @@ interface Row {
   when: string;
 }
 
-const env = (): NodeJS.ProcessEnv => {
-  const dotenv = readFileSyncSafe(join(HRB, '.env'));
-  const out: NodeJS.ProcessEnv = { ...process.env };
-  for (const line of dotenv.split('\n')) {
-    const m = /^([A-Z_]+)=(.*)$/.exec(line.trim());
-    if (m?.[1] !== undefined && m[2] !== undefined) out[m[1]] ??= m[2];
-  }
-  out['THRESHOLD_VECTOR'] ??= '0.67';
-  return out;
-};
-
-function readFileSyncSafe(p: string): string {
-  try {
-    // eslint-disable-next-line
-    return require('node:fs').readFileSync(p, 'utf8') as string;
-  } catch {
-    return '';
-  }
-}
+/**
+ * No env handling here on purpose.
+ *
+ * Each tool loads its own `.env`: cv-optimizer in `config.ts`, hr-breaker with
+ * python-dotenv. An earlier version of this script scraped hr-breaker's `.env`
+ * with `require()`, which does not exist in an ESM module. The call threw, a
+ * `catch` swallowed it, and every cv-optimizer run started with no API key and
+ * died in under a second - reported as a normal `fail`. Do not reintroduce it.
+ */
 
 const run = (
   cmd: string,
@@ -81,7 +73,7 @@ const run = (
     execFile(
       cmd,
       args,
-      { cwd, env: env(), maxBuffer: 64 * 1024 * 1024, timeout: 45 * 60 * 1000 },
+      { cwd, maxBuffer: 64 * 1024 * 1024, timeout: 45 * 60 * 1000 },
       (err, stdout, stderr) => {
         resolve({
           out: `${stdout}\n${stderr}`,
@@ -112,6 +104,31 @@ const parseScores = (text: string): { scores: Scores; iterations: number } => {
   return { scores, iterations };
 };
 
+/**
+ * A run that produced no score line did not really run. Say so loudly and
+ * distinctly, so it can never be mistaken for a filter verdict.
+ *
+ * The 0.4-second "failures" that made the first parity attempt worthless all
+ * looked exactly like ordinary failures in the table.
+ */
+const classify = (side: Side, label: string, job: string, tail: string): Side => {
+  const nFilters = Object.keys(side.scores).length;
+  if (nFilters === 0) {
+    process.stdout.write(
+      `\n  !! ${label} produced NO SCORES for ${job} after ${side.seconds}s.\n` +
+        `     This is not a filter result. The run did not work.\n` +
+        `     last output: ${tail}\n\n`,
+    );
+    return { ...side, ok: false, error: `NO SCORES after ${side.seconds}s: ${tail}` };
+  }
+  if (side.seconds < 5) {
+    process.stdout.write(
+      `\n  !! ${label} finished ${job} in ${side.seconds}s. That is too fast to be real.\n\n`,
+    );
+  }
+  return side;
+};
+
 const runTs = async (jd: string, outDir: string): Promise<Side> => {
   const r = await run(
     'node',
@@ -132,27 +149,31 @@ const runTs = async (jd: string, outDir: string): Promise<Side> => {
     CVOPT,
   );
   const { scores, iterations } = parseScores(r.out);
-  return {
-    ok: r.code === 0,
-    iterations,
-    scores,
-    seconds: r.seconds,
-    ...(r.code === 0 ? {} : { error: r.out.split('\n').filter(Boolean).slice(-3).join(' | ') }),
-  };
+  const tail = r.out.split('\n').filter(Boolean).slice(-3).join(' | ').slice(0, 300);
+  return classify(
+    {
+      ok: r.code === 0,
+      iterations,
+      scores,
+      seconds: r.seconds,
+      ...(r.code === 0 ? {} : { error: tail }),
+    },
+    'cv-optimizer',
+    jd.split('/').slice(-2)[0] ?? jd,
+    tail,
+  );
 };
 
 const runPy = async (jd: string): Promise<Side> => {
   const r = await run('uv', ['run', 'hr-breaker', 'optimize', join(ROOT, 'cv.md'), jd, '-i', INSTRUCTIONS], HRB);
   const { scores, iterations } = parseScores(r.out);
-  return {
-    ok: /Iteration \d+: PASS/.test(r.out),
-    iterations,
-    scores,
-    seconds: r.seconds,
-    ...(scores && Object.keys(scores).length > 0
-      ? {}
-      : { error: r.out.split('\n').filter(Boolean).slice(-3).join(' | ') }),
-  };
+  const tail = r.out.split('\n').filter(Boolean).slice(-3).join(' | ').slice(0, 300);
+  return classify(
+    { ok: /Iteration \d+: PASS/.test(r.out), iterations, scores, seconds: r.seconds },
+    'hr-breaker',
+    jd.split('/').slice(-2)[0] ?? jd,
+    tail,
+  );
 };
 
 const fmt = (s: { score: number; threshold: number; passed: boolean } | undefined): string =>
@@ -245,11 +266,35 @@ const main = async (): Promise<number> => {
   if (!values.force && existsSync(RESULTS)) {
     rows = JSON.parse(await readFile(RESULTS, 'utf8')) as Row[];
   }
-  const done = new Set(rows.map((r) => r.job));
-  const todo = dirs.filter((d) => !done.has(d));
 
-  process.stdout.write(`${dirs.length} jobs, ${todo.length} to run\n`);
+  /**
+   * Resume PER SIDE, not per job.
+   *
+   * A side counts as done only if it produced scores. A recorded run with no
+   * scores did not work, so it is re-run rather than trusted. That is what
+   * turned a broken first attempt into four rows of useless "fail".
+   */
+  const hasScores = (side: Side | null | undefined): boolean =>
+    side !== null && side !== undefined && Object.keys(side.scores).length > 0;
+
+  const byJob = new Map(rows.map((r) => [r.job, r]));
+  const todo = dirs.filter((d) => {
+    const prev = byJob.get(d);
+    const needTs = !hasScores(prev?.ts);
+    const needPy = values['skip-python'] === true ? false : !hasScores(prev?.py);
+    return needTs || needPy;
+  });
+
+  process.stdout.write(`${dirs.length} jobs total, ${todo.length} need work\n`);
+  for (const d of dirs) {
+    const prev = byJob.get(d);
+    process.stdout.write(
+      `  ${d.slice(0, 46).padEnd(46)} ts=${hasScores(prev?.ts) ? 'have' : 'NEED'}` +
+        ` py=${hasScores(prev?.py) ? 'have' : values['skip-python'] === true ? 'skip' : 'NEED'}\n`,
+    );
+  }
   await mkdir(join(CVOPT, 'docs'), { recursive: true });
+  await mkdir(OUT, { recursive: true });
 
   const limit = Math.max(1, Number(values.concurrency));
   let next = 0;
@@ -259,9 +304,18 @@ const main = async (): Promise<number> => {
       const job = todo[i];
       if (job === undefined) return;
       const jd = join(APPS, job, 'jd.txt');
+      const prev = byJob.get(job);
       process.stdout.write(`  start ${job}\n`);
-      const ts = await runTs(jd, '/tmp/parity-out');
-      const py = values['skip-python'] === true ? null : await runPy(jd);
+
+      // Keep a side that already produced scores. Only re-run what is missing.
+      const ts = hasScores(prev?.ts) ? (prev?.ts as Side) : await runTs(jd, OUT);
+      const py = hasScores(prev?.py)
+        ? (prev?.py as Side)
+        : values['skip-python'] === true
+          ? (prev?.py ?? null)
+          : await runPy(jd);
+
+      rows = rows.filter((r) => r.job !== job);
       rows.push({ job, ts, py, when: new Date().toISOString() });
       rows.sort((a, b) => a.job.localeCompare(b.job));
       await writeFile(RESULTS, JSON.stringify(rows, null, 1), 'utf8');
@@ -276,6 +330,7 @@ const main = async (): Promise<number> => {
 
   await writeReport(rows);
   process.stdout.write(`\nwrote ${REPORT}\n`);
+  process.stdout.write(`generated CVs are in ${OUT}\n`);
   return 0;
 };
 

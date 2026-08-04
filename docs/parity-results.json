@@ -1,0 +1,296 @@
+[
+ {
+  "job": "20260730-1036-builder_senior_software_engineer",
+  "ts": {
+   "ok": true,
+   "iterations": 2,
+   "scores": {
+    "ContentLengthChecker": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "DataValidator": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "HallucinationChecker": {
+     "score": 1,
+     "threshold": 0.9,
+     "passed": true
+    },
+    "KeywordMatcher": {
+     "score": 0.66,
+     "threshold": 0.25,
+     "passed": true
+    },
+    "VisionChecker": {
+     "score": 0.85,
+     "threshold": 0.7,
+     "passed": true
+    },
+    "VectorSimilarityMatcher": {
+     "score": 0.82,
+     "threshold": 0.67,
+     "passed": true
+    },
+    "AiGeneratedChecker": {
+     "score": 0.85,
+     "threshold": 0.4,
+     "passed": true
+    }
+   },
+   "seconds": 1049
+  },
+  "py": {
+   "ok": true,
+   "iterations": 2,
+   "scores": {
+    "ContentLengthChecker": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "DataValidator": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "LLMChecker": {
+     "score": 0.78,
+     "threshold": 0.7,
+     "passed": true
+    },
+    "KeywordMatcher": {
+     "score": 0.58,
+     "threshold": 0.25,
+     "passed": true
+    },
+    "VectorSimilarityMatcher": {
+     "score": 0.68,
+     "threshold": 0.55,
+     "passed": true
+    },
+    "HallucinationChecker": {
+     "score": 0.93,
+     "threshold": 0.9,
+     "passed": true
+    },
+    "AIGeneratedChecker": {
+     "score": 0.85,
+     "threshold": 0.4,
+     "passed": true
+    }
+   },
+   "seconds": 1558.31
+  },
+  "when": "2026-08-04T19:36:01.312Z"
+ },
+ {
+  "job": "20260730-1036-cloudlinux_founding_rasp_engineer_node_js",
+  "ts": {
+   "ok": false,
+   "iterations": 0,
+   "scores": {},
+   "seconds": 0.4,
+   "error": "16:42:36.676 [INFO] vision: gemini/gemini-3.5-flash | 16:42:36.676 [INFO] embeddings: Xenova/bge-m3 (local, worker thread) | 16:42:36.987 [ERROR] DeepSeek API key API key is missing. Pass it using the 'apiKey' parameter or the DEEPSEEK_API_KEY environment variable."
+  },
+  "py": {
+   "ok": false,
+   "iterations": 3,
+   "scores": {
+    "ContentLengthChecker": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "DataValidator": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "LLMChecker": {
+     "score": 0,
+     "threshold": 0.7,
+     "passed": false
+    },
+    "KeywordMatcher": {
+     "score": 0.18,
+     "threshold": 0.25,
+     "passed": false
+    },
+    "VectorSimilarityMatcher": {
+     "score": 0.6,
+     "threshold": 0.55,
+     "passed": true
+    },
+    "HallucinationChecker": {
+     "score": 0.98,
+     "threshold": 0.9,
+     "passed": true
+    },
+    "AIGeneratedChecker": {
+     "score": 0.4,
+     "threshold": 0.4,
+     "passed": true
+    }
+   },
+   "seconds": 2347.77
+  },
+  "when": "2026-08-04T17:21:44.780Z"
+ },
+ {
+  "job": "20260730-1036-cloudlinux_security_engineer_node_js_proactive_defense",
+  "ts": {
+   "ok": false,
+   "iterations": 0,
+   "scores": {},
+   "seconds": 0.36,
+   "error": "17:08:35.371 [INFO] vision: gemini/gemini-3.5-flash | 17:08:35.371 [INFO] embeddings: Xenova/bge-m3 (local, worker thread) | 17:08:35.652 [ERROR] DeepSeek API key API key is missing. Pass it using the 'apiKey' parameter or the DEEPSEEK_API_KEY environment variable."
+  },
+  "py": {
+   "ok": false,
+   "iterations": 3,
+   "scores": {
+    "ContentLengthChecker": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "DataValidator": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "LLMChecker": {
+     "score": 0.26,
+     "threshold": 0.7,
+     "passed": false
+    },
+    "KeywordMatcher": {
+     "score": 0.29,
+     "threshold": 0.25,
+     "passed": true
+    },
+    "VectorSimilarityMatcher": {
+     "score": 0.61,
+     "threshold": 0.55,
+     "passed": true
+    },
+    "HallucinationChecker": {
+     "score": 0.98,
+     "threshold": 0.9,
+     "passed": true
+    },
+    "AIGeneratedChecker": {
+     "score": 0.75,
+     "threshold": 0.4,
+     "passed": true
+    }
+   },
+   "seconds": 1443.9
+  },
+  "when": "2026-08-04T17:32:39.573Z"
+ },
+ {
+  "job": "20260730-1036-codurance_contract_software_engineer_typescript_node_js_portugal",
+  "ts": {
+   "ok": false,
+   "iterations": 0,
+   "scores": {},
+   "seconds": 0.37,
+   "error": "17:21:44.846 [INFO] vision: gemini/gemini-3.5-flash | 17:21:44.846 [INFO] embeddings: Xenova/bge-m3 (local, worker thread) | 17:21:45.134 [ERROR] DeepSeek API key API key is missing. Pass it using the 'apiKey' parameter or the DEEPSEEK_API_KEY environment variable."
+  },
+  "py": {
+   "ok": true,
+   "iterations": 2,
+   "scores": {
+    "ContentLengthChecker": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "DataValidator": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "LLMChecker": {
+     "score": 0.83,
+     "threshold": 0.7,
+     "passed": true
+    },
+    "KeywordMatcher": {
+     "score": 0.52,
+     "threshold": 0.25,
+     "passed": true
+    },
+    "VectorSimilarityMatcher": {
+     "score": 0.72,
+     "threshold": 0.55,
+     "passed": true
+    },
+    "HallucinationChecker": {
+     "score": 0.9,
+     "threshold": 0.9,
+     "passed": true
+    },
+    "AIGeneratedChecker": {
+     "score": 0.85,
+     "threshold": 0.4,
+     "passed": true
+    }
+   },
+   "seconds": 1134.43
+  },
+  "when": "2026-08-04T17:40:39.589Z"
+ },
+ {
+  "job": "20260730-1036-covergo_senior_full_stack_engineer_ai_builder",
+  "ts": {
+   "ok": true,
+   "iterations": 1,
+   "scores": {
+    "ContentLengthChecker": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "DataValidator": {
+     "score": 1,
+     "threshold": 1,
+     "passed": true
+    },
+    "HallucinationChecker": {
+     "score": 1,
+     "threshold": 0.9,
+     "passed": true
+    },
+    "KeywordMatcher": {
+     "score": 0.52,
+     "threshold": 0.25,
+     "passed": true
+    },
+    "VisionChecker": {
+     "score": 0.81,
+     "threshold": 0.7,
+     "passed": true
+    },
+    "VectorSimilarityMatcher": {
+     "score": 0.79,
+     "threshold": 0.67,
+     "passed": true
+    },
+    "AiGeneratedChecker": {
+     "score": 0.85,
+     "threshold": 0.4,
+     "passed": true
+    }
+   },
+   "seconds": 670.82
+  },
+  "py": null,
+  "when": "2026-08-04T19:29:43.133Z"
+ }
+]

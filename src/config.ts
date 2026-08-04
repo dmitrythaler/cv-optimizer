@@ -1,4 +1,30 @@
+import { existsSync } from 'node:fs';
 import process from 'node:process';
+
+/**
+ * Load `.env` from the project root, once, before any setting is read.
+ *
+ * hr-breaker does the same with python-dotenv. Without it every entry point
+ * would have to pass keys through by hand, and a caller that forgot would get
+ * a confusing failure deep inside a provider. A real env var still wins - the
+ * loader does not overwrite what is already set.
+ */
+const ENV_FILE = new URL('../.env', import.meta.url).pathname;
+let envLoaded = false;
+const loadEnvFile = (): void => {
+  if (envLoaded) return;
+  envLoaded = true;
+  if (!existsSync(ENV_FILE)) return;
+  try {
+    process.loadEnvFile(ENV_FILE);
+  } catch (err: unknown) {
+    // Say so. A silently ignored .env is how a run ends up with no API key
+    // and an error that points somewhere else entirely.
+    process.stderr.write(
+      `[WARN] could not read ${ENV_FILE}: ${err instanceof Error ? err.message : String(err)}\n`,
+    );
+  }
+};
 
 /**
  * Settings, resolved from env vars with defaults.
@@ -95,6 +121,7 @@ export interface Config {
 }
 
 export const loadConfig = (): Config => {
+  loadEnvFile();
   // `deepseek-chat` answers, but it is not in the /v1/models list. Name a real
   // model instead. The list holds deepseek-v4-pro and deepseek-v4-flash.
   const flash = str('FLASH_MODEL', 'deepseek/deepseek-v4-flash');
