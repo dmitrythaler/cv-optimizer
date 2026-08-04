@@ -50,6 +50,7 @@ const ctx = (embeddings: EmbeddingProvider, over: Partial<FilterContext> = {}): 
     title: 'Senior Node.js Engineer',
     company: 'Acme',
     description: 'Build backend services',
+    rawText: 'Build backend services',
     requirements: ['Node.js'],
     keywords: [],
     language: 'en',

@@ -99,6 +99,7 @@ export const checkFilters = async (
         title: '',
         company: '',
         description: jd,
+        rawText: jd,
         requirements: [],
         keywords: [],
         language: 'en',

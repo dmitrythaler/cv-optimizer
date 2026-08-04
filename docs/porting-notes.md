@@ -509,6 +509,7 @@ Port of `optimize_for_job()` and `run_filters()` in hr-breaker
 
 NOT ported: the Python skips filters with `priority >= 100` once something has
 failed, and never early-exits on them. No such filter exists - the highest is 7
+
 - so the branch is dead code.
 
 ### First end-to-end run, 2026-08-04
@@ -536,3 +537,41 @@ contact block is the two lines the `-i` instruction demands. It also avoided
 the two inflations recorded in the cv.md notes - it wrote `ArangoDB/Postgres`
 rather than claiming a migration, and `handled legacy data migration` rather
 than "led".
+
+## 12. Job parser, URL fetch, output naming
+
+**Job parser.** Port of `agents/job_parser.py`. The prompt is a copy, identical
+byte for byte. It runs on the flash model, as the Python does.
+
+One detail that is easy to get wrong, and I nearly did: the Python stores the
+model's **brief summary** in `description` and the **whole posting** in
+`raw_text`. KeywordMatcher and VectorSimilarityMatcher score against
+`title + description + requirements`, so they see the summary, not the full
+text. VisionChecker uses `job.description or job.raw_text`. This port keeps both
+fields and the same split.
+
+Before the parser existed, the CLI put the whole file into `description` and
+left title, company, requirements and keywords empty. That gave the filters
+weaker input than a real run, and made the output impossible to name.
+
+**URL fetch.** `cv-optimizer fetch-job <url> <out>` saves a posting to a text
+file, and `optimize` accepts a URL in place of a file.
+
+hr-breaker chains httpx, then the Wayback Machine, then Playwright. This port
+keeps the first and the last and drops Wayback: a job board posting is rarely
+archived, and a stale snapshot of a live posting is worse than none.
+
+Worth noting from hr-breaker's own notes: its Playwright fallback never worked,
+because the browser was never installed in that venv. So in practice it only
+ever had the plain request, which is why Cloudflare-protected boards failed.
+Here the browser is installed and used.
+
+**Output naming.** Port of `services/pdf_storage.py`:
+
+- `{MMDD_HHMM}_{first}_{last}_{company}_{role}_{lang}.pdf`
+- `{MMDD_HHMM}_debug_{company}_{role}/` holding `iteration_N.pdf` and
+  `iteration_N.png`
+
+The scheme is identical so both tools can write into one folder. The debug
+folder is written only when a run took more than one iteration - that is when
+there is something to choose between.

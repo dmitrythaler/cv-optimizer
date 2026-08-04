@@ -59,6 +59,7 @@ const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterConte
     title: 'Senior Node.js Engineer',
     company: 'Acme',
     description: 'Build things',
+    rawText: 'Build things',
     requirements: ['Node.js', 'TypeScript'],
     keywords: ['AWS'],
     language: 'en',

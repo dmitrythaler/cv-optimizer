@@ -31,6 +31,7 @@ const JOB: JobPosting = {
   title: 'T',
   company: 'C',
   description: 'D',
+  rawText: 'D',
   requirements: [],
   keywords: [],
   language: 'en',

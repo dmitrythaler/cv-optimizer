@@ -47,6 +47,7 @@ const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterConte
     title: 't',
     company: 'c',
     description: 'd',
+    rawText: 'd',
     requirements: [],
     keywords: [],
     language: 'en',

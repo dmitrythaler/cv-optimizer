@@ -10,7 +10,8 @@ import { version } from './version.ts';
 const USAGE = `cv-optimizer - tailor a CV to a job description
 
 USAGE
-  cv-optimizer optimize <cv-file> <jd-file> [options]
+  cv-optimizer optimize <cv-file> <jd-file|url> [options]
+  cv-optimizer fetch-job <url> <out-file>
   cv-optimizer pull-model
   cv-optimizer calibrate-vector <cv-file> <jd-glob-dir>
   cv-optimizer check-filters <cv-file> <jd-file> <filter[,filter...]|all>
@@ -18,7 +19,8 @@ USAGE
   cv-optimizer --help | --version
 
 COMMANDS
-  optimize      tailor <cv-file> to <jd-file>
+  optimize      tailor <cv-file> to a job; the job may be a file or a URL
+  fetch-job     download a job posting to a text file
   pull-model    download the local embedding model ahead of the first run
   calibrate-vector  measure THRESHOLD_VECTOR for the configured embedding model
   check-filters  score one CV against one job with the chosen filters
@@ -26,6 +28,7 @@ COMMANDS
 
 OPTIONS
   -o, --out <path>        where to write the PDF        (default: ./output)
+      --name <first last>  name used in the output filename
   -i, --instructions <s>  extra instructions for the optimizer
   -n, --max-iterations <n>  override MAX_ITERATIONS
       --seq               run filters sequentially, stop at first failure
@@ -43,6 +46,7 @@ const main = async (argv: string[]): Promise<number> => {
     allowPositionals: true,
     options: {
       out: { type: 'string', short: 'o' },
+      name: { type: 'string' },
       instructions: { type: 'string', short: 'i' },
       'max-iterations': { type: 'string', short: 'n' },
       seq: { type: 'boolean', default: false },
@@ -80,6 +84,18 @@ const main = async (argv: string[]): Promise<number> => {
       } finally {
         await provider.close();
       }
+    }
+
+    case 'fetch-job': {
+      const [url, out] = rest;
+      if (url === undefined || out === undefined) {
+        logger.error('fetch-job needs <url> and <out-file>');
+        return 1;
+      }
+      const { fetchJobToFile } = await import('./fetch-job.ts');
+      const text = await fetchJobToFile(url, out);
+      logger.info(`${text.length} chars written`);
+      return 0;
     }
 
     case 'calibrate-vector': {
@@ -126,9 +142,15 @@ const main = async (argv: string[]): Promise<number> => {
         logger.error(`--max-iterations must be a number, got ${JSON.stringify(rawMax)}`);
         return 1;
       }
-      const [cv, jd] = await Promise.all([readFile(cvPath, 'utf8'), readFile(jdPath, 'utf8')]);
+      const isUrl = /^https?:\/\//i.test(jdPath);
+      const [cv, jd] = await Promise.all([
+        readFile(cvPath, 'utf8'),
+        isUrl
+          ? import('./fetch-job.ts').then((m) => m.fetchJobText(jdPath))
+          : readFile(jdPath, 'utf8'),
+      ]);
       logger.info(`cv: ${cvPath} (${cv.length} chars)`);
-      logger.info(`jd: ${jdPath} (${jd.length} chars)`);
+      logger.info(`jd: ${jdPath} (${jd.length} chars${isUrl ? ', fetched' : ''})`);
       logger.info(`models: pro=${config.models.pro} flash=${config.models.flash}`);
       logger.info(`vision: ${config.models.vision}`);
       logger.info(`embeddings: ${config.embedding.model} (local, worker thread)`);
@@ -158,21 +180,15 @@ const main = async (argv: string[]): Promise<number> => {
       const runConfig = maxIterations === null ? config : { ...config, maxIterations };
 
       try {
-        // There is no job parser yet, so the whole file is the description.
-        const job = {
-          title: '',
-          company: '',
-          description: jd,
-          requirements: [],
-          keywords: [],
-          language: 'en',
-        };
+        const providers = aiSdkProviders(config.models);
+        const { parseJobPosting } = await import('./job.ts');
+        const job = await parseJobPosting(jd, providers.flash);
         const source = { text: cv, path: cvPath, instructions: values.instructions ?? null };
 
         const outcome = await optimize(source, job, {
           generate: (i) => generate(i, { renderer, config: runConfig }),
           renderer,
-          chat: aiSdkProviders(config.models),
+          chat: providers,
           embeddings,
           config: runConfig,
           sequential: values.seq === true,
@@ -180,13 +196,36 @@ const main = async (argv: string[]): Promise<number> => {
 
         const outDir = values.out ?? 'output';
         await mkdir(outDir, { recursive: true });
-        const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-        const pdfPath = join(outDir, `${stamp}-cv.pdf`);
+        const { runId, pdfPath, debugDirPath } = await import('./output-path.ts');
+        const id = runId();
+        const [first, ...restName] = (values.name ?? '').trim().split(/\s+/).filter(Boolean);
+        const target = pdfPath(outDir, {
+          firstName: first ?? null,
+          lastName: restName.length > 0 ? restName.join(' ') : null,
+          company: job.company || 'unknown',
+          role: job.title || null,
+          langCode: job.language,
+          runId: id,
+        });
         const rendered = await renderer.render(outcome.filed.resume.html);
-        await writeFile(pdfPath, rendered.pdf);
+        await writeFile(target, rendered.pdf);
+
+        // One file per iteration, as hr-breaker's debug folder does. When a run
+        // fails, this is what you look through to pick an attempt by hand.
+        if (outcome.iterations.length > 1) {
+          const dbg = debugDirPath(outDir, job.company || 'unknown', job.title || null, id);
+          await mkdir(dbg, { recursive: true });
+          for (const it of outcome.iterations) {
+            if (it.resume.html === '') continue;
+            const r = await renderer.render(it.resume.html);
+            await writeFile(join(dbg, `iteration_${it.n}.pdf`), r.pdf);
+            await writeFile(join(dbg, `iteration_${it.n}.png`), r.pngPage1);
+          }
+          logger.info(`debug: ${dbg} (${outcome.iterations.length} iterations)`);
+        }
 
         logger.info(`iterations: ${outcome.iterations.length}`);
-        logger.info(`pdf: ${pdfPath} (${rendered.pageCount} page(s))`);
+        logger.info(`pdf: ${target} (${rendered.pageCount} page(s))`);
         if (outcome.passed) {
           logger.info('PASSED - every filter agreed');
           return 0;

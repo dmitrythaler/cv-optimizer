@@ -49,6 +49,7 @@ const ctx = (
     title: 't',
     company: 'c',
     description: 'd',
+    rawText: 'd',
     requirements: [],
     keywords: [],
     language: 'en',

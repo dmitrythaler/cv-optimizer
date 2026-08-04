@@ -16,7 +16,14 @@ export interface ResumeSource {
 export interface JobPosting {
   readonly title: string;
   readonly company: string;
+  /**
+   * The parser's BRIEF SUMMARY of the role, not the whole posting.
+   * KeywordMatcher and VectorSimilarityMatcher score against
+   * title + description + requirements, so this is deliberately condensed.
+   */
   readonly description: string;
+  /** The full posting text. VisionChecker falls back to it when description is empty. */
+  readonly rawText: string;
   readonly requirements: readonly string[];
   /**
    * Explicit keywords extracted by the job parser. Added to the significant set

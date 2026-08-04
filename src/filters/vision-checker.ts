@@ -104,7 +104,8 @@ export const visionChecker: Filter = {
     const prompt = buildUserPrompt({
       jobTitle: job.title,
       jobCompany: job.company,
-      jobDescription: job.description,
+      // `job.description or job.raw_text` in the Python.
+      jobDescription: job.description || job.rawText,
       jobRequirements: job.requirements,
       jobKeywords: job.keywords,
       // The Python falls back html -> data -> "(no content)"; this port is
