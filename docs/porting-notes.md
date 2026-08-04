@@ -132,11 +132,11 @@ Every difference is listed here. Behaviour is preserved unless stated.
 - **Quirks kept, not fixed** — these are behaviour callers may depend on:
   - the `>2 pages` message reads "must be 1 page" while the check permits 2.
     Stale wording, correct behaviour.
-  - a page 2 with **zero** characters passes. Only a page 2 holding *some* text
+  - a page 2 with **zero** characters passes. Only a page 2 holding _some_ text
     below the overflow bound counts as spillover (`len > 0` guard in the original).
 - **`estimate_content_length` is not ported.** It is imported by the Python
   filter and never called - dead code.
-- **`resume_page2_overflow_chars` = 5000, not 1000.** The Python *code* default
+- **`resume_page2_overflow_chars` = 5000, not 1000.** The Python _code_ default
   is 1000, but hr-breaker's `.env` sets 5000, so 5000 is what actually runs.
   Effective behaviour wins.
 
@@ -149,3 +149,32 @@ Every difference is listed here. Behaviour is preserved unless stated.
 - **Regexes and message strings are identical**, including the `else if`: a
   missing `<header>` suppresses the separate "missing name" issue rather than
   reporting both.
+
+### HallucinationChecker (priority 3)
+
+- **Both prompts copied verbatim.** `STRICT_PROMPT` and `LENIENT_PROMPT` live in
+  `src/prompts/hallucination.ts` and are byte-identical to
+  `agents/hallucination_detector.py` (verified by SHA). The trailing space after
+  "You are a resume verification specialist." is preserved via an explicit
+  `${' '}` so no formatter can strip it, and a test pins it.
+- **One behavioural fix, deliberate.** In the Python, `passed` is computed
+  against a _hardcoded_ threshold (0.9 strict / 0.6 lenient) inside
+  `detect_hallucinations()`, and the filter then overwrites the reported
+  `threshold` from settings without recomputing `passed`. So changing
+  `FILTER_HALLUCINATION_THRESHOLD` moved the displayed number but not the
+  verdict. Here one threshold drives both. No visible difference today because
+  hr-breaker's `.env` sets 0.9, matching the hardcode - but it would have
+  surprised the first person to tune it. The lenient 0.6 bound stays hardcoded,
+  as in the original.
+- **`--no-shame` ported** as `NO_SHAME` / `config.noShame`.
+- **Dependencies arrive via `FilterContext`, not constructed inside filters.**
+  `chat` sits alongside `config` there. A filter that can build its own provider
+  can also mask a misconfigured one - which is exactly how the vector filter
+  died. This also keeps registration uniform: every filter is a plain object, so
+  `cv-optimizer filters` can list them without a provider.
+- **`targetLanguage` added to `FilterContext`**, mirroring the `language`
+  argument the Python threads through `evaluate()`. Language names for the
+  non-English prompt note come from `Intl.DisplayNames` rather than a lookup table.
+- The Python's fallback chain for optimized content (`html` -> structured
+  `data` -> `"(no content)"`) collapses to HTML-only here, since there is no
+  structured-resume mode.

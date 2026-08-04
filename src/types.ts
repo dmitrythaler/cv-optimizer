@@ -4,6 +4,12 @@
 export interface ResumeSource {
   readonly text: string;
   readonly path: string;
+  /**
+   * Extra instructions from `-i`. These count as source of truth alongside the
+   * CV itself: HallucinationChecker is shown them so that details supplied on
+   * the command line are not reported as fabrications.
+   */
+  readonly instructions: string | null;
 }
 
 /** A parsed job posting. */

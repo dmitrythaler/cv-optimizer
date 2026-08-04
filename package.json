@@ -34,12 +34,17 @@
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check ."
   },
+  "dependencies": {
+    "@ai-sdk/deepseek": "^3.0.21",
+    "ai": "^7.0.51",
+    "zod": "^4.4.3"
+  },
   "devDependencies": {
     "@types/node": "^26.1.2",
     "oxfmt": "^0.62.0",
     "typescript": "^7.0.2"
   },
   "engines": {
-    "node": ">=22.18"
+    "node": ">=24"
   }
 }

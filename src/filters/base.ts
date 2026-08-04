@@ -1,4 +1,5 @@
 import type { Config } from '../config.ts';
+import type { ChatProvider } from '../providers/llm.ts';
 import type { FilterResult, JobPosting, OptimizedResume, ResumeSource } from '../types.ts';
 
 export interface FilterContext {
@@ -6,6 +7,20 @@ export interface FilterContext {
   readonly job: JobPosting;
   readonly source: ResumeSource;
   readonly config: Config;
+  /**
+   * Model access, supplied by the pipeline. Filters receive their dependencies
+   * rather than constructing them - a filter that could build its own provider
+   * could also silently mask a misconfigured one, which is how hr-breaker
+   * shipped a dead filter for two months.
+   */
+  readonly chat: ChatProvider;
+  /**
+   * Resolved language the optimized CV was written in, e.g. "en", "pl".
+   * Distinct from `job.language`: the target can be overridden, and filters
+   * that compare wording need to know which language they are looking at.
+   * hr-breaker threads this through `evaluate()` the same way.
+   */
+  readonly targetLanguage: string;
 }
 
 /**

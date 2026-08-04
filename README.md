@@ -9,7 +9,7 @@ TypeScript re-implementation of [`../hr-breaker`](../hr-breaker).
 
 ## Requirements
 
-- Node >= 22.18 (runs TypeScript sources directly via native type stripping)
+- Node >= 24 (current Active LTS; runs TypeScript sources directly via native type stripping)
 - pnpm
 
 ## Install

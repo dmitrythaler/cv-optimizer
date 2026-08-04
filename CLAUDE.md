@@ -13,7 +13,7 @@ filters, providers and renderer are stubs that throw. Nothing calls a model yet.
 
 ## Stack
 
-- Node >= 22.18, ESM, TypeScript strict
+- Node >= 24 (current Active LTS), ESM, TypeScript strict
 - Chat models are remote; **embeddings are local** (ONNX in a worker thread, no API key)
 - Run source directly: `node src/cli.ts` (native type stripping, no ts-node/bundler)
 - Build with plain `tsc`; `rewriteRelativeImportExtensions` turns the `.ts`

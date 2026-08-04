@@ -6,6 +6,7 @@ import { all } from '../src/filters/index.ts';
 import { loadConfig } from '../src/config.ts';
 import type { FilterContext } from '../src/filters/base.ts';
 import type { OptimizedResume } from '../src/types.ts';
+import type { ChatProvider } from '../src/providers/llm.ts';
 
 const VALID_HTML =
   '<header class="header"><h1 class="name">Dmitry Thaler</h1></header>' +
@@ -20,11 +21,24 @@ const resume = (over: Partial<OptimizedResume> = {}): OptimizedResume => ({
   ...over,
 });
 
-const ctx = (over: Partial<OptimizedResume> = {}): FilterContext => ({
+const stubChat: ChatProvider = {
+  model: 'stub/none',
+  complete: () => Promise.reject(new Error('stub chat: not expected to be called')),
+  object: () => Promise.reject(new Error('stub chat: not expected to be called')),
+  supportsVision: () => false,
+};
+
+const ctx = (
+  over: Partial<OptimizedResume> = {},
+  extra: Partial<FilterContext> = {},
+): FilterContext => ({
   resume: resume(over),
   job: { title: 't', company: 'c', description: 'd', requirements: [], language: 'en' },
-  source: { text: 'cv', path: 'cv.md' },
+  source: { text: 'cv', path: 'cv.md', instructions: null },
   config: loadConfig(),
+  chat: stubChat,
+  targetLanguage: 'en',
+  ...extra,
 });
 
 /* ---------- ContentLengthChecker ---------- */
@@ -111,11 +125,11 @@ test('dataValidator: failure carries a suggestion, success does not', async () =
 
 /* ---------- registry ---------- */
 
-test('registry: both filters registered, ordered by priority', () => {
+test('registry: filters registered, ordered by priority', () => {
   const names = all().map((f) => f.name);
-  assert.deepEqual(names, ['ContentLengthChecker', 'DataValidator']);
+  assert.deepEqual(names, ['ContentLengthChecker', 'DataValidator', 'HallucinationChecker']);
   assert.deepEqual(
     all().map((f) => f.priority),
-    [0, 1],
+    [0, 1, 3],
   );
 });

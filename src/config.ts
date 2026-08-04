@@ -20,6 +20,12 @@ const num = (key: string, fallback: number): number => {
 
 const str = (key: string, fallback: string): string => process.env[key] || fallback;
 
+const bool = (key: string, fallback: boolean): boolean => {
+  const raw = process.env[key];
+  if (raw === undefined || raw === '') return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(raw.toLowerCase());
+};
+
 export interface Config {
   readonly chatModel: string;
   readonly embedding: {
@@ -31,6 +37,11 @@ export interface Config {
     readonly maxInputTokens: number;
   };
   readonly maxIterations: number;
+  /**
+   * hr-breaker's `--no-shame`: swaps strict grading for lenient prompts and
+   * bounds. Massively relaxes the fabrication checks - use with caution.
+   */
+  readonly noShame: boolean;
   readonly resume: {
     /**
      * A 2-page CV whose second page holds less than this many characters is
@@ -61,6 +72,7 @@ export const loadConfig = (): Config => ({
   },
 
   maxIterations: num('MAX_ITERATIONS', 3),
+  noShame: bool('NO_SHAME', false),
 
   resume: {
     // 5000 is the value hr-breaker actually runs with (set in its .env). Note
