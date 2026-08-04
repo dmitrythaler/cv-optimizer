@@ -64,8 +64,18 @@ under `../applications/*/jd.txt` against `../cv.md`, add an off-topic control,
 and put the threshold between the two clusters. Record the numbers in
 `porting-notes.md`.
 
-**AiGenerated** — heuristic LLM judgement on whether the prose reads as
-machine-written.
+**AiGenerated** — an LLM judges if a machine wrote the text.
+
+The score is **inverted**. The model reports `ai_probability`. The filter
+reports `1 - ai_probability`. A high score means the text looks human. This
+keeps the direction the same as every other filter: high is good.
+
+The prompt is careful about false positives. A CV is formulaic on purpose.
+Action verbs, equal bullet lengths and metrics are good practice, not tells.
+The prompt flags only impossible claims, internal contradictions, empty
+buzzwords and repeated filler.
+
+`noShame` divides the threshold by 2.
 
 ## Adding a filter
 

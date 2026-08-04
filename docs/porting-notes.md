@@ -332,3 +332,22 @@ the upgrade if per-requirement signal is ever needed.
   pipeline. A quantized `dtype` would cut that substantially with little effect
   on cosine, but the threshold is dtype-specific too, so switching means
   re-running `calibrate-vector`.
+
+### AiGeneratedChecker (priority 7)
+
+- The prompt is a copy of the Python prompt. It is identical, byte for byte.
+  A test reads the Python file and compares SHA values.
+- **The score is inverted.** The model reports `ai_probability`. The filter
+  reports `1 - ai_probability`. A high score means the text looks human. This
+  keeps the direction the same as the other filters.
+- **`is_ai_generated` is dead.** The agent returns the flag. The Python filter
+  then replaces `passed` with `score >= threshold` and ignores the flag. This
+  port does the same.
+  - The two rules do not agree. The prompt sets the flag above a probability of
+    0.5. The threshold of 0.4 fails only above a probability of 0.6.
+  - A probability of 0.55 therefore sets the flag and still passes. A test pins
+    this. It is a quirk, not an improvement.
+- **`noShame` divides the threshold by 2**, from 0.4 to 0.2. The Python does the
+  same. Note the other lenient bounds are hard-coded, but this one is computed.
+- The Python order for the text is `pdf_text`, then `html`, then structured
+  data. This port has no structured data, so the last branch cannot occur.
