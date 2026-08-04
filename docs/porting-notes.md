@@ -434,6 +434,11 @@ CV rendered by WeasyPrint extracts as `DMITRY THALER` under both tools.
 
 **This is not only a porting mismatch.** A real ATS reads the PDF the same way,
 so a Chromium-rendered CV would present the candidate's name as a row of single
-letters. The name is the one field an ATS must get right. Options: lower
-`.name` to 1.2pt or less, or keep 2pt and accept that the name does not parse.
-A test pins both ends of the threshold so the decision cannot be lost.
+letters. The name is the one field an ATS must get right.
+
+**FIXED 2026-08-04:** `.name` in this project's copy of the template is now
+`1.2pt`, the highest value that still extracts correctly. hr-breaker's copy
+still says 2pt, and is left alone on purpose - WeasyPrint does not have this
+problem, so changing it would alter a working tool's appearance for no gain.
+The two templates therefore differ by this one line. Two tests pin it: one
+checks the shipped template, one pins both ends of the threshold.

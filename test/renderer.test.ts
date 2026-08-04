@@ -65,11 +65,19 @@ test('renderer: counts pages from the real PDF, not from a guess', opts, async (
   assert.ok((out.pageTexts[1] ?? '').trim().length > 0);
 });
 
+test('renderer: the shipped template extracts the name correctly', opts, async () => {
+  // The one field an ATS must read. Guards the .name letter-spacing value in
+  // templates/resume_wrapper.html against being raised again.
+  const out = await renderer.render(HEADER + SECTION);
+  const first = (out.pageTexts[0] ?? '').trim().split('\n')[0];
+  assert.equal(first, 'DMITRY THALER', 'name must not extract as separated letters');
+});
+
 test('renderer: letter-spacing above 1.2pt breaks name extraction', opts, async () => {
   // Chromium bakes CSS letter-spacing into wide glyph gaps, and every PDF text
   // extractor then inserts spaces - including the one a real ATS would use.
-  // WeasyPrint did not do this, so the behaviour is new. The template ships
-  // 2pt on .name. See docs/porting-notes.md.
+  // WeasyPrint did not do this, so the behaviour is new. This pins both ends
+  // of the threshold. See docs/porting-notes.md.
   const at = async (ls: string): Promise<string> => {
     const out = await renderer.render(
       `<header class="header"><h1 class="name" style="letter-spacing:${ls}">Dmitry Thaler</h1></header>${SECTION}`,
@@ -77,5 +85,5 @@ test('renderer: letter-spacing above 1.2pt breaks name extraction', opts, async 
     return (out.pageTexts[0] ?? '').trim().split('\n')[0] ?? '';
   };
   assert.equal(await at('1.2pt'), 'DMITRY THALER', 'parses at 1.2pt');
-  assert.notEqual(await at('2pt'), 'DMITRY THALER', 'breaks at 2pt, the template default');
+  assert.notEqual(await at('2pt'), 'DMITRY THALER', 'breaks at 2pt');
 });
