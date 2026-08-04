@@ -442,3 +442,48 @@ still says 2pt, and is left alone on purpose - WeasyPrint does not have this
 problem, so changing it would alter a working tool's appearance for no gain.
 The two templates therefore differ by this one line. Two tests pin it: one
 checks the shipped template, one pins both ends of the threshold.
+
+## 10. The generator
+
+Ported from `agents/optimizer.py`. All three prompts and `resume_guide.md` are
+copies, identical byte for byte, checked by SHA in `test/optimizer-prompt.test.ts`
+against the Python source.
+
+**The generator is an agent. The pipeline around it is not.** The model calls
+tools, reads the results and revises. It has to: it cannot know the page count
+without rendering. ADR 0001 still holds - the loop that drives the generator has
+no model in its control flow.
+
+Tools ported:
+
+| tool                   | required | notes                                    |
+| ---------------------- | -------- | ---------------------------------------- |
+| `check_content_length` | yes      | renders, returns the real page count      |
+| `check_keywords_tool`  | no       | uses KeywordMatcher                       |
+| `validate_structure`   | no       | uses DataValidator                        |
+
+`preview_resume` is NOT ported. It returns a page image for the model to look
+at, and the pro model is DeepSeek, which cannot accept images at all (section
+8). A tool that silently does nothing is worse than a missing one. Add it when
+the pro model can see.
+
+`check_content_length` mirrors ContentLengthChecker exactly, including the
+page-2 overflow rule. If the tool and the filter disagreed, the model would be
+aiming at a target that does not exist.
+
+**The retry is an explicit loop.** The Python uses a pydantic-ai output
+validator that raises `ModelRetry` when the model skips or fails the length
+check. The AI SDK has no equivalent, so the loop is written out. The retry
+messages are the Python's, word for word.
+
+### A formatter edited two prompts
+
+`pnpm fmt` reformatted `templates/resume_guide.md` (98 lines) and
+`templates/resume_wrapper.html` (350 lines, including `<!DOCTYPE html>` to
+`<!doctype html>`). The guide is pasted into the system prompt, so this was a
+silent prompt edit by a tool, which is the exact failure mode this project
+guards against.
+
+Both files are restored. `templates/**` is now in `ignorePatterns` in
+`.oxfmtrc.json`. The SHA test on the guide would have caught it on any future
+run; it is what caught it this time.

@@ -63,6 +63,19 @@ export interface Config {
     /** How many missing keywords to name in the failure message. */
     readonly maxMissingDisplay: number;
   };
+  readonly optimizer: {
+    /**
+     * How many times the generator may be told to try again when it skips or
+     * fails check_content_length. hr-breaker's `optimizer_retries`.
+     */
+    readonly retries: number;
+    /**
+     * Cap on tool-call steps inside one attempt. hr-breaker's
+     * `optimizer_request_limit`, which exists because the page-fit loop can
+     * need many rounds under tight constraints.
+     */
+    readonly maxSteps: number;
+  };
   readonly resume: {
     /**
      * A 2-page CV whose second page holds less than this many characters is
@@ -109,6 +122,11 @@ export const loadConfig = (): Config => {
 
     maxIterations: num('MAX_ITERATIONS', 3),
     noShame: bool('NO_SHAME', false),
+
+    optimizer: {
+      retries: num('OPTIMIZER_RETRIES', 5),
+      maxSteps: num('OPTIMIZER_MAX_STEPS', 100),
+    },
 
     keyword: {
       maxFeatures: num('KEYWORD_TFIDF_MAX_FEATURES', 200),

@@ -26,7 +26,14 @@ import type { ChatProvider, ChatRequest } from './llm.ts';
  */
 const VISION_CAPABLE = new Set<string>(['gemini', 'google']);
 
-const resolve = (spec: string): { provider: string; model: LanguageModel } => {
+/**
+ * Resolves a `provider/model` spec to an AI SDK model.
+ *
+ * Exported ONLY for the generator, which needs tool calling and so cannot go
+ * through the narrow `ChatProvider` seam. Filters must keep using
+ * `ChatProvider`. This is the one deliberate leak of the SDK past this file.
+ */
+export const resolveModel = (spec: string): { provider: string; model: LanguageModel } => {
   const slash = spec.indexOf('/');
   if (slash <= 0 || slash === spec.length - 1) {
     throw new Error(`model must be "provider/model", got ${JSON.stringify(spec)}`);
@@ -55,7 +62,7 @@ const resolve = (spec: string): { provider: string; model: LanguageModel } => {
 };
 
 export const aiSdkChat = (spec: string): ChatProvider => {
-  const { provider, model } = resolve(spec);
+  const { provider, model } = resolveModel(spec);
 
   const messages = (req: ChatRequest) => {
     if (req.image === undefined) return { system: req.system, prompt: req.prompt };
