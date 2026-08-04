@@ -7,11 +7,13 @@ import { contentLength } from './content-length.ts';
 import { dataValidator } from './data-validator.ts';
 import { hallucination } from './hallucination.ts';
 import { keywordMatcher } from './keyword-matcher.ts';
+import { visionChecker } from './vision-checker.ts';
 
 register(contentLength);
 register(dataValidator);
 register(hallucination);
 register(keywordMatcher);
+register(visionChecker);
 
 export { register, all } from './registry.ts';
 export { skipped } from './base.ts';
@@ -19,4 +21,5 @@ export { contentLength } from './content-length.ts';
 export { dataValidator, validateHtml } from './data-validator.ts';
 export { hallucination, hallucinationResult } from './hallucination.ts';
 export { keywordMatcher, checkKeywords } from './keyword-matcher.ts';
+export { visionChecker, visionResult, computeAtsScore, SCORE_WEIGHTS } from './vision-checker.ts';
 export type { Filter, FilterContext } from './base.ts';

@@ -62,6 +62,7 @@ export interface Config {
     readonly vector: number;
     readonly hallucination: number;
     readonly aiGenerated: number;
+    /** Minimum weighted ATS score. Named `filter_llm_threshold` in hr-breaker. */
     readonly vision: number;
   };
   readonly logLevel: string;

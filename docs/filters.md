@@ -14,7 +14,7 @@ originals — see `porting-notes.md` for what was wrong with those.
 | 1   | DataValidator    | deterministic      | 1.0                  | HTML structure is sane                |
 | 3   | Hallucination    | LLM                | 0.90                 | claims not supported by the source CV |
 | 4   | KeywordMatcher   | TF-IDF             | 0.25                 | literal term overlap with the JD      |
-| 5   | VisionChecker    | LLM (vision)       | 0.70                 | does the rendered page look right     |
+| 5   | VisionChecker    | LLM (vision) + ATS | 0.70                 | visual quality AND ATS screening      |
 | 6   | VectorSimilarity | embeddings (local) | **must be measured** | semantic closeness to the JD          |
 | 7   | AiGenerated      | LLM                | 0.40                 | does it read as machine-written       |
 
@@ -36,9 +36,21 @@ Rough read: `0.50+` strong match, `~0.30` either a thin JD or a real domain gap,
 below `0.30` on a detailed JD means genuine mismatch. Historically the most
 trustworthy number in the set.
 
-**VisionChecker** — renders the page and asks a vision model. Powerful when it
-works; see `porting-notes.md` for how it fails and why `0.00` means "the image
-never arrived", not "the CV is ugly".
+**VisionChecker** — one model call doing two jobs: a visual quality check on the
+rendered page image, and an ATS screening on the extracted text. Named
+`LLMChecker` in hr-breaker; renamed here because the old name described the
+implementation rather than the job. The old name still appears in historical
+`cv_failed_filters` entries in `../results.json`.
+
+Passing requires **all three**: `looks_professional` AND `atsScore >= threshold`
+AND `!disqualified`.
+
+The reported score is the weighted ATS score — `overall_fit` 0.50, `keyword`
+0.25, `experience` 0.175, `education` 0.075 — but **only when
+`looks_professional` is true**. Otherwise it is hard-coded to `0.0`. So a
+`0.00` never means "the ATS rejected you"; it means the visual half said no and
+the ATS numbers were discarded. See `porting-notes.md` for how that turned a
+plumbing fault into weeks of apparently-bad CVs.
 
 **VectorSimilarity** — embedding cosine, from a local model in a worker thread.
 Coarse: it separates a software job from a bread recipe but barely distinguishes

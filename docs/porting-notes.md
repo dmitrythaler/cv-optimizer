@@ -225,3 +225,57 @@ Two places where exact parity is impossible, both benign:
   optimizer as iteration feedback, so hr-breaker's retries are not reproducible.
   **This port is deterministic**, which is a deliberate improvement rather than
   a parity break. Scores are unaffected.
+
+### VisionChecker (priority 5) - `LLMChecker` in hr-breaker
+
+`SYSTEM_PROMPT` is copied verbatim and verified byte-identical to
+`agents/combined_reviewer.py` by SHA, in a test that reads the Python source
+directly - so the prompt cannot drift without a test failure.
+
+**Renamed.** `LLMChecker` described the implementation ("it calls an LLM") and
+not the job; every other filter is named for what it checks. The string is
+user-visible: it lands in `cv_failed_filters` in `../results.json`, where three
+entries already read `LLMChecker`. Those stay as historical record; new runs
+emit `VisionChecker`.
+
+**The 0.00 mystery, solved.** The Python's scoring line is:
+
+```python
+score = ats_score if result.looks_professional else 0.0
+```
+
+A `0.00` therefore means `looks_professional=False` and nothing else - the ATS
+numbers are computed and then thrown away. Combined with the page image failing
+to reach the model (it then grades extracted PDF text, sees bullets trailing the
+company list in text order, and says "bullets detached from their companies"),
+this made a transport fault indistinguishable from an ugly CV. Every failure
+looked identical because every failure _was_ the same number. Behaviour kept for
+parity, and pinned by a test that asserts the discarded ATS score was excellent.
+
+**Passing is a three-way AND**: `looks_professional && atsScore >= threshold &&
+!disqualified`. Worth knowing that a CV can clear the ATS bar comfortably and
+still fail on the visual flag alone.
+
+**The ATS weights are lopsided**: `overall_fit` 0.50, `keyword` 0.25,
+`experience` 0.175, `education` 0.075. Half the score is one holistic judgement.
+`education` is scored at all, despite `cv.md` having no education section -
+a standing drag on every run. Weights carried over unchanged; flagging as a
+tuning candidate, not changing them.
+
+**Two guards the Python does not have**, and the only behavioural additions:
+
+- **Provider cannot do vision** -> `skipped()` plus a WARN, and no model call.
+  This is a configuration fault, not a defect in the CV, and must not produce a
+  verdict. hr-breaker conflated it with `looks_professional=false`.
+- **No rendered page image** -> a real failure, matching hr-breaker (which
+  returns `looks_professional=false, disqualified=true, page_count=0`). A CV
+  that will not render is broken.
+
+The provider layer refuses to send a request with an image to a non-vision
+provider, so the image cannot be silently dropped in transit - which is the
+specific failure that started all of this.
+
+**Minor**: the "score: X, need: Y" suggestion uses JS `toFixed(2)` where Python
+uses `f"{x:.2f}"`. They agree except on values that are exact binary ties, where
+Python rounds half-to-even (`0.125` -> `0.12`) and JS rounds half-up (`0.13`).
+Display only; tested.
