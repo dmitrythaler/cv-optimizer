@@ -40,11 +40,13 @@
     "@ai-sdk/google": "^4.0.33",
     "@huggingface/transformers": "^4.2.0",
     "ai": "^7.0.51",
+    "playwright": "^1.62.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
     "oxfmt": "^0.62.0",
+    "pdfjs-dist": "^6.2.108",
     "typescript": "^7.0.2"
   },
   "engines": {

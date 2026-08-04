@@ -398,3 +398,42 @@ idea, a race in `litellm_patch.py`, is the weaker explanation.
 
 Also note: `deepseek-chat` answers, but it is not in `/v1/models`. Name a real
 model.
+
+## 9. The renderer
+
+hr-breaker renders with WeasyPrint. This port renders with Chromium, through
+Playwright. Playwright is already used by the parent project.
+
+The page count, the per-page text and the page image all come from the
+**produced PDF**, read back with poppler (`pdftotext`, `pdftoppm`). None of
+them is guessed from the HTML. hr-breaker's vision filter judged a page the
+model never saw. Whatever the renderer returns here is what was actually made.
+
+`templates/resume_wrapper.html` is a copy of hr-breaker's file. The page rule
+is `size: letter` with `0.4in` margins. `preferCSSPageSize` tells Chromium to
+obey it.
+
+**Chromium and WeasyPrint differ on CSS `letter-spacing`, and it matters.**
+
+Chromium bakes letter-spacing into wide glyph gaps. Every PDF text extractor
+then inserts spaces between the letters. WeasyPrint does not do this.
+
+Measured on the shipped template, where `.name` has `letter-spacing: 2pt`:
+
+| letter-spacing | extracted first line     |
+| -------------- | ------------------------ |
+| 2pt (shipped)  | `D M I T RY T H A L E R` |
+| 1.5pt          | `D M I T RY T H A L E R` |
+| 1.2pt          | `DMITRY THALER`          |
+| 1pt            | `DMITRY THALER`          |
+
+Both `pdftotext` and `pdfjs-dist` agree, so it is not the extractor. The same
+CV rendered by WeasyPrint extracts as `DMITRY THALER` under both tools.
+
+`.section-title` uses 1pt and is unaffected.
+
+**This is not only a porting mismatch.** A real ATS reads the PDF the same way,
+so a Chromium-rendered CV would present the candidate's name as a row of single
+letters. The name is the one field an ATS must get right. Options: lower
+`.name` to 1.2pt or less, or keep 2pt and accept that the name does not parse.
+A test pins both ends of the threshold so the decision cannot be lost.
