@@ -12,6 +12,7 @@ USAGE
   cv-optimizer optimize <cv-file> <jd-file> [options]
   cv-optimizer pull-model
   cv-optimizer calibrate-vector <cv-file> <jd-glob-dir>
+  cv-optimizer check-filters <cv-file> <jd-file> <filter[,filter...]|all>
   cv-optimizer filters
   cv-optimizer --help | --version
 
@@ -19,6 +20,7 @@ COMMANDS
   optimize      tailor <cv-file> to <jd-file>
   pull-model    download the local embedding model ahead of the first run
   calibrate-vector  measure THRESHOLD_VECTOR for the configured embedding model
+  check-filters  score one CV against one job with the chosen filters
   filters       list registered filters
 
 OPTIONS
@@ -87,6 +89,16 @@ const main = async (argv: string[]): Promise<number> => {
       }
       const { calibrateVector } = await import('./calibrate.ts');
       return await calibrateVector(cvPath, jdDir, config);
+    }
+
+    case 'check-filters': {
+      const [cvPath, jdPath, names] = rest;
+      if (cvPath === undefined || jdPath === undefined || names === undefined) {
+        logger.error('check-filters needs <cv-file> <jd-file> <filter[,filter...]|all>');
+        return 1;
+      }
+      const { checkFilters } = await import('./check-filters.ts');
+      return await checkFilters(cvPath, jdPath, names, config);
     }
 
     case 'filters': {

@@ -32,6 +32,13 @@ pnpm start -- optimize ../cv.md ../applications/<job>/jd.txt --dry-run
 # list registered filters
 pnpm start -- filters
 
+# score one CV against one job with chosen filters (diagnostic)
+pnpm start -- check-filters ../cv.md ../applications/<job>/jd.txt KeywordMatcher,VectorSimilarityMatcher
+pnpm start -- check-filters ../cv.md ../applications/<job>/jd.txt all
+
+# measure THRESHOLD_VECTOR for the configured embedding model
+pnpm start -- calibrate-vector ../cv.md ../applications
+
 pnpm start -- --help
 ```
 
