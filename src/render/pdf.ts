@@ -13,6 +13,9 @@ export interface RenderOutput {
   readonly pdf: Uint8Array;
   readonly text: string;
   readonly pngPage1: Uint8Array;
+  readonly pageCount: number;
+  /** Extracted text per page, index 0 = page 1. */
+  readonly pageTexts: readonly string[];
 }
 
 export interface Renderer {

@@ -23,6 +23,13 @@ export interface OptimizedResume {
   readonly pdfText: string | null;
   /** PNG of the rendered first page, for vision-based filters. */
   readonly pngPage1: Uint8Array | null;
+  /** Rendered page count. null when not yet rendered. */
+  readonly pageCount: number | null;
+  /**
+   * Extracted text per page. ContentLength needs page 2 in isolation to detect
+   * overflow, which whole-document `pdfText` cannot express.
+   */
+  readonly pageTexts: readonly string[] | null;
 }
 
 /** Verdict from a single filter. */

@@ -31,6 +31,13 @@ export interface Config {
     readonly maxInputTokens: number;
   };
   readonly maxIterations: number;
+  readonly resume: {
+    /**
+     * A 2-page CV whose second page holds less than this many characters is
+     * treated as page-1 overflow rather than a genuine second page.
+     */
+    readonly page2OverflowChars: number;
+  };
   readonly thresholds: {
     readonly keyword: number;
     readonly vector: number;
@@ -54,6 +61,13 @@ export const loadConfig = (): Config => ({
   },
 
   maxIterations: num('MAX_ITERATIONS', 3),
+
+  resume: {
+    // 5000 is the value hr-breaker actually runs with (set in its .env). Note
+    // the Python *code* default is 1000 - the env override is the effective
+    // one, so that is what is carried over for behavioural parity.
+    page2OverflowChars: num('RESUME_PAGE2_OVERFLOW_CHARS', 5000),
+  },
 
   thresholds: {
     keyword: num('THRESHOLD_KEYWORD', 0.25),

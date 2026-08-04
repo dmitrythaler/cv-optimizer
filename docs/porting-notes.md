@@ -118,3 +118,34 @@ model is ever called, and keep the vision seam free of global mutable patching.
   Mind the context window: `bge-small-en-v1.5` caps at 512 tokens and would
   silently truncate a 2-page CV. `nomic-embed-text-v1.5` and `bge-m3` handle
   8192 and are multilingual, which matters because some JDs are in Polish.
+
+## 7. Deliberate deviations from the Python, filter by filter
+
+Every difference is listed here. Behaviour is preserved unless stated.
+
+### ContentLengthChecker (priority 0)
+
+- **Rendering moved out of the filter.** `content_length.py` called
+  `get_renderer().render(html)` itself, re-rendering a document the pipeline had
+  already rendered. Here the pipeline renders once and passes `pageCount` and
+  `pageTexts` down through `OptimizedResume`. Same verdicts, one render.
+- **Quirks kept, not fixed** — these are behaviour callers may depend on:
+  - the `>2 pages` message reads "must be 1 page" while the check permits 2.
+    Stale wording, correct behaviour.
+  - a page 2 with **zero** characters passes. Only a page 2 holding *some* text
+    below the overflow bound counts as spillover (`len > 0` guard in the original).
+- **`estimate_content_length` is not ported.** It is imported by the Python
+  filter and never called - dead code.
+- **`resume_page2_overflow_chars` = 5000, not 1000.** The Python *code* default
+  is 1000, but hr-breaker's `.env` sets 5000, so 5000 is what actually runs.
+  Effective behaviour wins.
+
+### DataValidator (priority 1)
+
+- **Only the HTML branch is ported.** `validate_resume_data()` validates a
+  structured `ResumeData` object - contact fields, per-entry experience and
+  education checks. This port has no structured-resume mode; `OptimizedResume`
+  carries HTML only. If that mode is ever added, port that branch with it.
+- **Regexes and message strings are identical**, including the `else if`: a
+  missing `<header>` suppresses the separate "missing name" issue rather than
+  reporting both.
