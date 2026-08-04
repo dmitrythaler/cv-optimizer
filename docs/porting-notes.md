@@ -351,3 +351,50 @@ the upgrade if per-requirement signal is ever needed.
   same. Note the other lenient bounds are hard-coded, but this one is computed.
 - The Python order for the text is `pdf_text`, then `html`, then structured
   data. This port has no structured data, so the last branch cannot occur.
+
+## 8. Model split, and DeepSeek vision
+
+hr-breaker uses two chat models. This port did not, at first. It does now.
+
+| filter               | model    | hr-breaker equivalent |
+| -------------------- | -------- | --------------------- |
+| HallucinationChecker | `pro`    | `get_pro_model()`     |
+| AiGeneratedChecker   | `flash`  | `get_flash_model()`   |
+| VisionChecker        | `vision` | `get_flash_model()`   |
+
+`VISION_MODEL` is new. It defaults to Gemini, not to `flash`.
+
+**The DeepSeek API cannot accept an image. This is measured, not assumed.**
+
+Tested against `api.deepseek.com` on 2026-08-04 with a real PNG:
+
+| attempt                                       | result                                             |
+| --------------------------------------------- | -------------------------------------------------- |
+| `image_url` content part                      | 400 `unknown variant 'image_url', expected 'text'` |
+| `image` content part                          | 400 same error                                     |
+| `input_image` content part                    | 400 same error                                     |
+| `/beta` endpoint                              | 400 same error                                     |
+| model ids `deepseek-vl`, `vl2`, `v4-vision` … | 400 same error                                     |
+| text only, same key                           | 200                                                |
+
+The error does not change with the model id, even for ids that do not exist.
+So the request schema itself has no image variant, and the rejection happens
+before model dispatch. `/v1/models` lists only `deepseek-v4-flash` and
+`deepseek-v4-pro`.
+
+The DeepSeek **app** does show a vision mode. That is a first-party surface.
+The public API has not followed. `@ai-sdk/deepseek` 3.0.21 is the current npm
+release, so no client upgrade changes this.
+
+Gemini works. Verified end to end through `providers/ai-sdk.ts`: a 64x64 blue
+PNG, and the model answered `{"colour":"blue"}`.
+
+**So hr-breaker's 0.00 scores have a simple cause.** Its `.env` sets
+`FLASH_MODEL=deepseek/deepseek-v4-flash`, and `combined_reviewer` uses the
+flash model. The image never reached the model. The reviewer judged the text
+alone. That also explains why the result was unstable: a model guessing from
+text order sometimes calls the layout good and sometimes does not. The earlier
+idea, a race in `litellm_patch.py`, is the weaker explanation.
+
+Also note: `deepseek-chat` answers, but it is not in `/v1/models`. Name a real
+model.

@@ -10,6 +10,7 @@ import {
 import { loadConfig } from '../src/config.ts';
 import type { FilterContext } from '../src/filters/base.ts';
 import type { EmbeddingProvider } from '../src/providers/embeddings.ts';
+import type { ChatProviders } from '../src/providers/ai-sdk.ts';
 import type { ChatProvider, ChatRequest } from '../src/providers/llm.ts';
 import type { HallucinationResult } from '../src/filters/hallucination.ts';
 
@@ -36,6 +37,8 @@ const stubEmbeddings: EmbeddingProvider = {
   close: () => Promise.resolve(),
 };
 
+const trio = (p: ChatProvider): ChatProviders => ({ pro: p, flash: p, vision: p });
+
 const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterContext => ({
   resume: {
     html: '<header class="header"><h1 class="name">D</h1></header>',
@@ -54,7 +57,7 @@ const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterConte
   },
   source: { text: 'ORIGINAL CV BODY', path: 'cv.md', instructions: null },
   config: loadConfig(),
-  chat,
+  chat: trio(chat),
   embeddings: stubEmbeddings,
   targetLanguage: 'en',
   ...over,

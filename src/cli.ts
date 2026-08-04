@@ -31,7 +31,7 @@ OPTIONS
       --dry-run           parse inputs and exit without calling any model
 
 ENVIRONMENT
-  CHAT_MODEL, EMBEDDING_MODEL, MAX_ITERATIONS, LOG_LEVEL,
+  PRO_MODEL, FLASH_MODEL, VISION_MODEL, EMBEDDING_MODEL, MAX_ITERATIONS, LOG_LEVEL,
   THRESHOLD_KEYWORD, THRESHOLD_VECTOR, THRESHOLD_HALLUCINATION,
   THRESHOLD_AI_GENERATED, THRESHOLD_VISION
 `;
@@ -122,7 +122,8 @@ const main = async (argv: string[]): Promise<number> => {
       const [cv, jd] = await Promise.all([readFile(cvPath, 'utf8'), readFile(jdPath, 'utf8')]);
       logger.info(`cv: ${cvPath} (${cv.length} chars)`);
       logger.info(`jd: ${jdPath} (${jd.length} chars)`);
-      logger.info(`chat: ${config.chatModel} (remote)`);
+      logger.info(`models: pro=${config.models.pro} flash=${config.models.flash}`);
+      logger.info(`vision: ${config.models.vision}`);
       logger.info(`embeddings: ${config.embedding.model} (local, worker thread)`);
 
       if (values['dry-run']) {

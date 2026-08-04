@@ -4,6 +4,7 @@ import { vectorSimilarity } from '../src/filters/vector-similarity.ts';
 import { loadConfig } from '../src/config.ts';
 import type { Config } from '../src/config.ts';
 import type { FilterContext } from '../src/filters/base.ts';
+import type { ChatProviders } from '../src/providers/ai-sdk.ts';
 import type { ChatProvider } from '../src/providers/llm.ts';
 import type { EmbeddingProvider } from '../src/providers/embeddings.ts';
 
@@ -35,6 +36,8 @@ const withThreshold = (t: number): Config => {
   return { ...base, thresholds: { ...base.thresholds, vector: t } };
 };
 
+const trio = (p: ChatProvider): ChatProviders => ({ pro: p, flash: p, vision: p });
+
 const ctx = (embeddings: EmbeddingProvider, over: Partial<FilterContext> = {}): FilterContext => ({
   resume: {
     html: '<p/>',
@@ -53,7 +56,7 @@ const ctx = (embeddings: EmbeddingProvider, over: Partial<FilterContext> = {}): 
   },
   source: { text: 'CV', path: 'cv.md', instructions: null },
   config: withThreshold(0.55),
-  chat: stubChat,
+  chat: trio(stubChat),
   embeddings,
   targetLanguage: 'en',
   ...over,

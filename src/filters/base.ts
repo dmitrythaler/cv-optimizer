@@ -1,6 +1,6 @@
 import type { Config } from '../config.ts';
 import type { EmbeddingProvider } from '../providers/embeddings.ts';
-import type { ChatProvider } from '../providers/llm.ts';
+import type { ChatProviders } from '../providers/ai-sdk.ts';
 import type { FilterResult, JobPosting, OptimizedResume, ResumeSource } from '../types.ts';
 
 export interface FilterContext {
@@ -13,8 +13,11 @@ export interface FilterContext {
    * rather than constructing them - a filter that could build its own provider
    * could also silently mask a misconfigured one, which is how hr-breaker
    * shipped a dead filter for two months.
+   *
+   * Three models, split by cost, as hr-breaker splits them. Each filter picks
+   * the one it needs. Only `vision` must accept images.
    */
-  readonly chat: ChatProvider;
+  readonly chat: ChatProviders;
   /** Local embedding access, supplied by the pipeline. Same rule as `chat`. */
   readonly embeddings: EmbeddingProvider;
   /**

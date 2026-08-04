@@ -68,7 +68,7 @@ export const hallucination: Filter = {
       languageCode: targetLanguage,
     });
 
-    const r = await chat.object({ system, prompt }, hallucinationResult);
+    const r = await chat.pro.object({ system, prompt }, hallucinationResult);
 
     const issues = [...r.concerns];
     const suggestions: string[] = [];

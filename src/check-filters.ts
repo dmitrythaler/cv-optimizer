@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import process from 'node:process';
 import { logger } from './logger.ts';
 import { all } from './filters/index.ts';
-import { aiSdkChat } from './providers/ai-sdk.ts';
+import { aiSdkProviders } from './providers/ai-sdk.ts';
 import { localEmbeddings } from './providers/local-embeddings.ts';
 import type { Config } from './config.ts';
 import type { Filter, FilterContext } from './filters/base.ts';
@@ -105,7 +105,7 @@ export const checkFilters = async (
       },
       source: { text: cv, path: cvPath, instructions: null },
       config,
-      chat: aiSdkChat(config.chatModel),
+      chat: aiSdkProviders(config.models),
       embeddings,
       targetLanguage: 'en',
     };
@@ -113,7 +113,10 @@ export const checkFilters = async (
     const out = process.stdout;
     out.write(`\ncv  : ${cvPath} (${cv.length} chars)\n`);
     out.write(`jd  : ${jdPath} (${jd.length} chars)\n`);
-    out.write(`chat: ${config.chatModel}   embeddings: ${config.embedding.model}\n\n`);
+    out.write(`pro : ${config.models.pro}\n`);
+    out.write(`fls : ${config.models.flash}\n`);
+    out.write(`vis : ${config.models.vision}\n`);
+    out.write(`emb : ${config.embedding.model}\n\n`);
     out.write(`${'filter'.padEnd(26)} ${'score'.padEnd(7)} ${'thresh'.padEnd(7)} result\n`);
     out.write(`${'-'.repeat(26)} ${'-'.repeat(7)} ${'-'.repeat(7)} ------\n`);
 

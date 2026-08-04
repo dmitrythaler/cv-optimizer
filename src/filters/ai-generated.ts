@@ -64,7 +64,7 @@ export const aiGenerated: Filter = {
       languageCode: targetLanguage,
     });
 
-    const r = await chat.object({ system, prompt }, aiGeneratedResult);
+    const r = await chat.flash.object({ system, prompt }, aiGeneratedResult);
 
     const score = 1.0 - r.ai_probability;
 

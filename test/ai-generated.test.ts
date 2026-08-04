@@ -7,6 +7,7 @@ import type { AiGeneratedResult } from '../src/filters/ai-generated.ts';
 import { SYSTEM_PROMPT, buildUserPrompt, currentDateLine } from '../src/prompts/ai-generated.ts';
 import { loadConfig } from '../src/config.ts';
 import type { FilterContext } from '../src/filters/base.ts';
+import type { ChatProviders } from '../src/providers/ai-sdk.ts';
 import type { ChatProvider, ChatRequest } from '../src/providers/llm.ts';
 import type { EmbeddingProvider } from '../src/providers/embeddings.ts';
 
@@ -32,6 +33,8 @@ const fakeChat = (reply: AiGeneratedResult) => {
   return { provider, seen };
 };
 
+const trio = (p: ChatProvider): ChatProviders => ({ pro: p, flash: p, vision: p });
+
 const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterContext => ({
   resume: {
     html: '<p>html</p>',
@@ -50,7 +53,7 @@ const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterConte
   },
   source: { text: 'CV', path: 'cv.md', instructions: null },
   config: loadConfig(),
-  chat,
+  chat: trio(chat),
   embeddings: stubEmbeddings,
   targetLanguage: 'en',
   ...over,

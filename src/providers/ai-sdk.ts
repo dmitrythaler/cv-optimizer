@@ -1,4 +1,5 @@
 import { createDeepSeek } from '@ai-sdk/deepseek';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { generateObject, generateText } from 'ai';
 import type { LanguageModel } from 'ai';
 import type { z } from 'zod';
@@ -7,12 +8,23 @@ import type { ChatProvider, ChatRequest } from './llm.ts';
 /**
  * ChatProvider backed by the Vercel AI SDK.
  *
- * Model strings keep hr-breaker's `provider/model` shape (e.g.
- * `deepseek/deepseek-chat`) so the two projects stay configurable the same way.
+ * Model strings keep hr-breaker's `provider/model` shape, for example
+ * `deepseek/deepseek-v4-flash` or `gemini/gemini-2.5-flash`. The two projects
+ * are then configured the same way.
  */
 
-/** Providers that can accept an image. Checked before a vision call is attempted. */
-const VISION_CAPABLE = new Set<string>([]);
+/**
+ * Providers that accept an image.
+ *
+ * DeepSeek is NOT in this set, and that is a measured fact, not caution.
+ * Tested against api.deepseek.com on 2026-08-04: every content-part shape
+ * (`image_url`, `image`, `input_image`), the `/beta` endpoint and every model
+ * id return the same 400 - "unknown variant `image_url`, expected `text`".
+ * The error does not change with the model, so the request schema itself has
+ * no image variant. The DeepSeek app has a vision mode; the public API does
+ * not. See docs/porting-notes.md.
+ */
+const VISION_CAPABLE = new Set<string>(['gemini', 'google']);
 
 const resolve = (spec: string): { provider: string; model: LanguageModel } => {
   const slash = spec.indexOf('/');
@@ -25,6 +37,16 @@ const resolve = (spec: string): { provider: string; model: LanguageModel } => {
   switch (provider) {
     case 'deepseek':
       return { provider, model: createDeepSeek({})(name) };
+    case 'gemini':
+    case 'google':
+      // Accepts GOOGLE_GENERATIVE_AI_API_KEY. GEMINI_API_KEY is the name
+      // hr-breaker uses, so it is accepted too.
+      return {
+        provider,
+        model: createGoogleGenerativeAI({
+          apiKey: process.env['GOOGLE_GENERATIVE_AI_API_KEY'] ?? process.env['GEMINI_API_KEY'],
+        })(name),
+      };
     default:
       throw new Error(
         `unsupported chat provider ${JSON.stringify(provider)} - add it in providers/ai-sdk.ts`,
@@ -38,9 +60,9 @@ export const aiSdkChat = (spec: string): ChatProvider => {
   const messages = (req: ChatRequest) => {
     if (req.image === undefined) return { system: req.system, prompt: req.prompt };
     if (!VISION_CAPABLE.has(provider)) {
-      // Better to refuse than to send the image and have it silently dropped -
-      // that is precisely how hr-breaker's vision filter came to grade the
-      // wrong thing for weeks. See docs/porting-notes.md.
+      // Refuse, rather than send an image the provider will drop. A dropped
+      // image is what made hr-breaker's vision filter grade the wrong thing
+      // for weeks. See docs/porting-notes.md.
       throw new Error(`provider ${provider} cannot accept images`);
     }
     return {
@@ -72,3 +94,20 @@ export const aiSdkChat = (spec: string): ChatProvider => {
     },
   };
 };
+
+/** The three models the filters use. Built once and shared. */
+export interface ChatProviders {
+  readonly pro: ChatProvider;
+  readonly flash: ChatProvider;
+  readonly vision: ChatProvider;
+}
+
+export const aiSdkProviders = (models: {
+  pro: string;
+  flash: string;
+  vision: string;
+}): ChatProviders => ({
+  pro: aiSdkChat(models.pro),
+  flash: aiSdkChat(models.flash),
+  vision: aiSdkChat(models.vision),
+});

@@ -78,12 +78,12 @@ export const visionChecker: Filter = {
     // Guard 1: the provider cannot do vision at all. That is a configuration
     // fault, not a defect in the CV, so report it as skipped rather than
     // inventing a verdict. hr-breaker had no such distinction.
-    if (!chat.supportsVision()) {
+    if (!chat.vision.supportsVision()) {
       logger.warn(
-        `${NAME}: chat provider ${chat.model} cannot accept images - filter skipped, ` +
+        `${NAME}: vision model ${chat.vision.model} cannot accept images - filter skipped, ` +
           `this is NOT a judgement about the CV`,
       );
-      return skipped(NAME, threshold, `provider ${chat.model} has no vision support`);
+      return skipped(NAME, threshold, `model ${chat.vision.model} has no vision support`);
     }
 
     // Guard 2: rendering produced no page image. Unlike guard 1 this IS a
@@ -113,7 +113,7 @@ export const visionChecker: Filter = {
       languageCode: targetLanguage,
     });
 
-    const r = await chat.object({ system, prompt, image: resume.pngPage1 }, visionResult);
+    const r = await chat.vision.object({ system, prompt, image: resume.pngPage1 }, visionResult);
 
     const atsScore = computeAtsScore(r);
     const passed = r.looks_professional && atsScore >= threshold && !r.disqualified;

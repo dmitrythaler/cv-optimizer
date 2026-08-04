@@ -7,6 +7,7 @@ import { loadConfig } from '../src/config.ts';
 import type { FilterContext } from '../src/filters/base.ts';
 import type { OptimizedResume } from '../src/types.ts';
 import type { EmbeddingProvider } from '../src/providers/embeddings.ts';
+import type { ChatProviders } from '../src/providers/ai-sdk.ts';
 import type { ChatProvider } from '../src/providers/llm.ts';
 
 const VALID_HTML =
@@ -37,6 +38,8 @@ const stubEmbeddings: EmbeddingProvider = {
   close: () => Promise.resolve(),
 };
 
+const trio = (p: ChatProvider): ChatProviders => ({ pro: p, flash: p, vision: p });
+
 const ctx = (
   over: Partial<OptimizedResume> = {},
   extra: Partial<FilterContext> = {},
@@ -52,7 +55,7 @@ const ctx = (
   },
   source: { text: 'cv', path: 'cv.md', instructions: null },
   config: loadConfig(),
-  chat: stubChat,
+  chat: trio(stubChat),
   embeddings: stubEmbeddings,
   targetLanguage: 'en',
   ...extra,

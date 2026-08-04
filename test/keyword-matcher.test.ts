@@ -7,6 +7,7 @@ import { loadConfig } from '../src/config.ts';
 import type { JobPosting } from '../src/types.ts';
 import type { FilterContext } from '../src/filters/base.ts';
 import type { EmbeddingProvider } from '../src/providers/embeddings.ts';
+import type { ChatProviders } from '../src/providers/ai-sdk.ts';
 import type { ChatProvider } from '../src/providers/llm.ts';
 
 interface Case {
@@ -106,12 +107,14 @@ const stubEmbeddings: EmbeddingProvider = {
   close: () => Promise.resolve(),
 };
 
+const trio = (p: ChatProvider): ChatProviders => ({ pro: p, flash: p, vision: p });
+
 const ctx = (pdfText: string | null, description: string): FilterContext => ({
   resume: { html: '<p/>', pdfText, pngPage1: null, pageCount: 1, pageTexts: ['p'] },
   job: job({ description }),
   source: { text: cv, path: 'cv.md', instructions: null },
   config: loadConfig(),
-  chat: stubChat,
+  chat: trio(stubChat),
   embeddings: stubEmbeddings,
   targetLanguage: 'en',
 });

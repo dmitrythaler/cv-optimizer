@@ -27,7 +27,20 @@ const bool = (key: string, fallback: boolean): boolean => {
 };
 
 export interface Config {
-  readonly chatModel: string;
+  /**
+   * Chat models, split by cost as hr-breaker splits them.
+   *
+   * - `pro`   the careful one. HallucinationChecker uses it.
+   * - `flash` the cheap one. AiGeneratedChecker uses it.
+   * - `vision` must accept images. VisionChecker uses it. It falls back to
+   *   `flash`, but note that DeepSeek REJECTS images at the API schema level,
+   *   so a DeepSeek flash model makes VisionChecker skip. Use Gemini for it.
+   */
+  readonly models: {
+    readonly pro: string;
+    readonly flash: string;
+    readonly vision: string;
+  };
   readonly embedding: {
     /** Hugging Face repo id of an ONNX-exported model, run locally. No API, no key. */
     readonly model: string;
@@ -68,49 +81,63 @@ export interface Config {
   readonly logLevel: string;
 }
 
-export const loadConfig = (): Config => ({
-  chatModel: str('CHAT_MODEL', 'deepseek/deepseek-chat'),
+export const loadConfig = (): Config => {
+  // `deepseek-chat` answers, but it is not in the /v1/models list. Name a real
+  // model instead. The list holds deepseek-v4-pro and deepseek-v4-flash.
+  const flash = str('FLASH_MODEL', 'deepseek/deepseek-v4-flash');
+  return {
+    models: {
+      pro: str('PRO_MODEL', 'deepseek/deepseek-v4-pro'),
+      flash,
+      // Defaults to Gemini, NOT to `flash`. DeepSeek rejects images at the API
+      // schema level, so a DeepSeek vision model makes VisionChecker skip
+      // every time. This needs GEMINI_API_KEY. Set VISION_MODEL to the flash
+      // model if you would rather not use a second provider - the filter will
+      // then skip, and say so.
+      vision: str('VISION_MODEL', 'gemini/gemini-3.5-flash'),
+    },
 
-  embedding: {
-    // bge-m3: multilingual (some job descriptions are in Polish) and an 8192
-    // token window, which a 2-page CV needs. Repo id verified 2026-08-04 to
-    // exist with ONNX weights. NOTE: nothing loads this yet - the worker's
-    // model load is still a TODO and VectorSimilarity is not implemented.
-    model: str('EMBEDDING_MODEL', 'Xenova/bge-m3'),
-    dimensions: num('EMBEDDING_DIMENSIONS', 0),
-    maxInputTokens: num('EMBEDDING_MAX_INPUT_TOKENS', 8192),
-  },
+    embedding: {
+      // bge-m3: multilingual (some job descriptions are in Polish) and an 8192
+      // token window, which a 2-page CV needs. Repo id verified 2026-08-04 to
+      // exist with ONNX weights. NOTE: nothing loads this yet - the worker's
+      // model load is still a TODO and VectorSimilarity is not implemented.
+      model: str('EMBEDDING_MODEL', 'Xenova/bge-m3'),
+      dimensions: num('EMBEDDING_DIMENSIONS', 0),
+      maxInputTokens: num('EMBEDDING_MAX_INPUT_TOKENS', 8192),
+    },
 
-  maxIterations: num('MAX_ITERATIONS', 3),
-  noShame: bool('NO_SHAME', false),
+    maxIterations: num('MAX_ITERATIONS', 3),
+    noShame: bool('NO_SHAME', false),
 
-  keyword: {
-    maxFeatures: num('KEYWORD_TFIDF_MAX_FEATURES', 200),
-    cutoff: num('KEYWORD_TFIDF_CUTOFF', 0.1),
-    maxMissingDisplay: num('KEYWORD_MAX_MISSING_DISPLAY', 10),
-  },
+    keyword: {
+      maxFeatures: num('KEYWORD_TFIDF_MAX_FEATURES', 200),
+      cutoff: num('KEYWORD_TFIDF_CUTOFF', 0.1),
+      maxMissingDisplay: num('KEYWORD_MAX_MISSING_DISPLAY', 10),
+    },
 
-  resume: {
-    // 5000 is the value hr-breaker actually runs with (set in its .env). Note
-    // the Python *code* default is 1000 - the env override is the effective
-    // one, so that is what is carried over for behavioural parity.
-    page2OverflowChars: num('RESUME_PAGE2_OVERFLOW_CHARS', 5000),
-  },
+    resume: {
+      // 5000 is the value hr-breaker actually runs with (set in its .env). Note
+      // the Python *code* default is 1000 - the env override is the effective
+      // one, so that is what is carried over for behavioural parity.
+      page2OverflowChars: num('RESUME_PAGE2_OVERFLOW_CHARS', 5000),
+    },
 
-  thresholds: {
-    keyword: num('THRESHOLD_KEYWORD', 0.25),
+    thresholds: {
+      keyword: num('THRESHOLD_KEYWORD', 0.25),
 
-    // NOT CALIBRATED. The 0.55 inherited from the Python version was measured
-    // against hosted gemini-embedding-001 at 768 dims; a different model has a
-    // different cosine distribution, so that number does not transfer.
-    // NaN makes every comparison false, so the filter fails loudly until this
-    // is measured. Do not replace it with a guess - see docs/porting-notes.md.
-    vector: num('THRESHOLD_VECTOR', Number.NaN),
+      // NOT CALIBRATED. The 0.55 inherited from the Python version was measured
+      // against hosted gemini-embedding-001 at 768 dims; a different model has a
+      // different cosine distribution, so that number does not transfer.
+      // NaN makes every comparison false, so the filter fails loudly until this
+      // is measured. Do not replace it with a guess - see docs/porting-notes.md.
+      vector: num('THRESHOLD_VECTOR', Number.NaN),
 
-    hallucination: num('THRESHOLD_HALLUCINATION', 0.9),
-    aiGenerated: num('THRESHOLD_AI_GENERATED', 0.4),
-    vision: num('THRESHOLD_VISION', 0.7),
-  },
+      hallucination: num('THRESHOLD_HALLUCINATION', 0.9),
+      aiGenerated: num('THRESHOLD_AI_GENERATED', 0.4),
+      vision: num('THRESHOLD_VISION', 0.7),
+    },
 
-  logLevel: str('LOG_LEVEL', 'info'),
-});
+    logLevel: str('LOG_LEVEL', 'info'),
+  };
+};
