@@ -62,6 +62,18 @@ here.
   part-way through. After the pull, operation is fully offline.
   Implemented as a `prefetch` message on the worker protocol, so it exercises
   exactly the same load path the real embedding calls use.
+- **ONE embedding worker per process, shared.** `onnxruntime-node` is a native
+  addon that can only self-register once per process; spawning a second
+  embedding worker in the same process fails with "Module did not self-register
+  / ERR_DLOPEN_FAILED". This was found the hard way - the first integration test
+  passed and the next two died. It constrains the concurrency plan: running
+  several optimize jobs in one process is fine, but they must SHARE a single
+  `EmbeddingProvider`, not each construct their own. Separate OS processes are
+  unaffected.
+- **Model weights cache to `.cache/models/`, not `node_modules`.** The library
+  default is `node_modules/@huggingface/transformers/.cache`, which `pnpm
+install` prunes - silently discarding a 2.2 GB download that `model:pull`
+  exists to make once. `env.cacheDir` is set explicitly in the worker.
 - Recalibration is now a required step whenever the embedding model changes.
   That is a feature — it was the absence of this discipline that let the Python
   filter ship broken.

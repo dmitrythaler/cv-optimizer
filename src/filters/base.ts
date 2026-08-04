@@ -1,4 +1,5 @@
 import type { Config } from '../config.ts';
+import type { EmbeddingProvider } from '../providers/embeddings.ts';
 import type { ChatProvider } from '../providers/llm.ts';
 import type { FilterResult, JobPosting, OptimizedResume, ResumeSource } from '../types.ts';
 
@@ -14,6 +15,8 @@ export interface FilterContext {
    * shipped a dead filter for two months.
    */
   readonly chat: ChatProvider;
+  /** Local embedding access, supplied by the pipeline. Same rule as `chat`. */
+  readonly embeddings: EmbeddingProvider;
   /**
    * Resolved language the optimized CV was written in, e.g. "en", "pl".
    * Distinct from `job.language`: the target can be overridden, and filters

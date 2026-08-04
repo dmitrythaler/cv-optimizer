@@ -6,6 +6,7 @@ import { keywordMatcher } from '../src/filters/keyword-matcher.ts';
 import { loadConfig } from '../src/config.ts';
 import type { JobPosting } from '../src/types.ts';
 import type { FilterContext } from '../src/filters/base.ts';
+import type { EmbeddingProvider } from '../src/providers/embeddings.ts';
 import type { ChatProvider } from '../src/providers/llm.ts';
 
 interface Case {
@@ -97,12 +98,21 @@ const stubChat: ChatProvider = {
   supportsVision: () => false,
 };
 
+const stubEmbeddings: EmbeddingProvider = {
+  model: 'stub/none',
+  dimensions: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  prefetch: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  embed: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  close: () => Promise.resolve(),
+};
+
 const ctx = (pdfText: string | null, description: string): FilterContext => ({
   resume: { html: '<p/>', pdfText, pngPage1: null, pageCount: 1, pageTexts: ['p'] },
   job: job({ description }),
   source: { text: cv, path: 'cv.md', instructions: null },
   config: loadConfig(),
   chat: stubChat,
+  embeddings: stubEmbeddings,
   targetLanguage: 'en',
 });
 

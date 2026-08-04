@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@ai-sdk/deepseek": "^3.0.21",
+    "@huggingface/transformers": "^4.2.0",
     "ai": "^7.0.51",
     "zod": "^4.4.3"
   },

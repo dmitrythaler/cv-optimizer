@@ -6,6 +6,7 @@ import { all } from '../src/filters/index.ts';
 import { loadConfig } from '../src/config.ts';
 import type { FilterContext } from '../src/filters/base.ts';
 import type { OptimizedResume } from '../src/types.ts';
+import type { EmbeddingProvider } from '../src/providers/embeddings.ts';
 import type { ChatProvider } from '../src/providers/llm.ts';
 
 const VALID_HTML =
@@ -28,6 +29,14 @@ const stubChat: ChatProvider = {
   supportsVision: () => false,
 };
 
+const stubEmbeddings: EmbeddingProvider = {
+  model: 'stub/none',
+  dimensions: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  prefetch: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  embed: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  close: () => Promise.resolve(),
+};
+
 const ctx = (
   over: Partial<OptimizedResume> = {},
   extra: Partial<FilterContext> = {},
@@ -44,6 +53,7 @@ const ctx = (
   source: { text: 'cv', path: 'cv.md', instructions: null },
   config: loadConfig(),
   chat: stubChat,
+  embeddings: stubEmbeddings,
   targetLanguage: 'en',
   ...extra,
 });
@@ -140,9 +150,10 @@ test('registry: filters registered, ordered by priority', () => {
     'HallucinationChecker',
     'KeywordMatcher',
     'VisionChecker',
+    'VectorSimilarityMatcher',
   ]);
   assert.deepEqual(
     all().map((f) => f.priority),
-    [0, 1, 3, 4, 5],
+    [0, 1, 3, 4, 5, 6],
   );
 });

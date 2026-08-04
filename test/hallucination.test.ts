@@ -9,6 +9,7 @@ import {
 } from '../src/prompts/hallucination.ts';
 import { loadConfig } from '../src/config.ts';
 import type { FilterContext } from '../src/filters/base.ts';
+import type { EmbeddingProvider } from '../src/providers/embeddings.ts';
 import type { ChatProvider, ChatRequest } from '../src/providers/llm.ts';
 import type { HallucinationResult } from '../src/filters/hallucination.ts';
 
@@ -25,6 +26,14 @@ const fakeChat = (reply: HallucinationResult) => {
     supportsVision: () => false,
   };
   return { provider, seen };
+};
+
+const stubEmbeddings: EmbeddingProvider = {
+  model: 'stub/none',
+  dimensions: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  prefetch: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  embed: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  close: () => Promise.resolve(),
 };
 
 const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterContext => ({
@@ -46,6 +55,7 @@ const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterConte
   source: { text: 'ORIGINAL CV BODY', path: 'cv.md', instructions: null },
   config: loadConfig(),
   chat,
+  embeddings: stubEmbeddings,
   targetLanguage: 'en',
   ...over,
 });

@@ -7,6 +7,7 @@ import type { VisionResult } from '../src/filters/vision-checker.ts';
 import { SYSTEM_PROMPT, buildUserPrompt, currentDateLine } from '../src/prompts/vision.ts';
 import { loadConfig } from '../src/config.ts';
 import type { FilterContext } from '../src/filters/base.ts';
+import type { EmbeddingProvider } from '../src/providers/embeddings.ts';
 import type { ChatProvider, ChatRequest } from '../src/providers/llm.ts';
 
 const GOOD: VisionResult = {
@@ -35,6 +36,14 @@ const fakeChat = (reply: VisionResult, opts: { vision?: boolean } = {}) => {
   return { provider, seen };
 };
 
+const stubEmbeddings: EmbeddingProvider = {
+  model: 'stub/none',
+  dimensions: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  prefetch: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  embed: () => Promise.reject(new Error('stub embeddings: not expected to be called')),
+  close: () => Promise.resolve(),
+};
+
 const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterContext => ({
   resume: {
     html: '<header class="header"><h1 class="name">D</h1></header>',
@@ -54,6 +63,7 @@ const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterConte
   source: { text: 'CV', path: 'cv.md', instructions: null },
   config: loadConfig(),
   chat,
+  embeddings: stubEmbeddings,
   targetLanguage: 'en',
   ...over,
 });

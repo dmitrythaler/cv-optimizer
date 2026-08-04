@@ -11,12 +11,14 @@ const USAGE = `cv-optimizer - tailor a CV to a job description
 USAGE
   cv-optimizer optimize <cv-file> <jd-file> [options]
   cv-optimizer pull-model
+  cv-optimizer calibrate-vector <cv-file> <jd-glob-dir>
   cv-optimizer filters
   cv-optimizer --help | --version
 
 COMMANDS
   optimize      tailor <cv-file> to <jd-file>
   pull-model    download the local embedding model ahead of the first run
+  calibrate-vector  measure THRESHOLD_VECTOR for the configured embedding model
   filters       list registered filters
 
 OPTIONS
@@ -75,6 +77,16 @@ const main = async (argv: string[]): Promise<number> => {
       } finally {
         await provider.close();
       }
+    }
+
+    case 'calibrate-vector': {
+      const [cvPath, jdDir] = rest;
+      if (cvPath === undefined || jdDir === undefined) {
+        logger.error('calibrate-vector needs <cv-file> and a directory of job folders');
+        return 1;
+      }
+      const { calibrateVector } = await import('./calibrate.ts');
+      return await calibrateVector(cvPath, jdDir, config);
     }
 
     case 'filters': {

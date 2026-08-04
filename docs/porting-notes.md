@@ -279,3 +279,56 @@ specific failure that started all of this.
 uses `f"{x:.2f}"`. They agree except on values that are exact binary ties, where
 Python rounds half-to-even (`0.125` -> `0.12`) and JS rounds half-up (`0.13`).
 Display only; tested.
+
+### VectorSimilarityMatcher (priority 6)
+
+The filter that was dead in the Python for months. Both original bugs are fixed
+and pinned by tests: an embedding failure is `skipped()` with a NaN score (never
+a passing 1.0), and the score is raw cosine (never `(cos + 1) / 2`).
+
+**Calibrated 2026-08-04, `Xenova/bge-m3` @ 1024 dims**, via
+`cv-optimizer calibrate-vector ../cv.md ../applications`:
+
+| set                              | cosine        |
+| -------------------------------- | ------------- |
+| 21 real job descriptions         | 0.794 – 0.898 |
+| control: sourdough bread recipe  | 0.498         |
+| control: wrong stack (Java role) | 0.542         |
+
+Separation 0.252, so `THRESHOLD_VECTOR=0.67` (midpoint of the gap). Recorded in
+`.env.example`; the code default stays `NaN` so an unmeasured threshold fails
+loudly rather than passing everything.
+
+**The local model is better than the hosted one it replaces**, on both measures
+that matter:
+
+| model                         | separation | spread among real jobs |
+| ----------------------------- | ---------- | ---------------------- |
+| gemini-embedding-001 (hosted) | 0.222      | 0.037                  |
+| bge-m3 (local)                | **0.252**  | **0.104**              |
+
+A ~3x wider spread among genuine jobs means it discriminates between them, not
+just between "software" and "not software".
+
+It still does not catch the one true domain mismatch: co.brick, the
+computational-geometry role that TF-IDF correctly flags at 0.31, scores 0.867 -
+mid-pack. Whole-document embedding averages that away. Chunked embedding remains
+the upgrade if per-requirement signal is ever needed.
+
+**Operational findings, both learned by hitting them:**
+
+- **`onnxruntime-node` can only load once per process.** A second embedding
+  worker in the same process dies with `ERR_DLOPEN_FAILED`. Concurrent jobs in
+  one process must share a single `EmbeddingProvider`. See ADR 0002.
+- **Cache location matters.** Transformers.js defaults to
+  `node_modules/@huggingface/transformers/.cache`, which a `pnpm install`
+  prunes. Now pinned to `.cache/models/` via `env.cacheDir`. Verified: a second
+  `model:pull` takes 2.4s instead of 9 minutes.
+- **Over-long input is refused, not truncated.** The tokenizer is loaded
+  alongside the pipeline purely to check length first. Truncation would embed
+  half a CV and return a confident number - exactly the failure mode this port
+  exists to prevent.
+- The download is ~2.2 GB because Transformers.js defaults to fp32 for this
+  pipeline. A quantized `dtype` would cut that substantially with little effect
+  on cosine, but the threshold is dtype-specific too, so switching means
+  re-running `calibrate-vector`.
