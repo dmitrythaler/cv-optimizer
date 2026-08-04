@@ -33,7 +33,14 @@ const ctx = (
   extra: Partial<FilterContext> = {},
 ): FilterContext => ({
   resume: resume(over),
-  job: { title: 't', company: 'c', description: 'd', requirements: [], language: 'en' },
+  job: {
+    title: 't',
+    company: 'c',
+    description: 'd',
+    requirements: [],
+    keywords: [],
+    language: 'en',
+  },
   source: { text: 'cv', path: 'cv.md', instructions: null },
   config: loadConfig(),
   chat: stubChat,
@@ -127,9 +134,14 @@ test('dataValidator: failure carries a suggestion, success does not', async () =
 
 test('registry: filters registered, ordered by priority', () => {
   const names = all().map((f) => f.name);
-  assert.deepEqual(names, ['ContentLengthChecker', 'DataValidator', 'HallucinationChecker']);
+  assert.deepEqual(names, [
+    'ContentLengthChecker',
+    'DataValidator',
+    'HallucinationChecker',
+    'KeywordMatcher',
+  ]);
   assert.deepEqual(
     all().map((f) => f.priority),
-    [0, 1, 3],
+    [0, 1, 3, 4],
   );
 });

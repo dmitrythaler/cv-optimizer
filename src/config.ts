@@ -42,6 +42,14 @@ export interface Config {
    * bounds. Massively relaxes the fabrication checks - use with caution.
    */
   readonly noShame: boolean;
+  readonly keyword: {
+    /** sklearn `max_features` for the job-text vectorizer. */
+    readonly maxFeatures: number;
+    /** TF-IDF weight above which a term counts as significant. Strict >. */
+    readonly cutoff: number;
+    /** How many missing keywords to name in the failure message. */
+    readonly maxMissingDisplay: number;
+  };
   readonly resume: {
     /**
      * A 2-page CV whose second page holds less than this many characters is
@@ -74,6 +82,12 @@ export const loadConfig = (): Config => ({
 
   maxIterations: num('MAX_ITERATIONS', 3),
   noShame: bool('NO_SHAME', false),
+
+  keyword: {
+    maxFeatures: num('KEYWORD_TFIDF_MAX_FEATURES', 200),
+    cutoff: num('KEYWORD_TFIDF_CUTOFF', 0.1),
+    maxMissingDisplay: num('KEYWORD_MAX_MISSING_DISPLAY', 10),
+  },
 
   resume: {
     // 5000 is the value hr-breaker actually runs with (set in its .env). Note

@@ -178,3 +178,50 @@ Every difference is listed here. Behaviour is preserved unless stated.
 - The Python's fallback chain for optimized content (`html` -> structured
   `data` -> `"(no content)"`) collapses to HTML-only here, since there is no
   structured-resume mode.
+
+### KeywordMatcher (priority 4)
+
+Scores match hr-breaker **exactly** - all nine JDs in the corpus agree to
+within 1e-9, verified by running the Python's own `check_keywords()` over
+`cv.md` and comparing (`test/fixtures.keywords.json`).
+
+- **scikit-learn's `TfidfVectorizer` is reimplemented, not approximated.** Two
+  properties of the exact configuration make that tractable:
+  1. It is fitted on a **single document**. With `smooth_idf` (default) and one
+     document, `idf = ln((1+1)/(1+1)) + 1 = 1` for every term, so tf-idf
+     collapses to plain term frequency.
+  2. `norm="l2"` then scales the count vector to unit length.
+
+  So a term's weight is just `count / sqrt(sum of counts squared)`. Verified
+  against sklearn fixtures in `test/tfidf.test.ts`.
+
+- **The 318-word `ENGLISH_STOP_WORDS` list is copied verbatim** into
+  `src/text/stopwords.ts`. It is idiosyncratic - it contains "system",
+  "computer", "fire", "cry" - and every removal shifts every score, so it must
+  not be tidied.
+- **Tokenizer quirks preserved.** `(?u)\b[a-zA-Z][a-zA-Z0-9+#.-]*\b` means
+  `Node.js` survives whole, `.NET` becomes `net` (a token must start with a
+  letter), and **`C++` and `C#` both collapse to `c`** - the trailing `\b`
+  cannot sit between `+` and a space, so the match backtracks to the bare
+  letter. Tested.
+- **Bigrams are formed after stop-word removal**, so "the lazy dog with a very
+  good system" yields "lazy dog" then "dog good", bridging the removed words.
+
+Two places where exact parity is impossible, both benign:
+
+- **`max_features` tie-breaking.** When the cut lands inside a run of
+  equally-frequent terms, sklearn breaks the tie with `(-tfs).argsort()` -
+  numpy's _unstable_ quicksort, an artifact of introsort internals rather than a
+  rule. On the real corpus 86 terms differ at that cliff, but every one is a
+  count-1 term scoring ~0.04, far below the 0.1 significance cutoff, so none
+  reach the score. The 23 significant terms are identical. This port breaks ties
+  alphabetically.
+- **`missing_keywords` ordering is non-deterministic in Python.**
+  `significant_keywords` is a `set`, CPython randomizes string hashing per
+  process, and the sort is stable - so it preserves an arbitrary order among
+  equal-weight terms. Three consecutive runs of the same input produced three
+  different orders, and where more than `maxMissingDisplay` terms tie, the
+  displayed slice differs in _membership_ too. That text is fed back to the
+  optimizer as iteration feedback, so hr-breaker's retries are not reproducible.
+  **This port is deterministic**, which is a deliberate improvement rather than
+  a parity break. Scores are unaffected.

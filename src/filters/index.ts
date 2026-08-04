@@ -6,14 +6,17 @@ import { register } from './registry.ts';
 import { contentLength } from './content-length.ts';
 import { dataValidator } from './data-validator.ts';
 import { hallucination } from './hallucination.ts';
+import { keywordMatcher } from './keyword-matcher.ts';
 
 register(contentLength);
 register(dataValidator);
 register(hallucination);
+register(keywordMatcher);
 
 export { register, all } from './registry.ts';
 export { skipped } from './base.ts';
 export { contentLength } from './content-length.ts';
 export { dataValidator, validateHtml } from './data-validator.ts';
 export { hallucination, hallucinationResult } from './hallucination.ts';
+export { keywordMatcher, checkKeywords } from './keyword-matcher.ts';
 export type { Filter, FilterContext } from './base.ts';
