@@ -79,6 +79,11 @@ output/20260805-0912-link_group-full_stack_engineer/
 `jd.txt` is written by `prepareRun` BEFORE the loop starts, so a run that dies
 twenty minutes in does not also lose the text it was working from.
 
+`fetch-job <url>` writes the same folder with `jd.txt` alone, and asks for no
+output path. Both commands name the folder through `prepareRun`, so they cannot
+disagree about where a posting belongs. It costs one flash call, because the
+folder is named after the company and the role.
+
 `job-text.ts` strips the page furniture. Measured on a real justjoin.it page:
 609 lines in, the posting was lines 96-250, and cleaning removed 54%. It cuts
 the trailer at a "similar offers" heading and drops navigation and legal

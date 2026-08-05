@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import process from 'node:process';
 import { loadConfig } from './config.ts';
 import { logger } from './logger.ts';
@@ -10,7 +11,7 @@ const USAGE = `cv-optimizer - tailor a CV to a job description
 
 USAGE
   cv-optimizer optimize <cv-file> <jd-file|url> [options]
-  cv-optimizer fetch-job <url> <out-file>
+  cv-optimizer fetch-job <url> [-o <path>]
   cv-optimizer pull-model
   cv-optimizer calibrate-vector <cv-file> <jd-glob-dir>
   cv-optimizer check-filters <cv-file> <jd-file> <filter[,filter...]|all>
@@ -19,7 +20,7 @@ USAGE
 
 COMMANDS
   optimize      tailor <cv-file> to a job; the job may be a file or a URL
-  fetch-job     download a job posting to a text file
+  fetch-job     download and clean a posting into its own run folder as jd.txt
   pull-model    download the local embedding model ahead of the first run
   calibrate-vector  measure THRESHOLD_VECTOR for the configured embedding model
   check-filters  score one CV against one job with the chosen filters
@@ -34,9 +35,10 @@ OPTIONS
 
 OUTPUT
   One run writes one folder: {date}-{time}-{company}-{position}/
-  holding the CV, iteration_N.pdf/.png for every pass, optimization.json,
-  and errors.log when anything went wrong. The CV file name comes from
-  CV_NAME_TEMPLATE.
+  holding jd.txt, the CV, iteration_N.pdf/.png for every pass,
+  optimization.json, and errors.log when anything went wrong. The CV file name
+  comes from CV_NAME_TEMPLATE. fetch-job writes the same folder with jd.txt
+  alone.
 
 ENVIRONMENT
   PRO_MODEL, FLASH_MODEL, VISION_MODEL, EMBEDDING_MODEL, MAX_ITERATIONS, LOG_LEVEL,
@@ -90,14 +92,25 @@ const main = async (argv: string[]): Promise<number> => {
     }
 
     case 'fetch-job': {
-      const [url, out] = rest;
-      if (url === undefined || out === undefined) {
-        logger.error('fetch-job needs <url> and <out-file>');
+      const [url] = rest;
+      if (url === undefined) {
+        logger.error('fetch-job needs <url>');
         return 1;
       }
-      const { fetchJobToFile } = await import('./fetch-job.ts');
-      const text = await fetchJobToFile(url, out);
-      logger.info(`${text.length} chars written`);
+      // No output path is asked for. The posting names its own folder, exactly
+      // as `optimize` names it, so the two commands cannot disagree.
+      const { fetchJob } = await import('./fetch-job.ts');
+      const { parseJobPosting } = await import('./job.ts');
+      const { aiSdkProviders } = await import('./providers/ai-sdk.ts');
+      const { prepareRun } = await import('./run-output.ts');
+      const { JD_TXT } = await import('./output-path.ts');
+
+      const fetched = await fetchJob(url);
+      // One cheap flash call. The folder is named after the company and the
+      // role, so the posting has to be parsed before there is a folder.
+      const job = await parseJobPosting(fetched.text, aiSdkProviders(config.models).flash);
+      const { folder } = await prepareRun(values.out ?? 'output', job, config, fetched.text);
+      logger.info(`${fetched.text.length} chars written to ${join(folder, JD_TXT)}`);
       return 0;
     }
 

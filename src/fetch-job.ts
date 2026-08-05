@@ -1,10 +1,9 @@
-import { writeFile } from 'node:fs/promises';
 import { logger } from './logger.ts';
 import { cleanJobText, describeClean } from './job-text.ts';
 import type { CleanReport } from './job-text.ts';
 
 /**
- * Fetches a job posting from a URL and saves the text to a file.
+ * Fetches a job posting from a URL.
  *
  * hr-breaker chains httpx, then the Wayback Machine, then Playwright. This
  * port keeps the first and the last and drops Wayback: a job board snapshot is
@@ -166,15 +165,4 @@ export const fetchJob = async (url: string): Promise<FetchedJob> => {
   else logger.info(line);
 
   return { text, url, method, clean };
-};
-
-/** Text only, for callers that do not care where it came from. */
-export const fetchJobText = async (url: string): Promise<string> => (await fetchJob(url)).text;
-
-/** Fetches a posting and writes it to `out`. Returns the text. */
-export const fetchJobToFile = async (url: string, out: string): Promise<string> => {
-  const text = await fetchJobText(url);
-  await writeFile(out, text, 'utf8');
-  logger.info(`saved to ${out}`);
-  return text;
 };
