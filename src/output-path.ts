@@ -6,7 +6,7 @@ import { join } from 'node:path';
  * One run produces one FOLDER, named after the run and the job:
  *
  *   output/20260805-0912-link_group-full_stack_engineer/
- *     Dmitry.Thaler.CV.link_group.full_stack_engineer.pdf   <- CV_NAME_TEMPLATE
+ *     John.Dow.CV.link_group.full_stack_engineer.pdf   <- CV_NAME_TEMPLATE
  *     iteration_1.pdf
  *     iteration_1.png
  *     iteration_2.pdf
@@ -20,7 +20,7 @@ import { join } from 'node:path';
  * the name a recruiter sees once the file leaves the folder.
  */
 
-/** Port of hr-breaker `sanitize_filename()`: lowercase, non-alphanumerics to underscore. */
+/** Lowercase, and every run of non-alphanumerics becomes one underscore. */
 export const sanitize = (name: string): string =>
   name
     .toLowerCase()

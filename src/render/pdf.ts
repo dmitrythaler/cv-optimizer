@@ -1,8 +1,7 @@
 /**
  * HTML -> PDF -> (text, PNG).
  *
- * The Python original used WeasyPrint; here Playwright's page.pdf() is the
- * natural fit and is already present elsewhere in this repo.
+ * Playwright's page.pdf() is the natural fit and is already a dependency.
  *
  * The PNG matters: the vision filter grades the rendered page. When that image
  * fails to reach the model, the filter silently falls back to grading extracted

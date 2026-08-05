@@ -24,7 +24,7 @@ export type AiGeneratedResult = z.infer<typeof aiGeneratedResult>;
 /**
  * Looks for signs that a model wrote the CV.
  *
- * This is a port of hr-breaker `filters/ai_generated_checker.py` and
+ * Pairs with
  * `agents/ai_generated_detector.py`. The prompt is a copy, byte for byte.
  *
  * The score is INVERTED: `score = 1 - ai_probability`. A high score means the
@@ -37,9 +37,8 @@ export type AiGeneratedResult = z.infer<typeof aiGeneratedResult>;
  * The prompt flags only impossible claims, contradictions, empty buzzwords and
  * repeated filler.
  *
- * NOTE: the model also returns `is_ai_generated`, but the Python filter ignores
- * it and decides on the score alone. This port does the same. See
- * docs/porting-notes.md.
+ * NOTE: the model also returns `is_ai_generated`. It is deliberately ignored -
+ * the decision rests on the score alone. See docs/design-notes.md.
  */
 export const aiGenerated: Filter = {
   name: NAME,
@@ -51,14 +50,14 @@ export const aiGenerated: Filter = {
     chat,
     targetLanguage,
   }: FilterContext): Promise<FilterResult> => {
-    // In lenient mode the Python divides the threshold by 2.
+    // Lenient mode halves the threshold.
     const threshold = config.noShame
       ? config.thresholds.aiGenerated / 2
       : config.thresholds.aiGenerated;
 
     const system = `${SYSTEM_PROMPT}\n\n${currentDateLine()}`;
     const prompt = buildUserPrompt({
-      // The Python order is pdf_text, then html, then structured data. This
+      // Order: pdf_text, then html, then structured data. This
       // port has no structured data, so the last branch cannot occur.
       resumeText: resume.pdfText || resume.html || '(no content)',
       languageCode: targetLanguage,

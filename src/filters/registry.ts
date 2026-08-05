@@ -16,7 +16,7 @@ export const register = (filter: Filter): void => {
 export const all = (): readonly Filter[] => registry;
 
 /**
- * A filter that threw. The Python turns an exception into a FAILED result, not
+ * A filter that threw. An exception becomes a FAILED result, not
  * a skip: a throw is a bug in the filter, and a bug must not read as approval.
  *
  * This is different from `skipped()`, which a filter returns on purpose when it
@@ -39,15 +39,14 @@ export interface RunOptions {
 /**
  * Runs every registered filter.
  *
- * Port of `run_filters()` in hr-breaker `orchestration.py`.
  *
  * Parallel is the default and the normal mode. Sequential exists for
  * debugging: it runs in priority order and stops at the first failure, so the
  * log ends at the thing that broke.
  *
- * NOT ported: the Python skips filters with priority >= 100 once something has
+ * Deliberately absent: skipping filters with priority >= 100 once something has
  * failed, and does not early-exit on them. No such filter exists - the highest
- * is 7 - so the branch is dead. See docs/porting-notes.md.
+ * is 7 - so the branch would be dead. See docs/design-notes.md.
  */
 export const runAll = async (
   ctx: FilterContext,

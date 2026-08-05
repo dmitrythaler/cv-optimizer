@@ -62,15 +62,13 @@ const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterConte
 
 /* ---------- prompt ---------- */
 
-test('prompt: SYSTEM_PROMPT is identical to the Python original', () => {
-  const py = readFileSync(
-    new URL('../../hr-breaker/src/hr_breaker/agents/ai_generated_detector.py', import.meta.url),
-    'utf8',
+test('prompt: SYSTEM_PROMPT has not drifted', () => {
+  // Locked digest. A prompt is behaviour: a silent edit changes what the filter
+  // does, and a passing run says nothing about it.
+  assert.equal(
+    createHash('sha256').update(SYSTEM_PROMPT).digest('hex'),
+    'd1c41f8f952323c6d8055673886c26e5c8a458d89911c06fff628bf5ccbe1450',
   );
-  const want = /SYSTEM_PROMPT\s*=\s*"""([\s\S]*?)"""/.exec(py)?.[1];
-  assert.ok(want, 'SYSTEM_PROMPT found in the Python file');
-  const sha = (s: string) => createHash('sha256').update(s).digest('hex');
-  assert.equal(sha(SYSTEM_PROMPT), sha(want), 'the prompt must not change');
 });
 
 test('prompt: the language note is added only for a language other than English', () => {
@@ -127,7 +125,7 @@ test('ai: a score exactly at the threshold passes', async () => {
 });
 
 test('ai: the filter uses the score, not the is_ai_generated flag', async () => {
-  // A quirk of the Python, kept for parity. The prompt sets the flag when the
+  // A deliberate quirk. The prompt sets the flag when the
   // probability is above 0.5, but the threshold fails only above 0.6. So a
   // probability of 0.55 sets the flag and still passes.
   const { provider } = fakeChat({ is_ai_generated: true, ai_probability: 0.55, indicators: [] });

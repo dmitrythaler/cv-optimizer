@@ -4,7 +4,7 @@ import process from 'node:process';
 /**
  * Load `.env` from the project root, once, before any setting is read.
  *
- * hr-breaker does the same with python-dotenv. Without it every entry point
+ * Without it every entry point
  * would have to pass keys through by hand, and a caller that forgot would get
  * a confusing failure deep inside a provider. A real env var still wins - the
  * loader does not overwrite what is already set.
@@ -29,9 +29,9 @@ const loadEnvFile = (): void => {
 /**
  * Settings, resolved from env vars with defaults.
  *
- * Thresholds are deliberately explicit rather than clever: the Python original
- * shipped a filter whose threshold was mathematically unreachable for two
- * months without anyone noticing. See docs/porting-notes.md.
+ * Thresholds are deliberately explicit rather than clever. A threshold that is
+ * mathematically unreachable makes a filter pass everything, and nothing about
+ * a running system says so. See docs/design-notes.md.
  */
 
 const num = (key: string, fallback: number): number => {
@@ -54,7 +54,7 @@ const bool = (key: string, fallback: boolean): boolean => {
 
 export interface Config {
   /**
-   * Chat models, split by cost as hr-breaker splits them.
+   * Chat models, split by cost.
    *
    * - `pro`   the careful one. HallucinationChecker uses it.
    * - `flash` the cheap one. AiGeneratedChecker uses it.
@@ -77,8 +77,8 @@ export interface Config {
   };
   readonly maxIterations: number;
   /**
-   * hr-breaker's `--no-shame`: swaps strict grading for lenient prompts and
-   * bounds. Massively relaxes the fabrication checks - use with caution.
+   * Swaps strict grading for lenient prompts and bounds. Massively relaxes
+   * the fabrication checks - use with caution.
    */
   readonly noShame: boolean;
   /**
@@ -101,13 +101,12 @@ export interface Config {
   readonly optimizer: {
     /**
      * How many times the generator may be told to try again when it skips or
-     * fails check_content_length. hr-breaker's `optimizer_retries`.
+     * fails check_content_length.
      */
     readonly retries: number;
     /**
-     * Cap on tool-call steps inside one attempt. hr-breaker's
-     * `optimizer_request_limit`, which exists because the page-fit loop can
-     * need many rounds under tight constraints.
+     * Cap on tool-call steps inside one attempt. The page-fit loop can need
+     * many rounds under tight constraints.
      */
     readonly maxSteps: number;
   };
@@ -123,7 +122,7 @@ export interface Config {
     readonly vector: number;
     readonly hallucination: number;
     readonly aiGenerated: number;
-    /** Minimum weighted ATS score. Named `filter_llm_threshold` in hr-breaker. */
+    /** Minimum weighted ATS score. */
     readonly vision: number;
   };
   readonly logLevel: string;
@@ -173,20 +172,19 @@ export const loadConfig = (): Config => {
     },
 
     resume: {
-      // 5000 is the value hr-breaker actually runs with (set in its .env). Note
-      // the Python *code* default is 1000 - the env override is the effective
-      // one, so that is what is carried over for behavioural parity.
+      // 5000 is the value that runs in practice. A 2-page CV whose second page
+      // holds less than this is page-1 overflow, not a real second page.
       page2OverflowChars: num('RESUME_PAGE2_OVERFLOW_CHARS', 5000),
     },
 
     thresholds: {
       keyword: num('THRESHOLD_KEYWORD', 0.25),
 
-      // NOT CALIBRATED. The 0.55 inherited from the Python version was measured
-      // against hosted gemini-embedding-001 at 768 dims; a different model has a
-      // different cosine distribution, so that number does not transfer.
+      // NOT CALIBRATED. A cosine threshold belongs to one embedding model at
+      // one dimension count. A different model has a different distribution, so
+      // a number measured elsewhere does not transfer.
       // NaN makes every comparison false, so the filter fails loudly until this
-      // is measured. Do not replace it with a guess - see docs/porting-notes.md.
+      // is measured. Do not replace it with a guess - see docs/design-notes.md.
       vector: num('THRESHOLD_VECTOR', Number.NaN),
 
       hallucination: num('THRESHOLD_HALLUCINATION', 0.9),

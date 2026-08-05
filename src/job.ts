@@ -7,8 +7,8 @@ import type { JobPosting } from './types.ts';
 /**
  * Turns job posting text into the structured fields the filters need.
  *
- * Port of `parse_job_posting()` in hr-breaker `agents/job_parser.py`. It runs
- * on the flash model, as the Python does.
+ * It runs
+ * on the flash model.
  *
  * This matters more than it looks. Without it, `title`, `company`,
  * `requirements` and `keywords` are all empty, so KeywordMatcher scores against
@@ -43,7 +43,7 @@ export const parseJobPosting = async (text: string, chat: ChatProvider): Promise
   return {
     title: r.title,
     company: r.company,
-    // The parser's brief summary, as the Python stores it. KeywordMatcher and
+    // The parser's brief summary. KeywordMatcher and
     // VectorSimilarityMatcher score against title + description + requirements,
     // so they see the summary, NOT the whole posting. The full text stays in
     // rawText for VisionChecker's fallback.

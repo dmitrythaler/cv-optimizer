@@ -58,8 +58,6 @@ const toReports = (results: readonly FilterResult[]): FilterReport[] =>
 /**
  * The generate, render, grade loop.
  *
- * Port of `optimize_for_job()` in hr-breaker `orchestration.py`.
- *
  * Each round: generate a CV, render it, extract the text and the page image,
  * grade it with every filter. Stop on the first fully passing round. Otherwise
  * feed the failures back and try again, until the iteration budget runs out.
@@ -68,9 +66,8 @@ const toReports = (results: readonly FilterResult[]): FilterReport[] =>
  * makes a judgement. See docs/adr/0001.
  *
  * `filed` is the LAST iteration, which is the passing one when the loop broke
- * early. That is what the Python returns. It is NOT the best iteration - it
- * does not try to pick one. Every iteration is returned, so a caller can look
- * back over them, which is what the manual step in hr-breaker's task.md does.
+ * early. It is NOT the best iteration - nothing here tries to pick one. Every
+ * iteration is returned, so a caller can look back over them by hand.
  */
 export const optimize = async (
   source: ResumeSource,

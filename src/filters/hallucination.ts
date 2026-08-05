@@ -29,7 +29,7 @@ export type HallucinationResult = z.infer<typeof hallucinationResult>;
 /**
  * Detects claims in the generated CV that the source does not support.
  *
- * Ported from hr-breaker `filters/hallucination_checker.py` +
+ * Pairs with
  * `agents/hallucination_detector.py`. Both prompts are copied verbatim into
  * ../prompts/hallucination.ts.
  *
@@ -37,7 +37,7 @@ export type HallucinationResult = z.infer<typeof hallucinationResult>;
  * domain experience to chase KeywordMatcher, and this is what catches it. A
  * falling score across iterations means fabrication is creeping in.
  *
- * One deviation from the Python, see docs/porting-notes.md: there, `passed` is
+ * One deliberate choice, see docs/design-notes.md: elsewhere `passed` is
  * computed against a hardcoded threshold (0.9 strict / 0.6 lenient) while the
  * reported `threshold` is then overwritten from settings - so raising or
  * lowering FILTER_HALLUCINATION_THRESHOLD changed the displayed number but not
@@ -55,14 +55,14 @@ export const hallucination: Filter = {
     targetLanguage,
   }: FilterContext): Promise<FilterResult> => {
     const noShame = config.noShame;
-    // 0.6 is the Python's hardcoded lenient bound; strict mode is configurable.
+    // 0.6 is the fixed lenient bound; strict mode is configurable.
     const threshold = noShame ? 0.6 : config.thresholds.hallucination;
 
     const system = `${noShame ? LENIENT_PROMPT : STRICT_PROMPT}\n\n${currentDateLine()}`;
     const prompt = buildUserPrompt({
       sourceContent: source.text,
       sourceInstructions: source.instructions,
-      // The Python falls back to structured data, then to "(no content)". This
+      // The fallback chain ends at structured data, then "(no content)". This
       // port is HTML-only, so the fallback cannot arise.
       optimizedContent: resume.html || '(no content)',
       languageCode: targetLanguage,

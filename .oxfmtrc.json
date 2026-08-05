@@ -11,12 +11,5 @@
   "bracketSpacing": true,
   "insertFinalNewline": true,
   "endOfLine": "lf",
-  "ignorePatterns": [
-    "dist/**",
-    "node_modules/**",
-    "templates/**",
-    "output/**",
-    "docs/parity-results.json",
-    "docs/parity-report.md"
-  ]
+  "ignorePatterns": ["dist/**", "node_modules/**", "templates/**", "output/**"]
 }

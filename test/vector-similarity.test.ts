@@ -85,7 +85,7 @@ test('vector: dissimilar vectors fail and name the score', async () => {
 });
 
 test('vector: the score is RAW cosine, never rescaled to (cos+1)/2', async () => {
-  // The Python rescale squashed everything into [0.5,1.0] and made the
+  // A (x+1)/2 rescale would squash everything into [0.5,1.0] and make the
   // threshold unreachable - a bread recipe scored 0.72 and passed at 0.4.
   const { provider } = fakeEmbeddings([
     [1, 0],
@@ -108,7 +108,7 @@ test('vector: embeds the CV text and the assembled job text, in that order', asy
 });
 
 test('vector: an embedding failure is SKIPPED, never a passing 1.0', async () => {
-  // This is the exact bug that kept the Python filter dead for months: a hard
+  // This is the exact failure mode that keeps a filter dead and quiet: a hard
   // 401 became `passed: true, score: 1.0`.
   const { provider } = fakeEmbeddings(new Error('model unreachable'));
   const r = await vectorSimilarity.evaluate(ctx(provider));

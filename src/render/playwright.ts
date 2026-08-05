@@ -13,21 +13,20 @@ const run = promisify(execFile);
 /**
  * Renders resume HTML to PDF, then reads the real PDF back.
  *
- * hr-breaker used WeasyPrint. This port uses Chromium through Playwright,
- * which gives a real CSS engine and is already a dependency of the parent
- * project.
+ * Chromium through Playwright, which gives a real CSS engine and is already a
+ * dependency.
  *
  * The page count, the per-page text and the page image all come from the
  * PRODUCED PDF, through poppler. They are never guessed from the HTML. That
- * matters: hr-breaker's vision filter judged a page the model never saw, and
- * nobody noticed for weeks. Whatever this returns is what was actually made.
+ * matters: a vision filter that judges a page the model never saw fails
+ * silently. Whatever this returns is what was actually made.
  *
  * Needs poppler-utils on PATH: pdftotext and pdftoppm.
  */
 
 const WRAPPER = new URL('../../templates/resume_wrapper.html', import.meta.url).pathname;
 
-/** Wraps the generated body in the template, exactly as the Python does. */
+/** Wraps the generated body in the template. */
 export const wrapHtml = (wrapper: string, body: string): string =>
   wrapper.replace('{{HEADER}}', '').replace('{{BODY}}', body);
 

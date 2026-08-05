@@ -12,14 +12,14 @@ const HAS_SCRIPT = /<script/i;
 /**
  * Structural checks on the generated HTML.
  *
- * Ported from hr-breaker `filters/data_validator.py`, `validate_html()`. Rules
+ * Rules
  * and message strings are identical, including the else-if: when the header is
  * missing entirely the name is NOT separately reported.
  *
  * NOT ported: the `validate_resume_data()` branch, which validates a structured
- * ResumeData object (contact fields, experience/education entries). This port
+ * ResumeData object (contact fields, experience/education entries). This build
  * has no structured-resume mode - `OptimizedResume` carries HTML only - so
- * there is nothing for it to check. See docs/porting-notes.md.
+ * there is nothing for it to check. See docs/design-notes.md.
  */
 export const validateHtml = (html: string): string[] => {
   const issues: string[] = [];

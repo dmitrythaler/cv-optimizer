@@ -1,6 +1,5 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import {
   OPTIMIZER_BASE,
@@ -13,35 +12,39 @@ import {
 } from '../src/prompts/optimizer.ts';
 import { estimateLength } from '../src/generator.ts';
 
-const PY = new URL('../../hr-breaker/src/hr_breaker/agents/optimizer.py', import.meta.url).pathname;
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 
-const grab = (name: string, raw: boolean): string => {
-  const py = readFileSync(PY, 'utf8');
-  const re = new RegExp(`${name}\\s*=\\s*${raw ? 'r' : ''}"""([\\s\\S]*?)"""`);
-  const m = re.exec(py);
-  assert.ok(m, `${name} found in the Python file`);
-  return m[1] ?? '';
+/**
+ * Locked prompt digests.
+ *
+ * A prompt is behaviour. Changing one silently changes what every filter and
+ * the generator do, and nothing about a passing run says so. A formatter once
+ * rewrote two prompt files by itself; this is what caught it.
+ *
+ * If a digest here fails, that is the point. Change it only when the prompt
+ * change is deliberate, and say so in the commit message.
+ */
+const LOCKED = {
+  OPTIMIZER_BASE: 'e0282fb56dfca66a1a99209c41725797c887bd509bc1e627f486f58c35468931',
+  OPTIMIZER_STRICT_RULES: '354673898f7e9e7f9a6fc93dc9ad4fe91bf51ac07553c1f11a2f22a42e25dee0',
+  OPTIMIZER_LENIENT_RULES: 'd18304032285b6a2f502bb7546f8c634060d493be145251718561a93bb2b4949',
+  RESUME_GUIDE: '47082e39ab4ad539176fb1dbebb088365d4793b95824d4c91e6cd57c651426fd',
 };
 
-test('prompt: OPTIMIZER_BASE is identical to the Python', () => {
-  assert.equal(sha(OPTIMIZER_BASE), sha(grab('OPTIMIZER_BASE', true)));
+test('prompt: OPTIMIZER_BASE has not drifted', () => {
+  assert.equal(sha(OPTIMIZER_BASE), LOCKED.OPTIMIZER_BASE);
 });
 
-test('prompt: OPTIMIZER_STRICT_RULES is identical to the Python', () => {
-  assert.equal(sha(OPTIMIZER_STRICT_RULES), sha(grab('OPTIMIZER_STRICT_RULES', false)));
+test('prompt: OPTIMIZER_STRICT_RULES has not drifted', () => {
+  assert.equal(sha(OPTIMIZER_STRICT_RULES), LOCKED.OPTIMIZER_STRICT_RULES);
 });
 
-test('prompt: OPTIMIZER_LENIENT_RULES is identical to the Python', () => {
-  assert.equal(sha(OPTIMIZER_LENIENT_RULES), sha(grab('OPTIMIZER_LENIENT_RULES', false)));
+test('prompt: OPTIMIZER_LENIENT_RULES has not drifted', () => {
+  assert.equal(sha(OPTIMIZER_LENIENT_RULES), LOCKED.OPTIMIZER_LENIENT_RULES);
 });
 
-test('prompt: resume_guide.md is identical to the Python copy', () => {
-  const theirs = readFileSync(
-    new URL('../../hr-breaker/templates/resume_guide.md', import.meta.url).pathname,
-    'utf8',
-  );
-  assert.equal(sha(loadResumeGuide()), sha(theirs));
+test('prompt: resume_guide.md has not drifted', () => {
+  assert.equal(sha(loadResumeGuide()), LOCKED.RESUME_GUIDE);
 });
 
 test('prompt: the system prompt fills both slots and picks rules by mode', () => {

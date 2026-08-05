@@ -4,15 +4,15 @@ import { readFileSync } from 'node:fs';
  * Prompts for the generator.
  *
  * OPTIMIZER_BASE, OPTIMIZER_STRICT_RULES and OPTIMIZER_LENIENT_RULES are copies
- * of the prompts in hr-breaker `agents/optimizer.py`. They are identical, byte
- * for byte. `test/optimizer-prompt.test.ts` reads the Python file and compares.
+ * Locked text. Pinned byte
+ * for byte. `test/optimizer-prompt.test.ts` pins it against a locked digest.
  *
  * `templates/resume_guide.md` is also a copy, and is pasted into the base
  * prompt. It defines the CSS classes the model is told to use, so it belongs
  * with the template, not with the code.
  *
  * Do not change a prompt without a note. Record the reason in
- * docs/porting-notes.md.
+ * docs/design-notes.md.
  */
 
 const GUIDE = new URL('../../templates/resume_guide.md', import.meta.url).pathname;
@@ -124,14 +124,14 @@ STRICT RULES - NEVER VIOLATE:
 - Do not cut critical content (like work experience, education, etc) if you can cut something else (like summary)
 `;
 
-/** Builds the system prompt. The Python uses `.format()` on the same two slots. */
+/** Builds the system prompt from the two slots. */
 export const buildSystemPrompt = (opts: { noShame: boolean }): string =>
   OPTIMIZER_BASE.replace(
     '{content_rules}',
     opts.noShame ? OPTIMIZER_LENIENT_RULES : OPTIMIZER_STRICT_RULES,
   ).replace('{resume_guide}', loadResumeGuide());
 
-/** The date line, added to the system prompt as the Python adds it. */
+/** The date line, appended to the system prompt. */
 export const currentDateLine = (now: Date = new Date()): string =>
   `Today's date: ${now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
 

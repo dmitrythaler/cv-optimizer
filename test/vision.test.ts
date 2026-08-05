@@ -74,15 +74,13 @@ const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterConte
 
 /* ---------- prompt ---------- */
 
-test('prompt: SYSTEM_PROMPT is byte-identical to the Python original', () => {
-  const py = readFileSync(
-    new URL('../../hr-breaker/src/hr_breaker/agents/combined_reviewer.py', import.meta.url),
-    'utf8',
+test('prompt: SYSTEM_PROMPT has not drifted', () => {
+  // Locked digest. A prompt is behaviour: a silent edit changes what the filter
+  // does, and a passing run says nothing about it.
+  assert.equal(
+    createHash('sha256').update(SYSTEM_PROMPT).digest('hex'),
+    '8a9561a0af33bac3e7e253275cd6e2c20d998a1f28361773b0eecdcbf46f03dc',
   );
-  const want = /SYSTEM_PROMPT\s*=\s*"""([\s\S]*?)"""/.exec(py)?.[1];
-  assert.ok(want, 'found SYSTEM_PROMPT in the Python source');
-  const sha = (s: string) => createHash('sha256').update(s).digest('hex');
-  assert.equal(sha(SYSTEM_PROMPT), sha(want), 'prompt must not drift from hr-breaker');
 });
 
 test('prompt: language note only for non-English', () => {
@@ -102,7 +100,7 @@ test('prompt: language note only for non-English', () => {
 
 /* ---------- ATS score ---------- */
 
-test('ats: weights match combined_reviewer.py and sum to 1', () => {
+test('ats: the weights are the documented ones and sum to 1', () => {
   const sum =
     SCORE_WEIGHTS.keyword +
     SCORE_WEIGHTS.experience +
@@ -142,7 +140,7 @@ test('vision: a professional CV above threshold passes with its ATS score', asyn
 });
 
 test('vision: looks_professional=false forces score to exactly 0.00, discarding the ATS score', async () => {
-  // This is the single most misread behaviour in hr-breaker. A 0.00 does NOT
+  // This is the most misread behaviour in the filter. A 0.00 does NOT
   // mean the ATS rejected the CV - the ATS numbers here are excellent.
   const { provider } = fakeChat({ ...GOOD, looks_professional: false });
   const r = await visionChecker.evaluate(ctx(provider));
@@ -169,14 +167,13 @@ test('vision: professional but below threshold fails and says by how much', asyn
   };
   const r = await visionChecker.evaluate(ctx(fakeChat(weak).provider));
   assert.equal(r.passed, false);
-  // 0.235, which both JS toFixed(2) and Python's .2f render as "0.23".
+  // 0.235 renders as "0.23".
   assert.match(r.suggestions.join(' '), /Improve ATS match \(score: 0\.23, need: 0\.7\)/);
 });
 
-test('vision: score formatting agrees with Python except on exact binary ties', () => {
-  // Both render 0.235 -> "0.23". They differ only where the value is an exact
-  // tie in binary: Python rounds half-to-even (0.125 -> "0.12"), JS rounds
-  // half-up (0.125 -> "0.13"). Display only - never reaches a verdict.
+test('vision: score formatting rounds half-up on exact binary ties', () => {
+  // toFixed rounds half-up where the value is an exact tie in binary
+  // (0.125 -> "0.13"). Display only - it never reaches a verdict.
   assert.equal((0.235).toFixed(2), '0.23');
   assert.equal((2.675).toFixed(2), '2.67');
   assert.equal((0.125).toFixed(2), '0.13'); // Python would say 0.12
@@ -203,7 +200,7 @@ test('vision: the page image is actually sent to the model', async () => {
 });
 
 test('vision: a provider without vision is SKIPPED, not judged', async () => {
-  // hr-breaker had no such distinction - it returned looks_professional=false,
+  // Without this distinction the filter returns looks_professional=false,
   // making a configuration fault indistinguishable from an ugly CV.
   const { provider, seen } = fakeChat(GOOD, { vision: false });
   const r = await visionChecker.evaluate(ctx(provider));

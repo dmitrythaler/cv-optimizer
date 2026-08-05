@@ -38,12 +38,12 @@
             font-weight: bold;
             text-transform: uppercase;
             /* 1.2pt, not 2pt. Chromium bakes letter-spacing into wide glyph
-               gaps, and every PDF text extractor - including the one a real
-               ATS uses - then puts spaces between the letters. At 2pt the name
-               extracts as "D M I T RY T H A L E R". 1.2pt is the highest value
-               that still extracts as "DMITRY THALER". WeasyPrint did not have
-               this problem, so hr-breaker's copy still says 2pt.
-               See docs/porting-notes.md. A test pins this. */
+               gaps, and a PDF text extractor - including the one a real ATS
+               uses - then puts spaces between the letters, so the name comes
+               out as "J O N A T H A N". Whether it splits depends on the glyphs
+               of the actual name and is NOT monotonic in the spacing: 1.2pt
+               held for every name measured, 1.5pt did not.
+               See docs/design-notes.md. A test pins this. */
             letter-spacing: 1.2pt;
             margin-bottom: 4pt;
         }

@@ -14,9 +14,9 @@ import type { JobPosting, OptimizedResume, ResumeSource } from './types.ts';
  * The generator: turns a source CV and a job posting into resume HTML.
  *
  * This is the one part of the pipeline that IS an agent. The model calls tools,
- * reads the results and revises, in a loop. That is hr-breaker's design and it
- * is the right one here: the model cannot know the page count without
- * rendering, so it has to be able to ask.
+ * reads the results and revises, in a loop. That is the right design here: the
+ * model cannot know the page count without rendering, so it has to be able to
+ * ask.
  *
  * The pipeline around it stays a plain loop. See docs/adr/0001.
  */
@@ -67,7 +67,7 @@ export const generate = async (
   const { renderer, config } = deps;
   const state: CheckState = { called: false, fits: false, pageCount: null, overflowIssue: null };
 
-  // The generator writes the CV, so it uses the pro model, as hr-breaker does.
+  // The generator writes the CV, so it uses the pro model.
   const { model } = resolveModel(config.models.pro);
 
   const system = `${buildSystemPrompt({ noShame: config.noShame })}\n\n${currentDateLine()}`;
@@ -177,9 +177,9 @@ export const generate = async (
   };
 
   /**
-   * The Python enforces the length check with a pydantic-ai output validator
+   * A framework output validator could enforce the length check
    * that raises ModelRetry. The AI SDK has no equivalent, so the retry is an
-   * explicit loop here. The messages are the Python's, word for word.
+   * explicit loop here.
    */
   const messages: { role: 'user' | 'assistant'; content: string }[] = [
     { role: 'user', content: prompt },

@@ -4,7 +4,7 @@ import type { FilterResult, JobPosting } from '../types.ts';
 
 const NAME = 'KeywordMatcher';
 
-/** Escapes a term for use inside a RegExp, matching Python's `re.escape`. */
+/** Escapes a term for use inside a RegExp. */
 const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export interface KeywordCheck {
@@ -20,7 +20,7 @@ export interface KeywordOptions {
 }
 
 /**
- * Port of `check_keywords()` in hr-breaker `filters/keyword_matcher.py`.
+
  *
  * The job text is vectorized, terms scoring above `cutoff` become the
  * "significant" set (plus any explicit `job.keywords`), and the score is the
@@ -41,7 +41,7 @@ export const checkKeywords = (
   const scores = vectorize(jobText.toLowerCase(), { maxFeatures: opts.maxFeatures });
 
   // sklearn raises ValueError when a document yields no usable terms (e.g. it
-  // is all stop words); the Python treats that as a pass.
+  // is all stop words); that counts as a pass.
   if (scores.size === 0) return { score: 1.0, passed: true, missingKeywords: [] };
 
   const significant = new Set<string>();
@@ -53,12 +53,12 @@ export const checkKeywords = (
   const matched: string[] = [];
   const missing: string[] = [];
   for (const keyword of significant) {
-    // \b around an escaped term, as the Python does.
+    // \b around an escaped term.
     if (new RegExp(`\\b${escapeRe(keyword)}\\b`).test(resumeLower)) matched.push(keyword);
     else missing.push(keyword);
   }
 
-  // 0.1 is the Python's fallback weight for an explicit job keyword that is not
+  // 0.1 is the fallback weight for an explicit job keyword that is not
   // in the vectorizer's vocabulary.
   const weight = (kw: string): number => scores.get(kw) ?? 0.1;
   const matchedWeight = matched.reduce((a, kw) => a + weight(kw), 0);
@@ -75,7 +75,7 @@ export const checkKeywords = (
 /**
  * TF-IDF term overlap between the generated CV and the job description.
  *
- * Ported from hr-breaker `filters/keyword_matcher.py`. Deterministic, free, and
+ * Deterministic, free, and
  * historically the most trustworthy number in the set - it caught a genuine
  * domain mismatch (a computational-geometry role, 0.31) that both the embedding
  * filter and the vision model waved through.

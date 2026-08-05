@@ -28,7 +28,7 @@ export interface JobPosting {
   /**
    * Explicit keywords extracted by the job parser. Added to the significant set
    * regardless of TF-IDF weight; ones absent from the vocabulary are weighted
-   * at 0.1, as in the Python.
+   * at 0.1.
    */
   readonly keywords: readonly string[];
   /** BCP-47-ish language code detected from the posting, e.g. "en", "pl". */

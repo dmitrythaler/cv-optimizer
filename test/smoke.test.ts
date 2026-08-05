@@ -16,8 +16,8 @@ test('cosine: opposite vectors are -1', () => {
 });
 
 test('cosine: is not rescaled into [0,1]', () => {
-  // The Python original mapped cosine through (x+1)/2, which compressed the
-  // real range into [0.5,1] and made the threshold unreachable. Guard that.
+  // Mapping cosine through (x+1)/2 would compress the
+  // real range into [0.5,1] and make the threshold unreachable. Guard that.
   assert.ok(cosine([1, 0], [-1, 0]) < 0);
 });
 

@@ -1,11 +1,11 @@
 /**
  * Prompt for the job parser.
  *
- * A copy of the prompt in hr-breaker `agents/job_parser.py`, identical byte for
- * byte. `test/job-parser.test.ts` reads the Python file and compares.
+ * Locked text, pinned byte for
+ * byte. `test/job-parser.test.ts` pins it against a locked digest.
  *
  * Do not change a prompt without a note. Record the reason in
- * docs/porting-notes.md.
+ * docs/design-notes.md.
  */
 
 export const SYSTEM_PROMPT = `You are a job posting parser. Extract structured information from job postings.

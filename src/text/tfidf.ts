@@ -1,7 +1,7 @@
 import { SKLEARN_ENGLISH_STOP_WORDS } from './stopwords.ts';
 
 /**
- * A reimplementation of exactly the scikit-learn vectorizer hr-breaker builds:
+ * A reimplementation of one specific scikit-learn vectorizer configuration:
  *
  *   TfidfVectorizer(stop_words="english", ngram_range=(1, 2), max_features=N,
  *                   token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z0-9+#.-]*\b")

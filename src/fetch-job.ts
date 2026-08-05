@@ -6,16 +6,12 @@ import type { CleanReport } from './job-text.ts';
 /**
  * Fetches a job posting from a URL.
  *
- * hr-breaker chains httpx, then the Wayback Machine, then Playwright. This
- * port keeps the first and the last and drops Wayback: a job board snapshot is
- * rarely in the archive, and a stale snapshot of a live posting is worse than
- * no snapshot.
+ * Plain fetch first, because it is fast and costs nothing. A real browser
+ * second, because most job boards render with JavaScript or sit behind
+ * Cloudflare.
  *
- * Plain fetch first, because it is fast and costs nothing. The browser second,
- * because most job boards render with JavaScript or sit behind Cloudflare.
- * hr-breaker's notes record that its own Playwright fallback never worked -
- * the browser was never installed in that venv - so in practice it only ever
- * had plain fetch. Here the browser is installed and used.
+ * There is deliberately no archive step. A job board snapshot is rarely in an
+ * archive, and a stale snapshot of a live posting is worse than no snapshot.
  */
 
 const looksBlocked = (html: string): boolean =>

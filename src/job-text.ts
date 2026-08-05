@@ -25,7 +25,7 @@
  * "Job description" heading would throw the company name away.
  *
  * Every cut is reported. A cleaner that quietly eats half a posting is worse
- * than no cleaner - see docs/porting-notes.md.
+ * than no cleaner - see docs/design-notes.md.
  */
 
 /**

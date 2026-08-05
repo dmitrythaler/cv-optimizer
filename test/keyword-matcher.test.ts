@@ -37,8 +37,8 @@ const job = (over: Partial<JobPosting> = {}): JobPosting => ({
 });
 
 /**
- * Parity against the real Python. Reference scores were produced by running
- * hr-breaker's own check_keywords() over cv.md and every JD in the corpus.
+ * Reference scores. They were produced by running
+ * a reference implementation over a source CV and every JD in the corpus.
  *
  * SCORE is asserted exactly - it is what drives `passed` and the pipeline.
  *
@@ -48,11 +48,11 @@ const job = (over: Partial<JobPosting> = {}): JobPosting => ({
  * is stable - so it preserves an arbitrary order among equal-weight terms.
  * Three consecutive runs of the same input gave three different orders. Where
  * there are more than `maxMissingDisplay` ties the slice even differs in
- * membership. This port is deterministic instead. See docs/porting-notes.md.
+ * membership. This build is deterministic instead. See docs/design-notes.md.
  */
 for (const [name, c] of Object.entries(fixtures)) {
   if (name.startsWith('_')) continue;
-  test(`keywords: matches hr-breaker exactly on ${name}`, () => {
+  test(`keywords: matches the reference scores exactly on ${name}`, () => {
     const got = checkKeywords(cv, job({ description: c.jd ?? '' }), 0.25, OPTS);
     assert.ok(Math.abs(got.score - c.score) < 1e-9, `score ${got.score} vs python ${c.score}`);
     assert.equal(got.passed, c.passed);
@@ -69,10 +69,10 @@ test('keywords: missing-keyword output is deterministic across runs', () => {
   const runs = Array.from({ length: 5 }, () =>
     checkKeywords(cv, job({ description: jd }), 0.25, OPTS).missingKeywords.join('|'),
   );
-  assert.equal(new Set(runs).size, 1, 'identical every time - unlike the Python original');
+  assert.equal(new Set(runs).size, 1, 'identical every time');
 });
 
-test('keywords: matches hr-breaker with explicit job.keywords, including one outside the vocabulary', () => {
+test('keywords: matches the reference with explicit job.keywords, including one outside the vocabulary', () => {
   const c = fixtures._with_keywords;
   assert.ok(c);
   const got = checkKeywords(

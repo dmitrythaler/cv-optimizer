@@ -173,7 +173,7 @@ test('prompt: language note only for non-English, naming the language', () => {
   assert.ok(pl.includes('Polish'), 'language code resolved to its English name');
 });
 
-test('prompt: both prompts keep the trailing space the Python has', () => {
+test('prompt: both prompts keep their trailing space', () => {
   // Guards against an editor or formatter silently trimming it.
   assert.ok(STRICT_PROMPT.startsWith('You are a resume verification specialist. \n'));
   assert.ok(LENIENT_PROMPT.startsWith('You are a resume verification specialist. \n'));

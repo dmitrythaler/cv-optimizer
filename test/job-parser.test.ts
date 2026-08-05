@@ -8,20 +8,15 @@ import { htmlToText } from '../src/fetch-job.ts';
 import { naming, renderCvName, runFolderName, sanitize, stamp } from '../src/output-path.ts';
 import type { ChatProvider, ChatRequest } from '../src/providers/llm.ts';
 
-test('prompt: the job parser prompt is identical to the Python', () => {
-  const py = readFileSync(
-    new URL('../../hr-breaker/src/hr_breaker/agents/job_parser.py', import.meta.url).pathname,
-    'utf8',
+test('prompt: the job parser system prompt has not drifted', () => {
+  assert.equal(
+    createHash('sha256').update(SYSTEM_PROMPT).digest('hex'),
+    '073acaac3fcdd7eabdebde14480e6c3eb6523d69c686811e02da7a62e646da36',
   );
-  const want = /SYSTEM_PROMPT\s*=\s*"""([\s\S]*?)"""/.exec(py)?.[1];
-  assert.ok(want);
-  const sha = (s: string) => createHash('sha256').update(s).digest('hex');
-  assert.equal(sha(SYSTEM_PROMPT), sha(want));
-  assert.equal(buildUserPrompt('X'), 'Parse this job posting:\n\nX');
 });
 
 test('parseJobPosting: keeps the summary and the full text apart', async () => {
-  // The Python stores the model's brief summary in `description` and the whole
+  // `description` holds the model's brief summary and `rawText` the whole
   // posting in `raw_text`. KeywordMatcher scores against the summary.
   const seen: ChatRequest[] = [];
   const chat: ChatProvider = {

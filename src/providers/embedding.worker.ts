@@ -47,7 +47,7 @@ const load = async (): Promise<{ extractor: Extractor; tokenizer: Tokenizer }> =
  *
  * A CV embedded from only its first N tokens yields a plausible-looking number
  * computed from half the document - the same class of silent wrongness that
- * kept the Python filter broken. Better to fail loudly.
+ * is what keeps a filter broken and quiet. Better to fail loudly.
  */
 const assertFits = (tok: Tokenizer, texts: readonly string[]): void => {
   texts.forEach((text, i) => {

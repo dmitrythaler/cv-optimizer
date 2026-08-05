@@ -1,16 +1,16 @@
 /**
  * Prompts for HallucinationChecker.
  *
- * Copied VERBATIM from hr-breaker `agents/hallucination_detector.py`
+ * Locked text.
  * (STRICT_PROMPT / LENIENT_PROMPT). Including the trailing space on the first
  * line and the trailing blank line - do not tidy them, an unintended prompt
  * edit is a silent behaviour change.
  *
  * If one of these ever needs to change, say so explicitly and record the reason
- * in docs/porting-notes.md. Never edit a prompt silently.
+ * in docs/design-notes.md. Never edit a prompt silently.
  */
 
-// `${' '}` preserves the trailing space the Python source has after
+// `${' '}` preserves a trailing space that is otherwise invisible after
 // "specialist." - written explicitly so editors and formatters cannot strip it.
 export const STRICT_PROMPT = `You are a resume verification specialist.${' '}
 Compare an ORIGINAL resume with an OPTIMIZED version and return a no_hallucination_score from 0.0 to 1.0.

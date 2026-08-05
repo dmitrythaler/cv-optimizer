@@ -25,17 +25,17 @@ const fail = (issues: string[], suggestions: string[]): FilterResult => ({
 /**
  * Page-fit check. Runs first so an oversized CV fails before anything is paid for.
  *
- * Ported from hr-breaker `filters/content_length.py`. Behaviour preserved exactly:
+ * Behaviour:
  *  - unrendered input passes (nothing to measure yet)
  *  - more than 2 pages fails
  *  - exactly 2 pages fails IF page 2 holds some text but less than
  *    `page2OverflowChars` - that is spillover from page 1, not a real second page
  *  - an empty page 2 (0 chars) passes, matching the original's `len > 0` guard
  *
- * Two things carried over deliberately rather than "fixed" - see docs/porting-notes.md:
+ * Two things are deliberate rather than oversights - see docs/design-notes.md:
  *  - the >2 message says "must be 1 page" while the check allows 2. The message
  *    is stale; the behaviour is what callers depend on.
- *  - the Python version re-rendered inside the filter. Here the pipeline renders
+ *  - an earlier design re-rendered inside the filter. Here the pipeline renders
  *    once and passes the result down, so this filter only reads.
  */
 export const contentLength: Filter = {

@@ -1,12 +1,12 @@
 /**
  * Prompts for AiGeneratedChecker.
  *
- * SYSTEM_PROMPT is a copy of the prompt in hr-breaker
+ * SYSTEM_PROMPT is locked text.
  * `agents/ai_generated_detector.py`. It is identical, byte for byte. The test
- * `test/ai-generated.test.ts` reads the Python file and compares the two.
+ * `test/ai-generated.test.ts` pins it against a locked digest.
  *
  * Do not change a prompt without a note. Record the reason in
- * docs/porting-notes.md.
+ * docs/design-notes.md.
  */
 
 export const SYSTEM_PROMPT = `You detect AI-generated content in resumes.
@@ -58,7 +58,7 @@ Set is_ai_generated=true ONLY if ai_probability > 0.5
 When listing indicators, quote specific problematic text.
 `;
 
-/** The date line. The Python adds it to the system prompt in the same way. */
+/** The date line, appended to the system prompt. */
 export const currentDateLine = (now: Date = new Date()): string =>
   `Today's date: ${now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
 

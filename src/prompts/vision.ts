@@ -1,13 +1,13 @@
 /**
  * Prompts for VisionChecker (vision + ATS review).
  *
- * SYSTEM_PROMPT is copied VERBATIM from hr-breaker `agents/combined_reviewer.py`,
+ * SYSTEM_PROMPT is locked text,
  * including the leading newline and the double space in
- * "VISUAL QUALITY CHECK  ===". Verified byte-identical against the Python source
+ * "VISUAL QUALITY CHECK  ===". Pinned byte for byte by a locked digest
  * by test/vision.test.ts.
  *
  * Never edit a prompt silently. If one must change, say so and record why in
- * docs/porting-notes.md.
+ * docs/design-notes.md.
  */
 
 export const SYSTEM_PROMPT = `

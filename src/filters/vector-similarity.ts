@@ -10,11 +10,11 @@ const NAME = 'VectorSimilarityMatcher';
  * Semantic closeness between the generated CV and the job description, by
  * embedding cosine.
  *
- * Ported from hr-breaker `filters/vector_similarity_matcher.py` - the filter
+ * The filter
  * that was silently dead there for months. Both of its bugs are fixed here and
  * guarded by tests:
  *
- *  1. It fails LOUDLY. The Python swallowed a hard 401 into `passed: true,
+ *  1. It fails LOUDLY. An earlier design swallowed a hard 401 into `passed: true,
  *     score: 1.0`, so a permanently broken filter was indistinguishable from a
  *     perfect match. Here an embedding failure is `skipped()` with a WARN and
  *     an explicit NaN score, so it can never read as agreement.
@@ -47,10 +47,10 @@ export const vectorSimilarity: Filter = {
     if (Number.isNaN(threshold)) {
       // Deliberate: THRESHOLD_VECTOR has no default because the inherited 0.55
       // was calibrated against a different, hosted model. Refuse rather than
-      // invent a bar. See docs/porting-notes.md.
+      // invent a bar. See docs/design-notes.md.
       logger.warn(
         `${NAME}: THRESHOLD_VECTOR is not set. It must be measured against the ` +
-          `embedding model in use - the value from hr-breaker does not transfer.`,
+          `embedding model in use - a value measured elsewhere does not transfer.`,
       );
       return skipped(NAME, threshold, 'THRESHOLD_VECTOR has not been calibrated');
     }

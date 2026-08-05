@@ -137,7 +137,7 @@ test('optimize: feeds the previous failures back to the generator', async () => 
 });
 
 test('optimize: files the LAST iteration, not the best one', async () => {
-  // hr-breaker returns the last attempt. It does not choose. Every iteration
+  // The loop returns the last attempt. It does not choose. Every iteration
   // is returned so a caller can look back.
   installFilter([false]);
   const out = await optimize(SOURCE, JOB, deps());

@@ -65,7 +65,7 @@ covers running several jobs at once. No child processes.
 
 ## Why the seams matter
 
-The Python version reached a vendor SDK from inside a filter, which is how a
+Reaching a vendor SDK from inside a filter is how a
 missing API key became an invisible always-passing filter. Here, a filter
 receives a provider and cannot construct one, so an unconfigured provider fails
 loudly at startup instead of quietly at grading time.

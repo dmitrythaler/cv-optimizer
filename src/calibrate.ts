@@ -10,7 +10,7 @@ import type { Config } from './config.ts';
  * Measures THRESHOLD_VECTOR for whichever embedding model is configured.
  *
  * A cosine threshold is only meaningful for the model that produced the
- * numbers. hr-breaker's 0.55 was measured against hosted gemini-embedding-001;
+ * numbers. A threshold measured against a hosted gemini-embedding-001 model;
  * carrying it to a different model would be a guess dressed as a measurement.
  * This command exists so the measurement is repeatable rather than folklore.
  *
@@ -100,7 +100,7 @@ export const calibrateVector = async (
 
     const suggested = Math.round((hi + gap / 2) * 100) / 100;
     out.write(`\nSUGGESTED THRESHOLD_VECTOR=${suggested}  (midpoint of the gap)\n`);
-    out.write('Record this measurement in docs/porting-notes.md alongside the model name.\n\n');
+    out.write('Record this measurement in docs/design-notes.md alongside the model name.\n\n');
     return 0;
   } finally {
     await embeddings.close();

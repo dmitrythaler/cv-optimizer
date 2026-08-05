@@ -4,14 +4,14 @@ Date: 2026-08-03
 
 ## Status
 
-Accepted. Supersedes the hosted-embedding default inherited from the Python
+Accepted. Supersedes the earlier hosted-embedding default
 version.
 
 ## Context
 
-The Python original called a hosted embedding API. That filter was dead for two
+An earlier design called a hosted embedding API. That filter was dead for two
 months because the API key was never configured and the failure path returned a
-passing score. See `docs/porting-notes.md`.
+passing score. See `docs/design-notes.md`.
 
 The workload is small: two short documents per iteration, roughly 20 embeddings
 per batch of eight jobs.
@@ -37,7 +37,7 @@ on chat API calls. This is the one genuinely CPU-bound step in the tool.
 
 **Why not workers or child processes elsewhere.** The rest is I/O-bound — HTTP
 out, wait, HTTP back. Node's event loop handles that concurrently in one
-process; a concurrency-limited `Promise.all` is enough. The Python version
+process; a concurrency-limited `Promise.all` is enough. A worker pool
 needed separate OS processes largely because of the GIL, which does not apply
 here.
 
@@ -75,5 +75,5 @@ here.
 install` prunes - silently discarding a 2.2 GB download that `model:pull`
   exists to make once. `env.cacheDir` is set explicitly in the worker.
 - Recalibration is now a required step whenever the embedding model changes.
-  That is a feature — it was the absence of this discipline that let the Python
+  That is a feature — it was the absence of this discipline that let the
   filter ship broken.

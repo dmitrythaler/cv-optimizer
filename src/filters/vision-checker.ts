@@ -5,14 +5,8 @@ import { skipped } from './base.ts';
 import type { Filter, FilterContext } from './base.ts';
 import type { FilterResult } from '../types.ts';
 
-/**
- * Renamed from hr-breaker's `LLMChecker`, which said nothing about what it does.
- * The old name still appears in historical `cv_failed_filters` entries in
- * ../results.json - see docs/porting-notes.md.
- */
 const NAME = 'VisionChecker';
 
-/** Mirrors `CombinedReviewResult` in agents/combined_reviewer.py. */
 export const visionResult = z.object({
   looks_professional: z.boolean().describe('True if resume looks professional'),
   visual_issues: z.array(z.string()).default([]).describe('List of visual/formatting issues found'),
@@ -49,18 +43,14 @@ export const computeAtsScore = (r: VisionResult): number =>
  * Renders-and-judges: one model call doing both a visual quality check on the
  * rendered page image and an ATS screening on the extracted text.
  *
- * Ported from hr-breaker `filters/llm_checker.py` + `agents/combined_reviewer.py`.
- * SYSTEM_PROMPT is verbatim (see ../prompts/vision.ts).
+ * IMPORTANT: the reported score is `atsScore` only when `looks_professional`
+ * is true, and hard 0.0 otherwise. So a **0.00 never means "the ATS rejected
+ * you"** - it means the vision half said no, and the ATS numbers were thrown
+ * away. That happens whenever the page image fails to reach the model, and it
+ * makes a plumbing fault look like a bad CV.
  *
- * IMPORTANT, and the reason this filter has a bad reputation: the reported
- * score is `atsScore` only when `looks_professional` is true, and hard 0.0
- * otherwise. So a **0.00 never means "the ATS rejected you"** - it means the
- * vision half said no, and the ATS numbers were thrown away. In hr-breaker that
- * happened whenever the page image failed to reach the model, which made a
- * plumbing fault look like a bad CV for weeks. See docs/porting-notes.md.
- *
- * This port keeps that scoring rule for parity but refuses to guess when it
- * cannot actually see the page - see the two guards below.
+ * The scoring rule stays, but the filter refuses to guess when it cannot
+ * actually see the page - see the two guards below.
  */
 export const visionChecker: Filter = {
   name: NAME,
@@ -77,7 +67,7 @@ export const visionChecker: Filter = {
 
     // Guard 1: the provider cannot do vision at all. That is a configuration
     // fault, not a defect in the CV, so report it as skipped rather than
-    // inventing a verdict. hr-breaker had no such distinction.
+    // inventing a verdict.
     if (!chat.vision.supportsVision()) {
       logger.warn(
         `${NAME}: vision model ${chat.vision.model} cannot accept images - filter skipped, ` +
@@ -87,8 +77,7 @@ export const visionChecker: Filter = {
     }
 
     // Guard 2: rendering produced no page image. Unlike guard 1 this IS a
-    // defect - a CV that will not render is broken - and hr-breaker fails it
-    // too (via looks_professional=false, disqualified=true, page_count=0).
+    // defect - a CV that will not render is broken.
     if (resume.pngPage1 === null) {
       return {
         filterName: NAME,
@@ -104,11 +93,11 @@ export const visionChecker: Filter = {
     const prompt = buildUserPrompt({
       jobTitle: job.title,
       jobCompany: job.company,
-      // `job.description or job.raw_text` in the Python.
+      // The brief summary, or the whole posting when there is none.
       jobDescription: job.description || job.rawText,
       jobRequirements: job.requirements,
       jobKeywords: job.keywords,
-      // The Python falls back html -> data -> "(no content)"; this port is
+      // The fallback runs html -> data -> "(no content)"; this build is
       // HTML-only, so the structured branch cannot arise.
       resumeText: resume.pdfText || resume.html || '(no content)',
       languageCode: targetLanguage,
@@ -136,8 +125,7 @@ export const visionChecker: Filter = {
     return {
       filterName: NAME,
       passed,
-      // Parity with the Python: the ATS score is discarded when the visual
-      // check fails. Kept so scores remain comparable across the two versions.
+      // The ATS score is discarded when the visual check fails.
       score: r.looks_professional ? atsScore : 0.0,
       threshold,
       issues: [...r.visual_issues, ...r.ats_issues],

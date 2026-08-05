@@ -2,7 +2,7 @@
 
 # cv-optimizer
 
-TypeScript re-implementation of `../hr-breaker`. Takes a CV and a job description,
+Takes a CV and a job description,
 generates a tailored CV, grades it with a set of filters, and retries until it
 passes or runs out of iterations.
 
@@ -57,7 +57,7 @@ src/
 docs/
   architecture.md        how the pieces fit
   filters.md             the filter roster and thresholds
-  porting-notes.md       what the Python original got wrong - READ THIS
+  design-notes.md        why the thresholds and guards exist - READ THIS
   adr/                   architecture decision records
 ```
 
@@ -68,7 +68,7 @@ One run writes one folder:
 ```
 output/20260805-0912-link_group-full_stack_engineer/
   jd.txt                the posting, fetched and cleaned
-  Dmitry.Thaler.CV.link_group.full_stack_engineer.pdf   <- CV_NAME_TEMPLATE
+  John.Dow.CV.link_group.full_stack_engineer.pdf   <- CV_NAME_TEMPLATE
   iteration_1.pdf   iteration_1.png
   iteration_2.pdf   iteration_2.png
   optimization.json     every filter score, per iteration
@@ -105,8 +105,8 @@ folder. An unknown placeholder in `CV_NAME_TEMPLATE` stops the run.
 
 ## Design rules
 
-These come from bugs that actually shipped in the Python version. See
-`docs/porting-notes.md` for the full account.
+These come from bugs that actually shipped. See `docs/design-notes.md` for the
+full account.
 
 1. **Never invent a passing score to mask an internal error.** A filter that
    cannot run must say so (`skipped()`), not return `1.0` and `passed: true`.
@@ -117,7 +117,7 @@ These come from bugs that actually shipped in the Python version. See
    through `(x + 1) / 2`, which made its threshold unreachable — a bread recipe
    scored 0.72 against the CV and passed.
 4. **Calibrate thresholds against measured data**, and record the measurement in
-   `docs/porting-notes.md`. Do not pick round numbers by feel.
+   `docs/design-notes.md`. Do not pick round numbers by feel.
 5. **The pipeline has no agent in it.** The steps are fixed and there is nothing
    to decide at runtime. Keep it a plain loop — determinism and cheap
    parallelism are the whole point.
@@ -131,6 +131,6 @@ These come from bugs that actually shipped in the Python version. See
 
 ## Parent project
 
-`../hr-breaker` is the working Python reference. `../results.json` and
-`../applications/` belong to the job-scanning side of the repo — see
-`../task.md`. Use the real JDs under `../applications/*/jd.txt` as test fixtures.
+`../results.json` and `../applications/` belong to the job-scanning side of the
+repo — see `../task.md`. Use the real JDs under `../applications/*/jd.txt` as
+test fixtures.

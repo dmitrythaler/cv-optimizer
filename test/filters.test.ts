@@ -11,7 +11,7 @@ import type { ChatProviders } from '../src/providers/ai-sdk.ts';
 import type { ChatProvider } from '../src/providers/llm.ts';
 
 const VALID_HTML =
-  '<header class="header"><h1 class="name">Dmitry Thaler</h1></header>' +
+  '<header class="header"><h1 class="name">John Dow</h1></header>' +
   '<section class="section"><p>experience</p></section>';
 
 const resume = (over: Partial<OptimizedResume> = {}): OptimizedResume => ({
@@ -95,7 +95,7 @@ test('contentLength: two pages with a nearly-empty page 2 is overflow', async ()
 });
 
 test('contentLength: two pages with a fully empty page 2 passes (len > 0 guard)', async () => {
-  // Quirk preserved from the Python original: zero-length page 2 is NOT overflow.
+  // Deliberate: a zero-length page 2 is NOT overflow.
   const r = await contentLength.evaluate(ctx({ pageCount: 2, pageTexts: ['page one', '   '] }));
   assert.equal(r.passed, true);
 });
@@ -109,7 +109,7 @@ test('dataValidator: valid html passes', async () => {
 });
 
 test('dataValidator: missing header reported, name NOT also reported', () => {
-  // Faithful to the Python else-if: one issue, not two.
+  // The branches are exclusive: one issue, not two.
   const issues = validateHtml('<section class="section">x</section>');
   assert.deepEqual(issues, ["Missing header element with class='header'"]);
 });

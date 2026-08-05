@@ -2,7 +2,7 @@
  * scikit-learn's built-in English stop word list, used by `TfidfVectorizer(stop_words="english")`.
  *
  * Extracted verbatim from `sklearn.feature_extraction.text.ENGLISH_STOP_WORDS`
- * (318 entries) so KeywordMatcher scores match hr-breaker's.
+ * (318 entries), so KeywordMatcher scores are reproducible.
  *
  * It is an idiosyncratic list - it contains "system", "computer", "fire" and
  * "cry" among others. That is scikit-learn's, not a mistake here. Do not

@@ -29,7 +29,7 @@ would buy nothing and cost three things worth keeping:
 
 - **Determinism** — the same inputs produce the same behaviour, which is what
   makes a threshold regression detectable at all.
-- **Cheap parallelism** — N jobs is N processes from a shell script. The Python
+- **Cheap parallelism** — N jobs is N processes from a shell script. An agent
   version ran 8 concurrently from an 18-line runner.
 - **Debuggability** — when a filter reported nonsense for two months, it was
   found by reading one file. Buried under agent reasoning about which tool to

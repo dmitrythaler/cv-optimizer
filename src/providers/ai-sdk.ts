@@ -8,9 +8,8 @@ import type { ChatProvider, ChatRequest } from './llm.ts';
 /**
  * ChatProvider backed by the Vercel AI SDK.
  *
- * Model strings keep hr-breaker's `provider/model` shape, for example
- * `deepseek/deepseek-v4-flash` or `gemini/gemini-2.5-flash`. The two projects
- * are then configured the same way.
+ * Model strings use a `provider/model` shape, for example
+ * `deepseek/deepseek-v4-flash` or `gemini/gemini-2.5-flash`.
  */
 
 /**
@@ -22,7 +21,7 @@ import type { ChatProvider, ChatRequest } from './llm.ts';
  * id return the same 400 - "unknown variant `image_url`, expected `text`".
  * The error does not change with the model, so the request schema itself has
  * no image variant. The DeepSeek app has a vision mode; the public API does
- * not. See docs/porting-notes.md.
+ * not. See docs/design-notes.md.
  */
 const VISION_CAPABLE = new Set<string>(['gemini', 'google']);
 
@@ -46,8 +45,7 @@ export const resolveModel = (spec: string): { provider: string; model: LanguageM
       return { provider, model: createDeepSeek({})(name) };
     case 'gemini':
     case 'google':
-      // Accepts GOOGLE_GENERATIVE_AI_API_KEY. GEMINI_API_KEY is the name
-      // hr-breaker uses, so it is accepted too.
+      // Accepts GOOGLE_GENERATIVE_AI_API_KEY, and GEMINI_API_KEY as an alias.
       return {
         provider,
         model: createGoogleGenerativeAI({
@@ -68,8 +66,7 @@ export const aiSdkChat = (spec: string): ChatProvider => {
     if (req.image === undefined) return { system: req.system, prompt: req.prompt };
     if (!VISION_CAPABLE.has(provider)) {
       // Refuse, rather than send an image the provider will drop. A dropped
-      // image is what made hr-breaker's vision filter grade the wrong thing
-      // for weeks. See docs/porting-notes.md.
+      // image makes the vision filter grade the wrong thing, silently.
       throw new Error(`provider ${provider} cannot accept images`);
     }
     return {
@@ -79,9 +76,8 @@ export const aiSdkChat = (spec: string): ChatProvider => {
           role: 'user' as const,
           content: [
             { type: 'text' as const, text: req.prompt },
-            // A `file` part, not the deprecated `image` part. This is the
-            // path that carried the page image, and it was broken for weeks in
-            // hr-breaker. Keep it on a supported API.
+            // A `file` part, not the deprecated `image` part. This is the path
+            // that carries the page image. Keep it on a supported API.
             { type: 'file' as const, data: req.image, mediaType: 'image/png' },
           ],
         },

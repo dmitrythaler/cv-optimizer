@@ -30,7 +30,7 @@ const opts = ready ? {} : { skip: 'needs chromium and poppler-utils' };
 const renderer = playwrightRenderer();
 after(() => renderer.close());
 
-const HEADER = '<header class="header"><h1 class="name">Dmitry Thaler</h1></header>';
+const HEADER = '<header class="header"><h1 class="name">John Dow</h1></header>';
 const SECTION =
   '<section class="section"><h2 class="section-title">SUMMARY</h2><p>Node.js.</p></section>';
 
@@ -70,20 +70,32 @@ test('renderer: the shipped template extracts the name correctly', opts, async (
   // templates/resume_wrapper.html against being raised again.
   const out = await renderer.render(HEADER + SECTION);
   const first = (out.pageTexts[0] ?? '').trim().split('\n')[0];
-  assert.equal(first, 'DMITRY THALER', 'name must not extract as separated letters');
+  assert.equal(first, 'JOHN DOW', 'name must not extract as separated letters');
 });
 
-test('renderer: letter-spacing above 1.2pt breaks name extraction', opts, async () => {
-  // Chromium bakes CSS letter-spacing into wide glyph gaps, and every PDF text
-  // extractor then inserts spaces - including the one a real ATS would use.
-  // WeasyPrint did not do this, so the behaviour is new. This pins both ends
-  // of the threshold. See docs/porting-notes.md.
+test('renderer: letter-spacing above 1.2pt can break name extraction', opts, async () => {
+  // Chromium bakes CSS letter-spacing into wide glyph gaps, and a PDF text
+  // extractor then inserts spaces between the letters - including the one a
+  // real ATS would use. The name is the one field an ATS must read.
+  //
+  // MEASURED, and not as simple as "more spacing is worse". Whether the
+  // extractor splits depends on the gap against the font's own space width,
+  // for these exact glyphs, so it is name-dependent and NOT monotonic:
+  //
+  //   name                1.2pt   1.5pt   2pt     2.5pt
+  //   Jonathan Dowerton   ok      SPLIT   SPLIT   -
+  //   John Dowerton       ok      SPLIT   ok      -
+  //   John Dow            ok      ok      ok      ok
+  //
+  // So 2pt is not safe merely because one short name survives it. 1.2pt is the
+  // value that held for every name tried, which is why the template uses it.
+  // A long name is used here because a short one cannot show the failure.
   const at = async (ls: string): Promise<string> => {
     const out = await renderer.render(
-      `<header class="header"><h1 class="name" style="letter-spacing:${ls}">Dmitry Thaler</h1></header>${SECTION}`,
+      `<header class="header"><h1 class="name" style="letter-spacing:${ls}">Jonathan Dowerton</h1></header>${SECTION}`,
     );
     return (out.pageTexts[0] ?? '').trim().split('\n')[0] ?? '';
   };
-  assert.equal(await at('1.2pt'), 'DMITRY THALER', 'parses at 1.2pt');
-  assert.notEqual(await at('2pt'), 'DMITRY THALER', 'breaks at 2pt');
+  assert.equal(await at('1.2pt'), 'JONATHAN DOWERTON', 'parses at the shipped 1.2pt');
+  assert.notEqual(await at('1.5pt'), 'JONATHAN DOWERTON', 'splits once raised');
 });
