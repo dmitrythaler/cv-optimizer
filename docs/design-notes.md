@@ -66,12 +66,12 @@ point — change it deliberately and say so in the commit message.
 
 ## 2. Filter design notes
 
-Priorities run 0–7. Parallel execution is the default; `--seq` stops at the
+Priorities run 0–8. Parallel execution is the default; `--seq` stops at the
 first failure and is for debugging. A filter that throws becomes a FAILED
 result, never a skipped one.
 
 There is deliberately **no** "skip the rest once something failed" branch. It
-would need a filter with priority >= 100 and the highest here is 7, so the code
+would need a filter with priority >= 100 and the highest here is 8, so the code
 would be dead.
 
 ### ContentLengthChecker (0)
@@ -115,35 +115,62 @@ implementation in a language with per-process string hash randomization gives a
 different order every run. That order reaches the optimizer as feedback, so
 retries stop being reproducible. This build sorts.
 
-### VisionChecker (5)
+### AtsChecker (5) and LayoutChecker (8)
 
-One model call doing a visual check on the rendered page image and an ATS
-screening on the extracted text.
+**These were one filter, and splitting them removed a real trap.**
 
-**The 0.00 that everybody misreads.** The scoring rule is:
+The combined filter made one model call that returned two unrelated judgements,
+then multiplied them:
 
 ```
 score = looks_professional ? atsScore : 0.0
 ```
 
-So **a 0.00 never means "the ATS rejected you"**. It means the visual half said
-no and the ATS numbers were thrown away. When the page image fails to reach the
-model, a plumbing fault therefore looks exactly like a terrible CV.
+So **a 0.00 never meant "the ATS rejected you"**. It meant the visual half said
+no and the ATS numbers were thrown away. A dropped page image therefore looked
+exactly like a terrible CV, which is how a plumbing fault hid for weeks.
 
-Two guards exist because of that:
+**The measurements that settled it**, over 26 recorded evaluations:
 
-- **The provider cannot accept images** -> `skipped()`. A configuration fault is
-  not a verdict about the CV.
+|                                                  |                     |
+| ------------------------------------------------ | ------------------- |
+| `looks_professional: false` fired                | **0 times of 26**   |
+| the visual half was the sole cause of a failure  | **4 of 6 failures** |
+| issues raised that were about how the page LOOKS | **0 of 15**         |
+
+Every issue it ever produced was a text judgement — "Missing required skill:
+Redis", "No education section listed". Meanwhile the same CV against the same
+job scored **0.57, 0.63 and 0.82** across three runs, crossing the threshold in
+both directions. An aesthetic opinion that never fires, cannot be reproduced,
+and can veto a good CV is not a filter; it is noise with authority.
+
+Note also that an ATS parses TEXT. Grading ATS fit from a picture of the page is
+less faithful to the thing being simulated, not more — and it dragged in a
+second vendor, because DeepSeek cannot accept images at all (§3).
+
+So:
+
+- **`AtsChecker`** — text only, cheap model, no image, no second vendor. Keeps
+  `disqualified`, which is genuinely valuable and is itself a text judgement.
+  The score is **never zeroed out**: what it computed is what it reports.
+  Weights sum to 1.0: keyword 0.25, experience 0.175, education 0.075,
+  overall_fit 0.50. Half the score is one holistic judgement. Passing needs the
+  score at or above threshold AND `!disqualified`.
+- **`LayoutChecker`** — image only, one narrow question: is the page broken?
+  Binary, like the deterministic filters. It never sees the job. `broken: true`
+  with an empty defect list is treated as not broken and logged, because a
+  filter that can veto a run must not do so on an unevidenced claim.
+
+Two guards stay on the image half:
+
+- **The provider cannot accept images** -> `skipped()`, NaN score, WARN log. A
+  configuration fault is not a verdict about the CV, and it does not block.
 - **No rendered page image** -> a real failure. A CV that will not render is
   broken.
 
-`passed` needs all three of `looks_professional`, `atsScore >= threshold` and
-`!disqualified`. A score above the threshold can still fail on `disqualified`,
-and that is not a bug — it means the posting has a hard requirement the CV does
-not meet.
-
-Weights sum to 1.0: keyword 0.25, experience 0.175, education 0.075,
-overall_fit 0.50. Half the score is one holistic judgement.
+Leave `VISION_MODEL` pointing at a provider without image support and you lose
+exactly one filter, loudly. Everything else, including the ATS screening, keeps
+running on one provider.
 
 ### VectorSimilarityMatcher (6)
 
@@ -206,7 +233,8 @@ per-requirement signal is ever needed.
 | -------------------- | -------- |
 | HallucinationChecker | `pro`    |
 | AiGeneratedChecker   | `flash`  |
-| VisionChecker        | `vision` |
+| AtsChecker           | `flash`  |
+| LayoutChecker        | `vision` |
 
 `VISION_MODEL` defaults to Gemini, **not** to `flash`.
 
@@ -230,8 +258,9 @@ followed. `@ai-sdk/deepseek` 3.0.21 is current, so no client upgrade changes it.
 Gemini works — verified end to end: a 64x64 blue PNG, and the model answered
 `{"colour":"blue"}`.
 
-Consequence: point `VISION_MODEL` at a DeepSeek model and VisionChecker skips
-every time, and says so. It does not quietly grade the text alone.
+Consequence: point `VISION_MODEL` at a DeepSeek model and LayoutChecker skips
+every time, and says so. It does not quietly grade the text alone. Since the
+split, that costs one narrow check rather than the whole ATS screening.
 
 Also: `deepseek-chat` answers but is not in `/v1/models`. Name a real model.
 Neither DeepSeek nor Anthropic offers an embeddings endpoint — verified,

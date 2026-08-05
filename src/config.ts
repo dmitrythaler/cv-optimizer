@@ -46,6 +46,22 @@ const num = (key: string, fallback: number): number => {
 
 const str = (key: string, fallback: string): string => process.env[key] || fallback;
 
+/**
+ * THRESHOLD_VISION was renamed to THRESHOLD_ATS when the combined vision filter
+ * was split. Honour the old name rather than ignoring it - a config silently
+ * dropped on the floor is how a threshold reverts to its default unnoticed.
+ */
+const atsThreshold = (): number => {
+  const old = process.env['THRESHOLD_VISION'];
+  if (old !== undefined && old !== '' && process.env['THRESHOLD_ATS'] === undefined) {
+    process.stderr.write(
+      '[WARN] THRESHOLD_VISION is renamed to THRESHOLD_ATS. Using it for now; rename it in .env.\n',
+    );
+    return num('THRESHOLD_VISION', 0.7);
+  }
+  return num('THRESHOLD_ATS', 0.7);
+};
+
 const bool = (key: string, fallback: boolean): boolean => {
   const raw = process.env[key];
   if (raw === undefined || raw === '') return fallback;
@@ -58,9 +74,9 @@ export interface Config {
    *
    * - `pro`   the careful one. HallucinationChecker uses it.
    * - `flash` the cheap one. AiGeneratedChecker uses it.
-   * - `vision` must accept images. VisionChecker uses it. It falls back to
-   *   `flash`, but note that DeepSeek REJECTS images at the API schema level,
-   *   so a DeepSeek flash model makes VisionChecker skip. Use Gemini for it.
+   * - `vision` must accept images. ONLY LayoutChecker uses it. DeepSeek
+   *   REJECTS images at the API schema level, so a DeepSeek model here makes
+   *   that one filter skip - everything else still runs. Use Gemini for it.
    */
   readonly models: {
     readonly pro: string;
@@ -122,8 +138,8 @@ export interface Config {
     readonly vector: number;
     readonly hallucination: number;
     readonly aiGenerated: number;
-    /** Minimum weighted ATS score. */
-    readonly vision: number;
+    /** Minimum weighted ATS score. LayoutChecker has no threshold: it is binary. */
+    readonly ats: number;
   };
   readonly logLevel: string;
 }
@@ -138,10 +154,10 @@ export const loadConfig = (): Config => {
       pro: str('PRO_MODEL', 'deepseek/deepseek-v4-pro'),
       flash,
       // Defaults to Gemini, NOT to `flash`. DeepSeek rejects images at the API
-      // schema level, so a DeepSeek vision model makes VisionChecker skip
-      // every time. This needs GEMINI_API_KEY. Set VISION_MODEL to the flash
-      // model if you would rather not use a second provider - the filter will
-      // then skip, and say so.
+      // schema level, so a DeepSeek model here makes LayoutChecker skip every
+      // time. This needs GEMINI_API_KEY. Set VISION_MODEL to the flash model if
+      // you would rather not use a second provider - LayoutChecker then skips
+      // and says so, and no other filter is affected.
       vision: str('VISION_MODEL', 'gemini/gemini-3.5-flash'),
     },
 
@@ -189,7 +205,7 @@ export const loadConfig = (): Config => {
 
       hallucination: num('THRESHOLD_HALLUCINATION', 0.9),
       aiGenerated: num('THRESHOLD_AI_GENERATED', 0.4),
-      vision: num('THRESHOLD_VISION', 0.7),
+      ats: atsThreshold(),
     },
 
     logLevel: str('LOG_LEVEL', 'info'),

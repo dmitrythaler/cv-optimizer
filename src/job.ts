@@ -46,7 +46,7 @@ export const parseJobPosting = async (text: string, chat: ChatProvider): Promise
     // The parser's brief summary. KeywordMatcher and
     // VectorSimilarityMatcher score against title + description + requirements,
     // so they see the summary, NOT the whole posting. The full text stays in
-    // rawText for VisionChecker's fallback.
+    // rawText for AtsChecker's fallback.
     description: r.description,
     rawText: text,
     requirements: r.requirements,

@@ -46,6 +46,7 @@ src/
   types.ts               domain types, provider-agnostic
   pipeline/orchestrator.ts   the generate/grade loop
   filters/               base contract + registry
+                         ATS screening reads TEXT; only LayoutChecker sees the page
   providers/llm.ts       chat/vision seam (remote)
   providers/embeddings.ts    embedding contract + cosine
   providers/local-embeddings.ts  host side: owns the worker

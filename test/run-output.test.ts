@@ -41,7 +41,7 @@ const result = (name: string, passed: boolean): FilterResult => ({
 const iteration = (n: number, passed: boolean, html = '<p>cv</p>'): Iteration => ({
   n,
   resume: { html, pdfText: 'text', pngPage1: null, pageCount: 2, pageTexts: null },
-  results: [result('KeywordMatcher', true), result('VisionChecker', passed)],
+  results: [result('KeywordMatcher', true), result('AtsChecker', passed)],
   passed,
 });
 
@@ -120,15 +120,15 @@ test('run folder: keeps every iteration, not only the filed one', async () => {
 
 test('run folder: a failing run records the issues in errors.log', async () => {
   logger.resetProblems();
-  logger.error('FAILED filters: VisionChecker');
-  logger.error('  VisionChecker: VisionChecker is unhappy');
+  logger.error('FAILED filters: AtsChecker');
+  logger.error('  AtsChecker: AtsChecker is unhappy');
 
   const { folder, files } = await write(outcomeOf([iteration(1, false)]));
   assert.ok(files.includes('errors.log'), 'errors.log written');
 
   const log = await readFile(join(folder, 'errors.log'), 'utf8');
-  assert.match(log, /FAILED filters: VisionChecker/);
-  assert.match(log, /VisionChecker is unhappy/);
+  assert.match(log, /FAILED filters: AtsChecker/);
+  assert.match(log, /AtsChecker is unhappy/);
 });
 
 test('optimization.json: records the verdict and every filter score', async () => {
@@ -150,7 +150,7 @@ test('optimization.json: records the verdict and every filter score', async () =
   assert.equal(j.iterations[0]?.passed, false);
   assert.deepEqual(
     j.iterations[0]?.filters.map((f) => f.name),
-    ['KeywordMatcher', 'VisionChecker'],
+    ['KeywordMatcher', 'AtsChecker'],
   );
 });
 

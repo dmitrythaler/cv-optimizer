@@ -22,7 +22,7 @@ import type { FilterResult } from './types.ts';
  *     always reports no fabrication.
  *   - ContentLengthChecker passes without a test, because there are no pages.
  *   - DataValidator wants resume HTML. A markdown file fails it.
- *   - VisionChecker needs a page image and reports that it has none.
+ *   - LayoutChecker needs a page image and reports that it has none.
  * The output marks each of these cases.
  */
 
@@ -31,7 +31,7 @@ const CAVEATS: Record<string, string> = {
   ContentLengthChecker: 'no rendered pages, so it passes without a test',
   DataValidator: 'expects resume HTML; a markdown file will fail',
   HallucinationChecker: 'compares the file with itself; expect a perfect score',
-  VisionChecker: 'needs a rendered page image, which this command cannot make',
+  LayoutChecker: 'needs a rendered page image, which this command cannot make',
 };
 
 const pick = (names: string): { chosen: Filter[]; unknown: string[] } => {

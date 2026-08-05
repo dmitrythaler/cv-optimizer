@@ -226,7 +226,7 @@ test('registry: every implemented filter is registered', async () => {
     'DataValidator',
     'HallucinationChecker',
     'KeywordMatcher',
-    'VisionChecker',
+    'AtsChecker',
     'VectorSimilarityMatcher',
     'AiGeneratedChecker',
   ]) {

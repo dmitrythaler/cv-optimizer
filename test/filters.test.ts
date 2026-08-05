@@ -153,12 +153,13 @@ test('registry: filters registered, ordered by priority', () => {
     'DataValidator',
     'HallucinationChecker',
     'KeywordMatcher',
-    'VisionChecker',
+    'AtsChecker',
     'VectorSimilarityMatcher',
     'AiGeneratedChecker',
+    'LayoutChecker',
   ]);
   assert.deepEqual(
     all().map((f) => f.priority),
-    [0, 1, 3, 4, 5, 6, 7],
+    [0, 1, 3, 4, 5, 6, 7, 8],
   );
 });

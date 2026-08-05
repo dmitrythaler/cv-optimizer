@@ -22,7 +22,7 @@ export interface JobPosting {
    * title + description + requirements, so this is deliberately condensed.
    */
   readonly description: string;
-  /** The full posting text. VisionChecker falls back to it when description is empty. */
+  /** The full posting text. AtsChecker falls back to it when description is empty. */
   readonly rawText: string;
   readonly requirements: readonly string[];
   /**

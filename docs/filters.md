@@ -14,12 +14,12 @@ Thresholds are calibrated values, measured against real data — see
 | 1   | DataValidator    | deterministic      | 1.0                  | HTML structure is sane                |
 | 3   | Hallucination    | LLM                | 0.90                 | claims not supported by the source CV |
 | 4   | KeywordMatcher   | TF-IDF             | 0.25                 | literal term overlap with the JD      |
-| 5   | VisionChecker    | LLM (vision) + ATS | 0.70                 | visual quality AND ATS screening      |
+| 5   | AtsChecker       | LLM (text)         | 0.70                 | ATS screening against the posting     |
 | 6   | VectorSimilarity | embeddings (local) | **must be measured** | semantic closeness to the JD          |
 | 7   | AiGenerated      | LLM                | 0.40                 | does it read as machine-written       |
+| 8   | LayoutChecker    | LLM (vision)       | binary               | is the rendered page BROKEN           |
 
-Priorities 2 and 8 are free — the original used 8 for a translation-quality
-check that only ran on cross-language output.
+Priority 2 is free.
 
 ## What each is actually measuring
 
@@ -36,21 +36,30 @@ Rough read: `0.50+` strong match, `~0.30` either a thin JD or a real domain gap,
 below `0.30` on a detailed JD means genuine mismatch. Historically the most
 trustworthy number in the set.
 
-**VisionChecker** — one model call doing two jobs: a visual quality check on the
-rendered page image, and an ATS screening on the extracted text. Named
-Named for what it does, because an earlier name described the
-implementation rather than the job. The old name still appears in historical
-`cv_failed_filters` entries in `../results.json`.
+**AtsChecker** — ATS screening from the extracted TEXT. A real applicant
+tracking system parses text, so this one needs no image and runs on the cheap
+model. The score is weighted: `overall_fit` 0.50, `keyword` 0.25, `experience`
+0.175, `education` 0.075.
 
-Passing requires **all three**: `looks_professional` AND `atsScore >= threshold`
-AND `!disqualified`.
+Passing needs the score at or above the threshold **and** `!disqualified`.
+`disqualified` is a hard requirement the posting states and the CV does not meet
+— a missing degree, a missing must-have language. A score above the threshold
+can still fail on it, and that is correct, not a bug.
 
-The reported score is the weighted ATS score — `overall_fit` 0.50, `keyword`
-0.25, `experience` 0.175, `education` 0.075 — but **only when
-`looks_professional` is true**. Otherwise it is hard-coded to `0.0`. So a
-`0.00` never means "the ATS rejected you"; it means the visual half said no and
-the ATS numbers were discarded. See `design-notes.md` for how that turns a
-plumbing fault into weeks of apparently-bad CVs.
+The score is **never zeroed out**. Whatever it computed is what it reports, so a
+weak match is always distinguishable from a defect elsewhere.
+
+**LayoutChecker** — the only filter that looks at the rendered page image, and
+it asks one question: is this page BROKEN? Clipped text, overlap, garbled
+glyphs, rendering artifacts. It does not grade taste, and it never sees the job.
+
+Binary: score 1 or 0, threshold 1, like the two deterministic filters. A model
+that claims `broken: true` while listing no defect is treated as not broken and
+logged — this filter can veto a whole run, so it does not do so on an empty
+assertion.
+
+These two were one filter, and splitting them removed a real trap. See
+`design-notes.md` §2 for the measurements that forced it.
 
 **VectorSimilarity** — embedding cosine, from a local model in a worker thread.
 Coarse: it separates a software job from a bread recipe but barely distinguishes
