@@ -145,6 +145,16 @@ const main = async (argv: string[]): Promise<number> => {
         logger.error(`--max-iterations must be a number, got ${JSON.stringify(rawMax)}`);
         return 1;
       }
+      // Check CV_NAME_TEMPLATE now, not after the run. A typo must cost a
+      // second, not twenty minutes of model calls.
+      const { naming, renderCvName, stamp } = await import('./output-path.ts');
+      try {
+        renderCvName(config.cvNameTemplate, naming('probe', 'probe', 'en', stamp()));
+      } catch (err: unknown) {
+        logger.error(err instanceof Error ? err.message : String(err));
+        return 1;
+      }
+
       const isUrl = /^https?:\/\//i.test(jdPath);
       const [cv, jd] = await Promise.all([
         readFile(cvPath, 'utf8'),

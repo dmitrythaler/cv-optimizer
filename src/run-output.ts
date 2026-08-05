@@ -44,10 +44,13 @@ export const writeRun = async (input: WriteRunInput): Promise<WriteRunResult> =>
   const { outputDir, outcome, job, source, renderer, config } = input;
 
   const n = naming(job.company || 'unknown', job.title || null, job.language);
+  // Resolve the name BEFORE creating anything, so a bad template leaves no
+  // empty folder behind. `optimize` also checks the template at startup, so a
+  // typo costs nothing instead of costing a whole run.
+  const cvName = renderCvName(config.cvNameTemplate, n);
+
   const folder = runFolderPath(outputDir, n);
   await mkdir(folder, { recursive: true });
-
-  const cvName = renderCvName(config.cvNameTemplate, n);
 
   // Render each iteration once. The filed iteration's bytes are also the CV, so
   // nothing is rendered twice.
