@@ -73,7 +73,9 @@ export interface JobSource {
   readonly from: string;
   readonly kind: 'url' | 'file';
   readonly method?: 'request' | 'browser';
-  readonly clean?: CleanReport;
+  /** How the posting was separated from the page. See fetch-job.ts. */
+  readonly strategy?: 'json-ld' | 'cleaned-html';
+  readonly clean?: CleanReport | null;
 }
 
 export interface WriteRunResult {

@@ -84,13 +84,20 @@ output path. Both commands name the folder through `prepareRun`, so they cannot
 disagree about where a posting belongs. It costs one flash call, because the
 folder is named after the company and the role.
 
-`job-text.ts` strips the page furniture. Measured on a real justjoin.it page:
-609 lines in, the posting was lines 96-250, and cleaning removed 54%. It cuts
-the trailer at a "similar offers" heading and drops navigation and legal
-boilerplate line by line. It keeps the head of the page, which holds the title,
-company and salary the parser needs. If cleaning would leave too little, it
-hands back the raw text and says so rather than passing an empty JD down the
-pipeline.
+The posting is separated from the page in two steps, best first:
+
+1. **`job-ld.ts`** reads the schema.org `JobPosting` from the page's JSON-LD.
+   This is the posting itself, so there is nothing to strip and nothing to
+   strip by mistake, and it works in ANY language. Nearly every serious board
+   publishes it, because Google requires it for Google Jobs indexing.
+2. **`job-text.ts`** is the fallback for pages with no JSON-LD. It cuts the
+   trailer at a "similar offers" heading and drops navigation and legal
+   boilerplate line by line. It is a word list, so it only works for the
+   languages someone added - a German page kept nearly all of its junk, which
+   is why step 1 exists. If cleaning would leave too little, it hands back the
+   raw text and says so rather than passing an empty JD down the pipeline.
+
+`optimization.json` records which strategy ran, under `job.source.strategy`.
 
 The folder name is fixed and holds no personal name. Only the CV file name is
 templated, because that is the name a recruiter sees once the file leaves the

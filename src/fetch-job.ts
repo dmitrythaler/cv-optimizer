@@ -1,5 +1,6 @@
 import { logger } from './logger.ts';
 import { cleanJobText, describeClean } from './job-text.ts';
+import { extractJobPostingLd } from './job-ld.ts';
 import type { CleanReport } from './job-text.ts';
 
 /**
@@ -44,7 +45,18 @@ export const htmlToText = (html: string): string =>
 
 const MIN_LENGTH = 200;
 
-const viaFetch = async (url: string): Promise<string> => {
+/**
+ * What a fetch returns: the raw HTML, and readable text taken from it.
+ *
+ * The HTML is kept because the JSON-LD extractor needs the `<script>` blocks,
+ * and both the markup stripper and the browser path throw scripts away.
+ */
+interface Page {
+  readonly html: string;
+  readonly text: string;
+}
+
+const viaFetch = async (url: string): Promise<Page> => {
   const res = await fetch(url, {
     headers: {
       // Job boards commonly refuse a bare client.
@@ -59,7 +71,7 @@ const viaFetch = async (url: string): Promise<string> => {
   if (looksBlocked(html)) throw new Error('blocked by a bot check');
   const text = htmlToText(html);
   if (text.length < MIN_LENGTH) throw new Error(`only ${text.length} chars of text`);
-  return text;
+  return { html, text };
 };
 
 /**
@@ -82,7 +94,7 @@ const CHROME_SELECTORS = [
   '[aria-label*="cookie" i]',
 ];
 
-const viaBrowser = async (url: string): Promise<string> => {
+const viaBrowser = async (url: string): Promise<Page> => {
   const { chromium } = await import('playwright');
   const browser = await chromium.launch();
   try {
@@ -91,6 +103,10 @@ const viaBrowser = async (url: string): Promise<string> => {
     // Job boards render late. Wait for the network to settle, but do not fail
     // the whole fetch if it never does.
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => undefined);
+
+    // Capture the markup BEFORE pruning. The JSON-LD lives in a <script>, and
+    // the prune below removes every script on the page.
+    const html = await page.content();
 
     // innerText beats parsing the markup: it follows what is actually rendered
     // and leaves out anything hidden.
@@ -116,53 +132,75 @@ const viaBrowser = async (url: string): Promise<string> => {
     }, CHROME_SELECTORS);
 
     if (text.length < MIN_LENGTH) throw new Error(`only ${text.length} chars of text`);
-    return text;
+    return { html, text };
   } finally {
     await browser.close();
   }
 };
 
 export interface FetchedJob {
-  /** Cleaned posting text. This is what the parser and the filters see. */
+  /** The posting text. This is what the parser and the filters see. */
   readonly text: string;
   readonly url: string;
   readonly method: 'request' | 'browser';
-  readonly clean: CleanReport;
+  /**
+   * How the posting was separated from the page.
+   *  - `json-ld`      schema.org JobPosting. Exact, and language-independent.
+   *  - `cleaned-html` the word-list heuristic. Only as good as its word lists.
+   */
+  readonly strategy: 'json-ld' | 'cleaned-html';
+  /** Only set for `cleaned-html`. Nothing is stripped on the json-ld path. */
+  readonly clean: CleanReport | null;
 }
 
 /**
- * Fetches a posting and strips the page furniture.
+ * Fetches a posting and separates it from the page around it.
  *
- * Plain request first, then a real browser. Whatever arrives goes through
- * `cleanJobText`, because a job board page is mostly not the job - navigation,
- * a "similar offers" list of OTHER jobs, adverts and a footer. Leaving that in
- * would let unrelated postings drag the keyword and vector scores.
+ * Plain request first, then a real browser.
+ *
+ * Then, in order:
+ *  1. schema.org JobPosting from the page's JSON-LD. This is the posting
+ *     itself, so there is nothing to strip and nothing to strip by mistake,
+ *     and it works whatever language the posting is written in.
+ *  2. The word-list heuristic in `job-text.ts`. It only ever works for
+ *     languages someone thought to add - a German page keeps nearly all of its
+ *     junk - so it is the fallback, not the plan.
  */
 export const fetchJob = async (url: string): Promise<FetchedJob> => {
   const errors: string[] = [];
-  let raw: string | null = null;
+  let page: Page | null = null;
   let method: 'request' | 'browser' = 'request';
 
   try {
-    raw = await viaFetch(url);
-    logger.info(`fetched ${url} with a plain request (${raw.length} chars)`);
+    page = await viaFetch(url);
+    logger.info(`fetched ${url} with a plain request (${page.text.length} chars)`);
   } catch (err: unknown) {
     errors.push(`fetch: ${err instanceof Error ? err.message : String(err)}`);
     logger.warn(`plain request failed for ${url}, trying a browser`);
     try {
-      raw = await viaBrowser(url);
+      page = await viaBrowser(url);
       method = 'browser';
-      logger.info(`fetched ${url} with a browser (${raw.length} chars)`);
+      logger.info(`fetched ${url} with a browser (${page.text.length} chars)`);
     } catch (err2: unknown) {
       errors.push(`browser: ${err2 instanceof Error ? err2.message : String(err2)}`);
     }
   }
-  if (raw === null) throw new Error(`could not fetch ${url}. Tried ${errors.join('; ')}`);
+  if (page === null) throw new Error(`could not fetch ${url}. Tried ${errors.join('; ')}`);
 
-  const { text, report: clean } = cleanJobText(raw);
+  const ld = extractJobPostingLd(page.html);
+  if (ld !== null) {
+    logger.info(
+      `job read from schema.org JSON-LD: ${ld.descriptionChars} chars of description` +
+        `${ld.company === null ? '' : ` at ${ld.company}`} - no cleaning needed`,
+    );
+    return { text: ld.text, url, method, strategy: 'json-ld', clean: null };
+  }
+
+  logger.info('no schema.org JobPosting on the page, falling back to the word-list cleaner');
+  const { text, report: clean } = cleanJobText(page.text);
   const line = describeClean(clean);
   if (clean.keptRaw) logger.warn(line);
   else logger.info(line);
 
-  return { text, url, method, clean };
+  return { text, url, method, strategy: 'cleaned-html', clean };
 };

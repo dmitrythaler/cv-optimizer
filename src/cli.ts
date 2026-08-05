@@ -182,6 +182,7 @@ const main = async (argv: string[]): Promise<number> => {
               from: fetched.url,
               kind: 'url' as const,
               method: fetched.method,
+              strategy: fetched.strategy,
               clean: fetched.clean,
             }
           : { from: jdPath, kind: 'file' as const };
