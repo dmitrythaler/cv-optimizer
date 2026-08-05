@@ -52,12 +52,31 @@ src/
   providers/embedding.worker.ts  the ONLY worker - local ONNX inference
   providers/embedding-protocol.ts  messages shared by both sides
   render/pdf.ts          HTML -> PDF/text/PNG seam
+  output-path.ts         run folder name + CV_NAME_TEMPLATE
+  run-output.ts          writes the run folder
 docs/
   architecture.md        how the pieces fit
   filters.md             the filter roster and thresholds
   porting-notes.md       what the Python original got wrong - READ THIS
   adr/                   architecture decision records
 ```
+
+## Output
+
+One run writes one folder:
+
+```
+output/20260805-0912-link_group-full_stack_engineer/
+  Dmitry.Thaler.CV.link_group.full_stack_engineer.pdf   <- CV_NAME_TEMPLATE
+  iteration_1.pdf   iteration_1.png
+  iteration_2.pdf   iteration_2.png
+  optimization.json     every filter score, per iteration
+  errors.log            only when something went wrong
+```
+
+The folder name is fixed and holds no personal name. Only the CV file name is
+templated, because that is the name a recruiter sees once the file leaves the
+folder. An unknown placeholder in `CV_NAME_TEMPLATE` stops the run.
 
 ## Design rules
 

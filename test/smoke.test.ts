@@ -30,9 +30,31 @@ test('cosine: zero vector yields 0 rather than NaN', () => {
 });
 
 test('config: vector threshold is uncalibrated until measured', () => {
-  const c = loadConfig();
-  // NaN makes every comparison false, so the filter cannot silently pass.
-  assert.ok(Number.isNaN(c.thresholds.vector), 'THRESHOLD_VECTOR must not default to a guess');
+  // The CODE default must be NaN, so that an unmeasured threshold makes every
+  // comparison false and the filter cannot silently pass everything. A real
+  // .env supplies the measured value, so clear it to see the default.
+  loadConfig(); // let .env load first - the loader runs once per process
+  const saved = process.env.THRESHOLD_VECTOR;
+  delete process.env.THRESHOLD_VECTOR;
+  try {
+    assert.ok(
+      Number.isNaN(loadConfig().thresholds.vector),
+      'THRESHOLD_VECTOR must not default to a guess',
+    );
+  } finally {
+    if (saved !== undefined) process.env.THRESHOLD_VECTOR = saved;
+  }
+});
+
+test('config: the measured threshold from .env is actually used', () => {
+  const saved = process.env.THRESHOLD_VECTOR;
+  process.env.THRESHOLD_VECTOR = '0.67';
+  try {
+    assert.equal(loadConfig().thresholds.vector, 0.67);
+  } finally {
+    if (saved === undefined) delete process.env.THRESHOLD_VECTOR;
+    else process.env.THRESHOLD_VECTOR = saved;
+  }
 });
 
 test('config: embedding is local, with no api key in play', () => {

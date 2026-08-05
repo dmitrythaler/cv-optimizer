@@ -81,6 +81,15 @@ export interface Config {
    * bounds. Massively relaxes the fabrication checks - use with caution.
    */
   readonly noShame: boolean;
+  /**
+   * File name of the CV inside the run folder. Accepts static text and the
+   * placeholders {date} {time} {company} {position} {lang}, plus the aliases
+   * {company_slug} and {position_slug}. See `output-path.ts`.
+   *
+   * The run FOLDER name is fixed and is not templated: the operator only needs
+   * control over the file a recruiter receives.
+   */
+  readonly cvNameTemplate: string;
   readonly keyword: {
     /** sklearn `max_features` for the job-text vectorizer. */
     readonly maxFeatures: number;
@@ -149,6 +158,8 @@ export const loadConfig = (): Config => {
 
     maxIterations: num('MAX_ITERATIONS', 3),
     noShame: bool('NO_SHAME', false),
+    // No personal name in the default - that belongs in the operator's own .env.
+    cvNameTemplate: str('CV_NAME_TEMPLATE', 'CV.{company}.{position}.pdf'),
 
     optimizer: {
       retries: num('OPTIMIZER_RETRIES', 5),

@@ -31,8 +31,8 @@ const REPORT = join(CVOPT, 'docs/parity-report.md');
 const OUT = join(CVOPT, 'output/parity');
 
 const INSTRUCTIONS =
-  "use same structure for the Contact info EXACTLY as in the source - 2 lines: 1st line ONLY " +
-  "for email/web, second line ONLY for phones, same separator, NEVER allow phones to cling to " +
+  'use same structure for the Contact info EXACTLY as in the source - 2 lines: 1st line ONLY ' +
+  'for email/web, second line ONLY for phones, same separator, NEVER allow phones to cling to ' +
   "1st line; never remove phones; do not change '15+ years'; do not remove jobs; NEVER add " +
   "anything that isn't in the source; NEVER use FUCKEN EM-DASH!; 2 pages are OK";
 
@@ -141,8 +141,6 @@ const runTs = async (jd: string, outDir: string): Promise<Side> => {
       outDir,
       '-n',
       '3',
-      '--name',
-      'Dmitry Thaler',
       '-i',
       INSTRUCTIONS,
     ],
@@ -165,7 +163,11 @@ const runTs = async (jd: string, outDir: string): Promise<Side> => {
 };
 
 const runPy = async (jd: string): Promise<Side> => {
-  const r = await run('uv', ['run', 'hr-breaker', 'optimize', join(ROOT, 'cv.md'), jd, '-i', INSTRUCTIONS], HRB);
+  const r = await run(
+    'uv',
+    ['run', 'hr-breaker', 'optimize', join(ROOT, 'cv.md'), jd, '-i', INSTRUCTIONS],
+    HRB,
+  );
   const { scores, iterations } = parseScores(r.out);
   const tail = r.out.split('\n').filter(Boolean).slice(-3).join(' | ').slice(0, 300);
   return classify(
@@ -221,7 +223,9 @@ const writeReport = async (rows: Row[]): Promise<void> => {
   lines.push(`| job | tool | ${used.join(' | ')} |`);
   lines.push(`| --- | --- | ${used.map(() => '---').join(' | ')} |`);
   for (const r of rows) {
-    lines.push(`| ${r.job.slice(0, 30)} | ts | ${used.map((n) => fmt(r.ts.scores[n])).join(' | ')} |`);
+    lines.push(
+      `| ${r.job.slice(0, 30)} | ts | ${used.map((n) => fmt(r.ts.scores[n])).join(' | ')} |`,
+    );
     if (r.py !== null) {
       lines.push(`| | py | ${used.map((n) => fmt(r.py?.scores[n])).join(' | ')} |`);
     }

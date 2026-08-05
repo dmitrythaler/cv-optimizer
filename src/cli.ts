@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import process from 'node:process';
 import { loadConfig } from './config.ts';
 import { logger } from './logger.ts';
@@ -27,16 +26,21 @@ COMMANDS
   filters       list registered filters
 
 OPTIONS
-  -o, --out <path>        where to write the PDF        (default: ./output)
-      --name <first last>  name used in the output filename
+  -o, --out <path>        parent folder for run folders  (default: ./output)
   -i, --instructions <s>  extra instructions for the optimizer
   -n, --max-iterations <n>  override MAX_ITERATIONS
       --seq               run filters sequentially, stop at first failure
       --dry-run           parse inputs and exit without calling any model
 
+OUTPUT
+  One run writes one folder: {date}-{time}-{company}-{position}/
+  holding the CV, iteration_N.pdf/.png for every pass, optimization.json,
+  and errors.log when anything went wrong. The CV file name comes from
+  CV_NAME_TEMPLATE.
+
 ENVIRONMENT
   PRO_MODEL, FLASH_MODEL, VISION_MODEL, EMBEDDING_MODEL, MAX_ITERATIONS, LOG_LEVEL,
-  THRESHOLD_KEYWORD, THRESHOLD_VECTOR, THRESHOLD_HALLUCINATION,
+  CV_NAME_TEMPLATE, THRESHOLD_KEYWORD, THRESHOLD_VECTOR, THRESHOLD_HALLUCINATION,
   THRESHOLD_AI_GENERATED, THRESHOLD_VISION
 `;
 
@@ -46,7 +50,6 @@ const main = async (argv: string[]): Promise<number> => {
     allowPositionals: true,
     options: {
       out: { type: 'string', short: 'o' },
-      name: { type: 'string' },
       instructions: { type: 'string', short: 'i' },
       'max-iterations': { type: 'string', short: 'n' },
       seq: { type: 'boolean', default: false },
@@ -179,6 +182,7 @@ const main = async (argv: string[]): Promise<number> => {
       const embeddings = localEmbeddings(config);
       const runConfig = maxIterations === null ? config : { ...config, maxIterations };
 
+      const startedAt = Date.now();
       try {
         const providers = aiSdkProviders(config.models);
         const { parseJobPosting } = await import('./job.ts');
@@ -194,46 +198,33 @@ const main = async (argv: string[]): Promise<number> => {
           sequential: values.seq === true,
         });
 
-        const outDir = values.out ?? 'output';
-        await mkdir(outDir, { recursive: true });
-        const { runId, pdfPath, debugDirPath } = await import('./output-path.ts');
-        const id = runId();
-        const [first, ...restName] = (values.name ?? '').trim().split(/\s+/).filter(Boolean);
-        const target = pdfPath(outDir, {
-          firstName: first ?? null,
-          lastName: restName.length > 0 ? restName.join(' ') : null,
-          company: job.company || 'unknown',
-          role: job.title || null,
-          langCode: job.language,
-          runId: id,
-        });
-        const rendered = await renderer.render(outcome.filed.resume.html);
-        await writeFile(target, rendered.pdf);
-
-        // One file per iteration, as hr-breaker's debug folder does. When a run
-        // fails, this is what you look through to pick an attempt by hand.
-        if (outcome.iterations.length > 1) {
-          const dbg = debugDirPath(outDir, job.company || 'unknown', job.title || null, id);
-          await mkdir(dbg, { recursive: true });
-          for (const it of outcome.iterations) {
-            if (it.resume.html === '') continue;
-            const r = await renderer.render(it.resume.html);
-            await writeFile(join(dbg, `iteration_${it.n}.pdf`), r.pdf);
-            await writeFile(join(dbg, `iteration_${it.n}.png`), r.pngPage1);
+        // Report the verdict BEFORE writing the folder, so that the failing
+        // filters and their issues reach errors.log too.
+        if (!outcome.passed) {
+          logger.error(`FAILED filters: ${outcome.failedFilters.join(', ')}`);
+          for (const r of outcome.filed.results.filter((x) => !x.passed)) {
+            for (const issue of r.issues) logger.error(`  ${r.filterName}: ${issue}`);
           }
-          logger.info(`debug: ${dbg} (${outcome.iterations.length} iterations)`);
         }
 
+        const { writeRun } = await import('./run-output.ts');
+        const { folder, cvFile, pageCount } = await writeRun({
+          outputDir: values.out ?? 'output',
+          outcome,
+          job,
+          source,
+          renderer,
+          config: runConfig,
+          startedAt,
+        });
+
         logger.info(`iterations: ${outcome.iterations.length}`);
-        logger.info(`pdf: ${target} (${rendered.pageCount} page(s))`);
+        logger.info(`folder: ${folder}`);
+        logger.info(`cv: ${cvFile} (${pageCount} page(s))`);
+        // A PDF exists either way. Never read a file's existence as success.
         if (outcome.passed) {
           logger.info('PASSED - every filter agreed');
           return 0;
-        }
-        // A PDF exists either way. Never read a file's existence as success.
-        logger.error(`FAILED filters: ${outcome.failedFilters.join(', ')}`);
-        for (const r of outcome.filed.results.filter((x) => !x.passed)) {
-          for (const issue of r.issues) logger.error(`  ${r.filterName}: ${issue}`);
         }
         return 2;
       } finally {

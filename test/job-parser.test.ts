@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { SYSTEM_PROMPT, buildUserPrompt } from '../src/prompts/job-parser.ts';
 import { parseJobPosting } from '../src/job.ts';
 import { htmlToText } from '../src/fetch-job.ts';
-import { debugDirName, pdfName, runId, sanitize } from '../src/output-path.ts';
+import { naming, renderCvName, runFolderName, sanitize, stamp } from '../src/output-path.ts';
 import type { ChatProvider, ChatRequest } from '../src/providers/llm.ts';
 
 test('prompt: the job parser prompt is identical to the Python', () => {
@@ -51,58 +51,77 @@ test('parseJobPosting: keeps the summary and the full text apart', async () => {
 
 /* ---------- output naming ---------- */
 
-test('naming: matches hr-breaker pdf_storage', () => {
+test('naming: run folder is {date}-{time}-{company}-{position}', () => {
+  const n = naming(
+    'co.brick Talents',
+    'Senior Full Stack Developer (Node.js+React)',
+    'en',
+    stamp(new Date(2026, 7, 5, 9, 12)),
+  );
   assert.equal(
-    pdfName({
-      firstName: 'Dmitry',
-      lastName: 'Thaler',
-      company: 'co.brick Talents',
-      role: 'Senior Full Stack Developer (Node.js+React)',
-      langCode: 'en',
-      runId: '0804_1530',
-    }),
-    '0804_1530_dmitry_thaler_co_brick_talents_senior_full_stack_developer_node_js_react_en.pdf',
+    runFolderName(n),
+    '20260805-0912-co_brick_talents-senior_full_stack_developer_node_js_react',
   );
 });
 
-test('naming: language always appended, defaulting to en', () => {
-  assert.match(
-    pdfName({
-      firstName: null,
-      lastName: null,
-      company: 'X',
-      role: null,
-      langCode: null,
-      runId: null,
-    }),
-    /^x_en\.pdf$/,
-  );
-  assert.match(
-    pdfName({
-      firstName: null,
-      lastName: null,
-      company: 'X',
-      role: null,
-      langCode: 'pl',
-      runId: null,
-    }),
-    /^x_pl\.pdf$/,
-  );
+test('naming: run folder drops a missing position, never the company', () => {
+  const n = naming('Acme Inc', null, null, stamp(new Date(2026, 7, 5, 9, 12)));
+  assert.equal(runFolderName(n), '20260805-0912-acme_inc');
 });
 
-test('naming: debug directory matches hr-breaker', () => {
-  assert.equal(
-    debugDirName('Acme Inc', 'Senior Dev', '0804_1530'),
-    '0804_1530_debug_acme_inc_senior_dev',
-  );
+test('naming: stamp is YYYYMMDD and HHMM', () => {
+  assert.deepEqual(stamp(new Date(2026, 7, 4, 9, 5)), { date: '20260804', time: '0905' });
 });
 
 test('naming: sanitize collapses runs and trims edges', () => {
   assert.equal(sanitize('  Node.js / React!! '), 'node_js_react');
 });
 
-test('naming: runId is MMDD_HHMM', () => {
-  assert.equal(runId(new Date(2026, 7, 4, 9, 5)), '0804_0905');
+/* ---------- CV_NAME_TEMPLATE ---------- */
+
+const NAMED = naming('Link Group', 'Full-Stack Engineer', 'en', stamp(new Date(2026, 7, 5, 9, 12)));
+
+test('template: fills every documented placeholder', () => {
+  assert.equal(
+    renderCvName('{date}_{time}_{company}_{position}_{lang}.pdf', NAMED),
+    '20260805_0912_link_group_full_stack_engineer_en.pdf',
+  );
+});
+
+test('template: static text is kept as written', () => {
+  assert.equal(
+    renderCvName('John.Dow.CV.{company}.{position}.pdf', NAMED),
+    'John.Dow.CV.link_group.full_stack_engineer.pdf',
+  );
+});
+
+test('template: _slug aliases mean the same thing', () => {
+  assert.equal(
+    renderCvName('{company_slug}-{position_slug}.pdf', NAMED),
+    renderCvName('{company}-{position}.pdf', NAMED),
+  );
+});
+
+test('template: .pdf is appended when missing', () => {
+  assert.equal(renderCvName('CV.{company}', NAMED), 'CV.link_group.pdf');
+});
+
+test('template: an unknown placeholder throws, it does not ship as text', () => {
+  assert.throws(() => renderCvName('CV.{compnay}.pdf', NAMED), /unknown placeholder/i);
+});
+
+test('template: an empty position leaves no doubled separator', () => {
+  const n = naming('Acme', null, 'en', stamp(new Date(2026, 7, 5, 9, 12)));
+  assert.equal(renderCvName('CV.{company}.{position}.pdf', n), 'CV.acme.pdf');
+});
+
+test('template: a path separator cannot escape the run folder', () => {
+  assert.ok(!renderCvName('../../{company}.pdf', NAMED).includes('/'));
+});
+
+test('template: a template that renders to nothing throws', () => {
+  const n = naming('', null, 'en', stamp());
+  assert.throws(() => renderCvName('{position}.pdf', n), /empty file name/i);
 });
 
 /* ---------- html to text ---------- */
