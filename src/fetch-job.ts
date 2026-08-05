@@ -1,5 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { logger } from './logger.ts';
+import { cleanJobText, describeClean } from './job-text.ts';
+import type { CleanReport } from './job-text.ts';
 
 /**
  * Fetches a job posting from a URL and saves the text to a file.
@@ -61,6 +63,26 @@ const viaFetch = async (url: string): Promise<string> => {
   return text;
 };
 
+/**
+ * Structural elements that never hold the job. Removed in the DOM, where the
+ * decision is reliable, before any text is extracted. The text-level cleaner in
+ * `job-text.ts` then handles what survives.
+ */
+const CHROME_SELECTORS = [
+  'nav',
+  'footer',
+  'aside',
+  'script',
+  'style',
+  'noscript',
+  'iframe',
+  'svg',
+  '[role="navigation"]',
+  '[role="banner"]',
+  '[role="contentinfo"]',
+  '[aria-label*="cookie" i]',
+];
+
 const viaBrowser = async (url: string): Promise<string> => {
   const { chromium } = await import('playwright');
   const browser = await chromium.launch();
@@ -70,7 +92,30 @@ const viaBrowser = async (url: string): Promise<string> => {
     // Job boards render late. Wait for the network to settle, but do not fail
     // the whole fetch if it never does.
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => undefined);
-    const text = htmlToText(await page.content());
+
+    // innerText beats parsing the markup: it follows what is actually rendered
+    // and leaves out anything hidden.
+    //
+    // The callback runs in the browser, so `document` is not a Node global. It
+    // is reached through globalThis with a minimal local type - adding the whole
+    // "dom" lib to tsconfig would put browser globals in scope for every server
+    // file, which is how `document` typos reach production.
+    const text = await page.evaluate((selectors: string[]) => {
+      const doc = (
+        globalThis as unknown as {
+          document?: {
+            querySelectorAll(s: string): Iterable<{ remove(): void }>;
+            body: { innerText: string };
+          };
+        }
+      ).document;
+      if (doc === undefined) return '';
+      for (const sel of selectors) {
+        for (const el of Array.from(doc.querySelectorAll(sel))) el.remove();
+      }
+      return doc.body.innerText;
+    }, CHROME_SELECTORS);
+
     if (text.length < MIN_LENGTH) throw new Error(`only ${text.length} chars of text`);
     return text;
   } finally {
@@ -78,26 +123,53 @@ const viaBrowser = async (url: string): Promise<string> => {
   }
 };
 
-/** Fetches the posting text. Tries a plain request, then a real browser. */
-export const fetchJobText = async (url: string): Promise<string> => {
+export interface FetchedJob {
+  /** Cleaned posting text. This is what the parser and the filters see. */
+  readonly text: string;
+  readonly url: string;
+  readonly method: 'request' | 'browser';
+  readonly clean: CleanReport;
+}
+
+/**
+ * Fetches a posting and strips the page furniture.
+ *
+ * Plain request first, then a real browser. Whatever arrives goes through
+ * `cleanJobText`, because a job board page is mostly not the job - navigation,
+ * a "similar offers" list of OTHER jobs, adverts and a footer. Leaving that in
+ * would let unrelated postings drag the keyword and vector scores.
+ */
+export const fetchJob = async (url: string): Promise<FetchedJob> => {
   const errors: string[] = [];
+  let raw: string | null = null;
+  let method: 'request' | 'browser' = 'request';
+
   try {
-    const text = await viaFetch(url);
-    logger.info(`fetched ${url} with a plain request (${text.length} chars)`);
-    return text;
+    raw = await viaFetch(url);
+    logger.info(`fetched ${url} with a plain request (${raw.length} chars)`);
   } catch (err: unknown) {
     errors.push(`fetch: ${err instanceof Error ? err.message : String(err)}`);
     logger.warn(`plain request failed for ${url}, trying a browser`);
+    try {
+      raw = await viaBrowser(url);
+      method = 'browser';
+      logger.info(`fetched ${url} with a browser (${raw.length} chars)`);
+    } catch (err2: unknown) {
+      errors.push(`browser: ${err2 instanceof Error ? err2.message : String(err2)}`);
+    }
   }
-  try {
-    const text = await viaBrowser(url);
-    logger.info(`fetched ${url} with a browser (${text.length} chars)`);
-    return text;
-  } catch (err: unknown) {
-    errors.push(`browser: ${err instanceof Error ? err.message : String(err)}`);
-  }
-  throw new Error(`could not fetch ${url}. Tried ${errors.join('; ')}`);
+  if (raw === null) throw new Error(`could not fetch ${url}. Tried ${errors.join('; ')}`);
+
+  const { text, report: clean } = cleanJobText(raw);
+  const line = describeClean(clean);
+  if (clean.keptRaw) logger.warn(line);
+  else logger.info(line);
+
+  return { text, url, method, clean };
 };
+
+/** Text only, for callers that do not care where it came from. */
+export const fetchJobText = async (url: string): Promise<string> => (await fetchJob(url)).text;
 
 /** Fetches a posting and writes it to `out`. Returns the text. */
 export const fetchJobToFile = async (url: string, out: string): Promise<string> => {

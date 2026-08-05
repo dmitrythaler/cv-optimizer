@@ -6,11 +6,13 @@ import {
   ERRORS_LOG,
   ITERATION_PDF,
   ITERATION_PNG,
+  JD_TXT,
   OPTIMIZATION_JSON,
   naming,
   renderCvName,
   runFolderPath,
 } from './output-path.ts';
+import type { CleanReport } from './job-text.ts';
 import type { Config } from './config.ts';
 import type { Renderer } from './render/pdf.ts';
 import type { JobPosting, OptimizationOutcome, ResumeSource } from './types.ts';
@@ -23,8 +25,38 @@ import type { JobPosting, OptimizationOutcome, ResumeSource } from './types.ts';
  * what it took to get there.
  */
 
+export interface PreparedRun {
+  readonly folder: string;
+  readonly cvName: string;
+}
+
+/**
+ * Creates the run folder and stores the job description in it, BEFORE the run
+ * starts.
+ *
+ * Order matters. The folder is named after the company and the role, so the
+ * posting has to be fetched and parsed first. Once it is, `jd.txt` is written
+ * at once - a run that dies after twenty minutes must not also lose the text it
+ * was working from.
+ */
+export const prepareRun = async (
+  outputDir: string,
+  job: JobPosting,
+  config: Config,
+  jobText: string,
+): Promise<PreparedRun> => {
+  const n = naming(job.company || 'unknown', job.title || null, job.language);
+  // Resolve the name before creating anything, so a bad template leaves no
+  // empty folder behind.
+  const cvName = renderCvName(config.cvNameTemplate, n);
+  const folder = runFolderPath(outputDir, n);
+  await mkdir(folder, { recursive: true });
+  await writeFile(join(folder, JD_TXT), `${jobText.trimEnd()}\n`, 'utf8');
+  return { folder, cvName };
+};
+
 export interface WriteRunInput {
-  readonly outputDir: string;
+  readonly prepared: PreparedRun;
   readonly outcome: OptimizationOutcome;
   readonly job: JobPosting;
   readonly source: ResumeSource;
@@ -32,6 +64,16 @@ export interface WriteRunInput {
   readonly config: Config;
   /** `Date.now()` at the start of the run, for the recorded duration. */
   readonly startedAt: number;
+  /** Where the posting came from. Recorded in optimization.json. */
+  readonly jobSource: JobSource;
+}
+
+export interface JobSource {
+  /** The URL fetched, or the path of the file read. */
+  readonly from: string;
+  readonly kind: 'url' | 'file';
+  readonly method?: 'request' | 'browser';
+  readonly clean?: CleanReport;
 }
 
 export interface WriteRunResult {
@@ -41,16 +83,8 @@ export interface WriteRunResult {
 }
 
 export const writeRun = async (input: WriteRunInput): Promise<WriteRunResult> => {
-  const { outputDir, outcome, job, source, renderer, config } = input;
-
-  const n = naming(job.company || 'unknown', job.title || null, job.language);
-  // Resolve the name BEFORE creating anything, so a bad template leaves no
-  // empty folder behind. `optimize` also checks the template at startup, so a
-  // typo costs nothing instead of costing a whole run.
-  const cvName = renderCvName(config.cvNameTemplate, n);
-
-  const folder = runFolderPath(outputDir, n);
-  await mkdir(folder, { recursive: true });
+  const { outcome, job, source, renderer, config } = input;
+  const { folder, cvName } = input.prepared;
 
   // Render each iteration once. The filed iteration's bytes are also the CV, so
   // nothing is rendered twice.
@@ -129,6 +163,9 @@ export const writeRun = async (input: WriteRunInput): Promise<WriteRunResult> =>
       language: job.language,
       requirements: job.requirements,
       keywords: job.keywords,
+      // Where the text in jd.txt came from, and what the cleaner removed.
+      source: input.jobSource,
+      file: JD_TXT,
     },
     source: { path: source.path, chars: source.text.length, instructions: source.instructions },
     settings: {

@@ -156,14 +156,25 @@ const main = async (argv: string[]): Promise<number> => {
       }
 
       const isUrl = /^https?:\/\//i.test(jdPath);
-      const [cv, jd] = await Promise.all([
+      const [cv, fetched] = await Promise.all([
         readFile(cvPath, 'utf8'),
         isUrl
-          ? import('./fetch-job.ts').then((m) => m.fetchJobText(jdPath))
-          : readFile(jdPath, 'utf8'),
+          ? import('./fetch-job.ts').then((m) => m.fetchJob(jdPath))
+          : readFile(jdPath, 'utf8').then((text) => ({ text, url: jdPath })),
       ]);
+      const jd = fetched.text;
+      const jobSource =
+        'method' in fetched
+          ? {
+              from: fetched.url,
+              kind: 'url' as const,
+              method: fetched.method,
+              clean: fetched.clean,
+            }
+          : { from: jdPath, kind: 'file' as const };
+
       logger.info(`cv: ${cvPath} (${cv.length} chars)`);
-      logger.info(`jd: ${jdPath} (${jd.length} chars${isUrl ? ', fetched' : ''})`);
+      logger.info(`jd: ${jdPath} (${jd.length} chars${isUrl ? ', fetched and cleaned' : ''})`);
       logger.info(`models: pro=${config.models.pro} flash=${config.models.flash}`);
       logger.info(`vision: ${config.models.vision}`);
       logger.info(`embeddings: ${config.embedding.model} (local, worker thread)`);
@@ -199,6 +210,12 @@ const main = async (argv: string[]): Promise<number> => {
         const job = await parseJobPosting(jd, providers.flash);
         const source = { text: cv, path: cvPath, instructions: values.instructions ?? null };
 
+        // Create the folder and store jd.txt NOW, not at the end. A run that
+        // dies after twenty minutes must not also lose the posting it used.
+        const { prepareRun, writeRun } = await import('./run-output.ts');
+        const prepared = await prepareRun(values.out ?? 'output', job, runConfig, jd);
+        logger.info(`folder: ${prepared.folder}`);
+
         const outcome = await optimize(source, job, {
           generate: (i) => generate(i, { renderer, config: runConfig }),
           renderer,
@@ -217,15 +234,15 @@ const main = async (argv: string[]): Promise<number> => {
           }
         }
 
-        const { writeRun } = await import('./run-output.ts');
         const { folder, cvFile, pageCount } = await writeRun({
-          outputDir: values.out ?? 'output',
+          prepared,
           outcome,
           job,
           source,
           renderer,
           config: runConfig,
           startedAt,
+          jobSource,
         });
 
         logger.info(`iterations: ${outcome.iterations.length}`);

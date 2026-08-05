@@ -123,6 +123,8 @@ export const renderCvName = (template: string, n: RunNaming): string => {
   return name;
 };
 
+/** The job description the run actually worked from, after cleaning. */
+export const JD_TXT = 'jd.txt';
 export const ITERATION_PDF = (n: number): string => `iteration_${n}.pdf`;
 export const ITERATION_PNG = (n: number): string => `iteration_${n}.png`;
 export const OPTIMIZATION_JSON = 'optimization.json';

@@ -1,0 +1,610 @@
+Full-Stack Engineer - Link Group
+
+Show menu
+
+Hide menu
+Offers
+Salaries
+Calculator
+Companies
+Geek
+Favorites
+History
+Viewed
+Saved
+Matched
+Chats
+More
+
+Currency
+
+
+
+#1 Job Board for tech industry in Europe
+
+​
+​
+
+
+​
+​
+
+
+​
+
+
+Search
+
+
+
+
+
+
+Search: Job title, company, keyword
+
+Location
+
+More filters
+
+
+
+
+
+
+Full-Stack Engineer
+25,52 - 29,93 EUR Net per hour - B2B
+
+
+
+
+Save
+Apply
+
+
+All offers
+
+Białystok
+
+JavaScript
+
+Full-Stack Engineer
+
+
+JavaScript
+
+Full-Stack Engineer
+JavaScript
+
+- , Białystok +9 Locations
+Link Group
+
+
+
+Full-time
+
+
+B2B
+
+
+Senior
+
+
+Remote
+
+25,52 - 29,93 EUR Net per hour - B2B
+
+Job description
+Senior Fullstack Engineer (React & Node.js)
+
+About the Role
+We are looking for a Senior Fullstack Engineer to join a product team building modern, scalable web applications and digital experiences.
+You will work across the entire application stack, from user-facing interfaces to backend services and integrations. The role has a strong focus on frontend engineering while also involving backend development, API design, and data management.
+You will collaborate closely with product, design, and engineering teams to deliver high-quality, accessible, and performant applications.
+
+Responsibilities
+Develop and maintain modern web applications using React, Node.js, and TypeScript.
+
+Build scalable and reusable UI components integrated with a design system.
+
+Develop and maintain backend services and APIs using Node.js and Fastify.
+
+Integrate applications with CMS platforms and third-party services.
+
+Work with PostgreSQL and Redis to support application functionality and performance.
+
+Write and maintain automated tests, including unit and end-to-end tests.
+
+Ensure high standards of accessibility, performance, and code quality.
+
+Participate in architectural discussions and contribute to engineering best practices.
+
+
+Requirements
+Strong commercial experience in fullstack development using React and Node.js.
+
+Solid experience with modern frontend technologies, including React Router and TanStack Query.
+
+Experience integrating with Headless CMS platforms, preferably Contentful.
+
+Good understanding of API design and backend development principles.
+
+Experience with PostgreSQL and Redis.
+
+Experience with automated testing frameworks such as Vitest and Playwright.
+
+Strong understanding of accessibility standards (WCAG) and performance optimisation.
+
+Ability to work across the entire software development lifecycle in a product-oriented environment.
+
+
+Nice to Have
+Experience with authentication and identity platforms such as SAP Gigya.
+
+Experience integrating Salesforce products or loyalty platforms.
+
+Experience in highly scalable, customer-facing digital products.
+
+Experience working in agile, cross-functional product teams.
+
+
+
+
+Tech stack
+React
+
+
+
+
+
+advanced
+
+Node.js
+
+
+
+
+
+advanced
+
+PostgreSQL
+
+
+
+
+
+advanced
+
+
+
+
+Office location
+
+Białystok
+
+
+
+Warszawa
+
+
+
+Olsztyn
+
+
+
+Gdańsk
+
+
+
+Szczecin
+
+
+
+Wrocław
+
+
+
+Kraków
+
+
+
+Lublin
+
+
+
+Łódź
+
+
+
+Poznań
+
+
+
+
+
+
+
+Full-Stack Engineer
+25,52 - 29,93 EUR Net per hour - B2B
+
+
+
+
+Save
+Apply
+
+
+Summary of the offer
+
+Save
+
+Full-Stack Engineer
+- , Białystok
+Link Group
+
+25,52 - 29,93 EUR Net per hour - B2B
+
+Apply
+
+By applying, I consent to the processing of my personal data for the purpose of conducting the recruitment process. Treść obowiązku informacyjnego z art. 13 RODO dla kandydatów biorących udział w rekrutacji
+Administratorem Pani/Pana danych osobowych... More This site is protected by reCAPTCHA and the Google  Privacy Policy  and  Terms of Service apply.
+
+Check similar offers
+
+
+Cloudfide
+
+
+Warszawa
+, +4 Locations
+
+
+
+Remote
+Remote
+
+Lead Fullstack Engineer (Node.js/React)
+New
+
+Undisclosed Salary
+
+
+
+
+Node.js
+TypeScript
+Express.js
+React
+MongoDB
+Azure
+Azure DevOps
+
+
+Senior Senior B2B B2B B2B Contract B2B Contract
+New
+
+
+Inuits
+
+
+Kraków
+, +4 Locations
+
+
+
+Remote
+Remote
+
+Staff Full Stack Engineer
+New
+
+41,74 - 46,37 EUR/h
+
+
+
+
+JavaScript
+TypeScript
+Node.js
+LLM
+PostgreSQL
+Redis
+
+
+Senior Senior B2B B2B Full-time Full-time
+New
+
+
+AURA
+
+
+Poland (Remote)
+, +1 Location
+
+
+
+Remote
+Remote
+
+Senior Full Stack Engineer
+New
+
+Undisclosed Salary
+
+
+
+
+React
+Redux
+TypeScript
+React Native
+HTML
+CSS
+SCSS
+GraphQL
+Node.js
+
+
+Senior Senior B2B B2B Full-time Full-time
+New
+
+
+TechTree
+
+
+Warszawa
+, +1 Location
+
+
+
+Remote
+Remote
+
+Senior Full Stack Engineer
+New
+
+60 000 - 80 000 EUR/year
+
+
+
+
+Symfony
+
+
+Senior Senior B2B B2B Full-time Full-time
+New
+
+
+Winged IT
+
+
+Poland (Remote)
+
+
+Remote
+Remote
+
+Senior Full Stack AI Engineer
+New
+
+5 576,42 - 9 008,07 EUR/month
+
+
+
+
+JavaScript
+React
+Node.js
+AWS
+MongoDB
+
+
+Senior Senior B2B B2B Full-time Full-time
+New
+
+
+ADVERTISEMENT: Recommended by Just Join IT
+
+Salary 25,52 - 29,93 EUR
+Net per hour - B2B
+Applied -
+
+Apply
+18 day left (until 23.08.2026)
+
+
+Save
+Share
+
+
+
+Applied -
+Check similar offers
+Cloudfide
+
+
+Warszawa
+, +4 Locations
+
+
+
+Remote
+Remote
+
+Lead Fullstack Engineer (Node.js/React)
+New
+
+Undisclosed Salary
+
+
+
+
+Node.js
+TypeScript
+Express.js
+React
+MongoDB
+Azure
+Azure DevOps
+
+
+Senior Senior B2B B2B B2B Contract B2B Contract
+New
+
+
+Inuits
+
+
+Kraków
+, +4 Locations
+
+
+
+Remote
+Remote
+
+Staff Full Stack Engineer
+New
+
+41,74 - 46,37 EUR/h
+
+
+
+
+JavaScript
+TypeScript
+Node.js
+LLM
+PostgreSQL
+Redis
+
+
+Senior Senior B2B B2B Full-time Full-time
+New
+
+
+AURA
+
+
+Poland (Remote)
+, +1 Location
+
+
+
+Remote
+Remote
+
+Senior Full Stack Engineer
+New
+
+Undisclosed Salary
+
+
+
+
+React
+Redux
+TypeScript
+React Native
+HTML
+CSS
+SCSS
+GraphQL
+Node.js
+
+
+Senior Senior B2B B2B Full-time Full-time
+New
+
+
+TechTree
+
+
+Warszawa
+, +1 Location
+
+
+
+Remote
+Remote
+
+Senior Full Stack Engineer
+New
+
+60 000 - 80 000 EUR/year
+
+
+
+
+Symfony
+
+
+Senior Senior B2B B2B Full-time Full-time
+New
+
+
+Winged IT
+
+
+Poland (Remote)
+
+
+Remote
+Remote
+
+Senior Full Stack AI Engineer
+New
+
+5 576,42 - 9 008,07 EUR/month
+
+
+
+
+JavaScript
+React
+Node.js
+AWS
+MongoDB
+
+
+Senior Senior B2B B2B Full-time Full-time
+New
+
+
+ADVERTISEMENT: Recommended by Just Join IT
+
+All offers
+
+Białystok
+
+JavaScript
+
+Full-Stack Engineer
+
+
+
+
+
+Job offers
+Salary calculator
+Company Profiles
+Just Geek IT Blog
+Employer Panel
+Candidate Profile
+rocketjobs.pl
+About Us
+Career
+
+
+
+
+
+
+© 2026 Just Join IT sp. z o.o. Help Terms Privacy policy Cookie settings
+
+
+
+
+
+Add offer
+Log in
+Log in

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { writeRun } from '../src/run-output.ts';
+import { prepareRun, writeRun } from '../src/run-output.ts';
 import { loadConfig } from '../src/config.ts';
 import { logger } from '../src/logger.ts';
 import type { Renderer } from '../src/render/pdf.ts';
@@ -67,6 +67,13 @@ const JOB: JobPosting = {
 
 const SOURCE = { text: 'cv text', path: '../cv.md', instructions: null };
 
+const JD = 'Full-Stack Engineer at Link Group. React, Node.js, PostgreSQL.';
+const JOB_SOURCE = {
+  from: 'https://example.test/job',
+  kind: 'url' as const,
+  method: 'request' as const,
+};
+
 const write = async (
   outcome: OptimizationOutcome,
   opts: { renderFails?: boolean; template?: string } = {},
@@ -74,14 +81,16 @@ const write = async (
   const dir = await mkdtemp(join(tmpdir(), 'cvopt-'));
   const base = loadConfig();
   const config = { ...base, cvNameTemplate: opts.template ?? 'CV.{company}.{position}.pdf' };
+  const prepared = await prepareRun(dir, JOB, config, JD);
   const { folder } = await writeRun({
-    outputDir: dir,
+    prepared,
     outcome,
     job: JOB,
     source: SOURCE,
     renderer: fakeRenderer(opts.renderFails ?? false),
     config,
     startedAt: Date.now() - 1000,
+    jobSource: JOB_SOURCE,
   });
   return { dir, folder, files: (await readdir(folder)).sort() };
 };
@@ -93,6 +102,7 @@ test('run folder: a passing run writes no errors.log', async () => {
     'CV.link_group.full_stack_engineer.pdf',
     'iteration_1.pdf',
     'iteration_1.png',
+    'jd.txt',
     'optimization.json',
   ]);
 });
@@ -163,18 +173,30 @@ test('run folder: an unknown placeholder stops the run before anything is writte
   logger.resetProblems();
   const dir = await mkdtemp(join(tmpdir(), 'cvopt-'));
   const config = { ...loadConfig(), cvNameTemplate: 'CV.{compnay}.pdf' };
-  await assert.rejects(
-    writeRun({
-      outputDir: dir,
-      outcome: outcomeOf([iteration(1, true)]),
-      job: JOB,
-      source: SOURCE,
-      renderer: fakeRenderer(),
-      config,
-      startedAt: Date.now(),
-    }),
-    /unknown placeholder/i,
-  );
+  await assert.rejects(prepareRun(dir, JOB, config, JD), /unknown placeholder/i);
   // Not even an empty folder: the name is resolved before anything is created.
   assert.deepEqual(await readdir(dir), []);
+});
+
+test('jd.txt: the posting is stored before the run, not after', async () => {
+  logger.resetProblems();
+  const dir = await mkdtemp(join(tmpdir(), 'cvopt-'));
+  const config = loadConfig();
+  const { folder } = await prepareRun(dir, JOB, config, JD);
+
+  // Written by prepareRun alone. No optimize, no writeRun, no CV yet.
+  assert.deepEqual((await readdir(folder)).sort(), ['jd.txt']);
+  assert.equal(await readFile(join(folder, 'jd.txt'), 'utf8'), `${JD}\n`);
+});
+
+test('optimization.json: records where the posting came from', async () => {
+  logger.resetProblems();
+  const { folder } = await write(outcomeOf([iteration(1, true)]));
+  const j = JSON.parse(await readFile(join(folder, 'optimization.json'), 'utf8')) as {
+    job: { file: string; source: { from: string; kind: string; method: string } };
+  };
+  assert.equal(j.job.file, 'jd.txt');
+  assert.equal(j.job.source.kind, 'url');
+  assert.equal(j.job.source.from, 'https://example.test/job');
+  assert.equal(j.job.source.method, 'request');
 });

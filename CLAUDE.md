@@ -67,12 +67,25 @@ One run writes one folder:
 
 ```
 output/20260805-0912-link_group-full_stack_engineer/
+  jd.txt                the posting, fetched and cleaned
   Dmitry.Thaler.CV.link_group.full_stack_engineer.pdf   <- CV_NAME_TEMPLATE
   iteration_1.pdf   iteration_1.png
   iteration_2.pdf   iteration_2.png
   optimization.json     every filter score, per iteration
   errors.log            only when something went wrong
 ```
+
+`optimize` takes a URL in place of a file. It fetches the posting itself, and
+`jd.txt` is written by `prepareRun` BEFORE the loop starts, so a run that dies
+twenty minutes in does not also lose the text it was working from.
+
+`job-text.ts` strips the page furniture. Measured on a real justjoin.it page:
+609 lines in, the posting was lines 96-250, and cleaning removed 54%. It cuts
+the trailer at a "similar offers" heading and drops navigation and legal
+boilerplate line by line. It keeps the head of the page, which holds the title,
+company and salary the parser needs. If cleaning would leave too little, it
+hands back the raw text and says so rather than passing an empty JD down the
+pipeline.
 
 The folder name is fixed and holds no personal name. Only the CV file name is
 templated, because that is the name a recruiter sees once the file leaves the
