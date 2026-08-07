@@ -1,5 +1,3 @@
-import { join } from 'node:path';
-
 /**
  * Output naming.
  *
@@ -63,30 +61,10 @@ export const naming = (
   lang: lang ?? 'en',
 });
 
-/** `{date}-{time}-{company_slug}-{position_slug}` */
-export const runFolderName = (n: RunNaming): string => {
-  const parts = [n.date, n.time, n.company];
-  if (n.position) parts.push(n.position);
-  return parts.join('-');
-};
+/** The job description the run actually worked from, after cleaning. */
 
-export const runFolderPath = (outputDir: string, n: RunNaming): string =>
-  join(outputDir, runFolderName(n));
-
-/**
- * Placeholders CV_NAME_TEMPLATE accepts. `*_slug` are aliases, because a
- * company or a position in a file name is always a slug - there is no unslugged
- * form to choose instead.
- */
 const VARS = ['date', 'time', 'company', 'company_slug', 'position', 'position_slug', 'lang'];
 
-/**
- * Fills CV_NAME_TEMPLATE.
- *
- * An unknown placeholder THROWS. A silently-unreplaced `{compnay}` would ship a
- * file literally called `CV.{compnay}.pdf`, and nobody would notice until a
- * recruiter did.
- */
 export const renderCvName = (template: string, n: RunNaming): string => {
   const value: Record<string, string> = {
     date: n.date,
@@ -97,7 +75,6 @@ export const renderCvName = (template: string, n: RunNaming): string => {
     position_slug: n.position ?? '',
     lang: n.lang,
   };
-
   const unknown = [...template.matchAll(/\{([^}]*)\}/g)]
     .map((m) => m[1] ?? '')
     .filter((k) => !VARS.includes(k));
@@ -107,15 +84,9 @@ export const renderCvName = (template: string, n: RunNaming): string => {
         `Known: ${VARS.map((v) => `{${v}}`).join(', ')}`,
     );
   }
-
   let name = template.replace(/\{([^}]*)\}/g, (_, k: string) => value[k] ?? '');
-
-  // A template with an empty {position} leaves a doubled separator behind.
   name = name.replace(/([.\-_ ])\1+/g, '$1').replace(/[.\-_ ]+(\.pdf)$/i, '$1');
-
-  // Never let a template escape its folder.
   name = name.replace(/[/\\\0]/g, '_').trim();
-
   if (name === '' || name.toLowerCase() === '.pdf') {
     throw new Error(`CV_NAME_TEMPLATE ${JSON.stringify(template)} produced an empty file name`);
   }
@@ -123,8 +94,6 @@ export const renderCvName = (template: string, n: RunNaming): string => {
   return name;
 };
 
-/** The job description the run actually worked from, after cleaning. */
-export const JD_TXT = 'jd.txt';
 export const ITERATION_PDF = (n: number): string => `iteration_${n}.pdf`;
 export const ITERATION_PNG = (n: number): string => `iteration_${n}.png`;
 export const OPTIMIZATION_JSON = 'optimization.json';

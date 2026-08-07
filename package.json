@@ -1,6 +1,6 @@
 {
   "name": "cv-optimizer",
-  "version": "0.0.1",
+  "version": "0.5.0",
   "description": "Tailors a CV to a job description, then grades its own output until it passes.",
   "keywords": [
     "ats",
@@ -28,9 +28,9 @@
   "scripts": {
     "build": "tsc -p .",
     "typecheck": "tsc --noEmit",
-    "start": "node src/cli.ts",
-    "model:pull": "node src/cli.ts pull-model",
-    "dev": "node --watch src/cli.ts",
+    "start": "node --env-file=.env dist/cli.js",
+    "model:pull": "node --env-file=.env dist/cli.js pull-model",
+    "dev": "node --env-file=.env --watch src/cli.ts",
     "test": "node --test test/*.test.ts",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check ."

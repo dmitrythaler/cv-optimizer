@@ -22,7 +22,11 @@ export const localEmbeddings = (config: Config): EmbeddingProvider => {
 
   const start = (): Worker => {
     if (worker !== null) return worker;
-    const w = new Worker(new URL('./embedding.worker.ts', import.meta.url), {
+    // tsc rewrites .ts to .js in import specifiers, but NOT inside
+    // new URL() calls. Detect at runtime so the worker loads from both
+    // `node src/cli.ts` (source) and `node dist/cli.js` (build).
+    const ext = import.meta.url.endsWith('.ts') ? '.ts' : '.js';
+    const w = new Worker(new URL(`./embedding.worker${ext}`, import.meta.url), {
       workerData: { model, dimensions: dims, maxInputTokens },
     });
     w.on('message', (res: WorkerResponse) => {

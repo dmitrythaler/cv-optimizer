@@ -6,11 +6,9 @@ import {
   ERRORS_LOG,
   ITERATION_PDF,
   ITERATION_PNG,
-  JD_TXT,
   OPTIMIZATION_JSON,
   naming,
   renderCvName,
-  runFolderPath,
 } from './output-path.ts';
 import type { CleanReport } from './job-text.ts';
 import type { Config } from './config.ts';
@@ -43,16 +41,11 @@ export const prepareRun = async (
   outputDir: string,
   job: JobPosting,
   config: Config,
-  jobText: string,
 ): Promise<PreparedRun> => {
   const n = naming(job.company || 'unknown', job.title || null, job.language);
-  // Resolve the name before creating anything, so a bad template leaves no
-  // empty folder behind.
   const cvName = renderCvName(config.cvNameTemplate, n);
-  const folder = runFolderPath(outputDir, n);
-  await mkdir(folder, { recursive: true });
-  await writeFile(join(folder, JD_TXT), `${jobText.trimEnd()}\n`, 'utf8');
-  return { folder, cvName };
+  await mkdir(outputDir, { recursive: true });
+  return { folder: outputDir, cvName };
 };
 
 export interface WriteRunInput {
@@ -167,7 +160,6 @@ export const writeRun = async (input: WriteRunInput): Promise<WriteRunResult> =>
       keywords: job.keywords,
       // Where the text in jd.txt came from, and what the cleaner removed.
       source: input.jobSource,
-      file: JD_TXT,
     },
     source: { path: source.path, chars: source.text.length, instructions: source.instructions },
     settings: {

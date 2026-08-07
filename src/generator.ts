@@ -70,7 +70,7 @@ export const generate = async (
   // The generator writes the CV, so it uses the pro model.
   const { model } = resolveModel(config.models.pro);
 
-  const system = `${buildSystemPrompt({ noShame: config.noShame })}\n\n${currentDateLine()}`;
+  const system = `${buildSystemPrompt({ noShame: config.noShame, targetChars: config.resume.targetChars, targetWords: config.resume.targetWords })}\n\n${currentDateLine()}`;
 
   const estimate = input.lastAttempt === null ? null : estimateLength(input.lastAttempt);
   const prompt = buildUserPrompt({
@@ -119,8 +119,8 @@ export const generate = async (
           state.pageCount = out.pageCount;
           state.overflowIssue = overflow;
 
-          logger.debug(
-            `check_content_length: ${out.pageCount} pages, ${est.chars} chars, fits=${state.fits}`,
+          logger.info(
+            `  check_content_length: ${out.pageCount} pages, ${est.chars} chars, fits=${state.fits}`,
           );
 
           return {
@@ -217,7 +217,7 @@ export const generate = async (
         : `check_content_length returned page_count=${state.pageCount} — exceeds the 2-page limit. ` +
           'Trim content and call check_content_length again until fits_page_limit=True, then return.';
 
-    logger.warn(`generator: attempt ${attempt} rejected - ${retry.split('.')[0] ?? ''}`);
+    logger.info(`  attempt ${attempt} rejected: ${retry.split('.')[0] ?? ''}`);
     messages.push({ role: 'assistant', content: out.html });
     messages.push({ role: 'user', content: retry });
   }

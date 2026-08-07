@@ -8,8 +8,9 @@ passes or runs out of iterations.
 
 ## Status
 
-**Backbone only.** The structure, types and CLI shell exist; the generator,
-filters, providers and renderer are stubs that throw. Nothing calls a model yet.
+**Live.** The generator calls DeepSeek (pro and flash) and Gemini (vision).
+Filters grade every iteration and feed failures back. Embeddings run locally
+through ONNX in a worker thread. The tool is operational.
 
 ## Stack
 

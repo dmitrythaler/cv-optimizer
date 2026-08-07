@@ -85,6 +85,7 @@ export const optimize = async (
 
     let resume: OptimizedResume;
     try {
+      logger.info('  generating CV …');
       resume = await generate({
         source,
         job,
@@ -121,6 +122,7 @@ export const optimize = async (
 
     // Grade the RENDERED document, not the HTML. What an ATS pulls out of the
     // PDF is what matters, and it differs from what the markup implies.
+    logger.info('  rendering PDF …');
     try {
       const out = await renderer.render(resume.html);
       resume = {

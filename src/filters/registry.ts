@@ -55,8 +55,12 @@ export const runAll = async (
   if (opts.sequential === true) {
     const out: FilterResult[] = [];
     for (const f of registry) {
+      logger.info(`  running ${f.name} …`);
       try {
         const r = await f.evaluate(ctx);
+        logger.info(
+          `  ${f.name}: ${Number.isNaN(r.score) ? 'skipped' : r.score.toFixed(2)}/${r.threshold.toFixed(2)}${r.passed ? ' PASS' : ' FAIL'}`,
+        );
         out.push(r);
         if (!r.passed) break;
       } catch (err: unknown) {
@@ -68,7 +72,28 @@ export const runAll = async (
     return out;
   }
 
-  const settled = await Promise.allSettled(registry.map((f) => f.evaluate(ctx)));
+  logger.info(`  grading with ${registry.length} filters …`);
+  const settled = await Promise.allSettled(
+    registry.map(async (f) => {
+      logger.info(`    ${f.name} …`);
+      try {
+        const r = await f.evaluate(ctx);
+        const label = Number.isNaN(r.score)
+          ? 'SKIPPED'
+          : `${r.score.toFixed(2)}/${r.threshold.toFixed(2)}${r.passed ? ' PASS' : ' FAIL'}`;
+        if (r.passed) {
+          logger.info(`    ${f.name}: ${label}`);
+        } else {
+          logger.warn(`    ${f.name}: ${label}`);
+          for (const issue of r.issues) logger.warn(`      ${issue}`);
+        }
+        return r;
+      } catch (err: unknown) {
+        logger.error(`    ${f.name}: exception — ${String(err)}`);
+        throw err;
+      }
+    }),
+  );
   return settled.map((s, i) => {
     const f = registry[i] as Filter;
     if (s.status === 'fulfilled') return s.value;

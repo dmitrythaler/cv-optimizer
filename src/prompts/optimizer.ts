@@ -51,7 +51,7 @@ CONTENT RULES:
 {content_rules}
 
 CONTENT BUDGET:
-- Target: ~500-1000 words, ~4000-8000 characters (higher end is fine for candidates with 7+ years / many roles; these are rough estimates, actual fit depends on formatting)
+- Target: ~{target_words} words, ~{target_chars} characters (higher end is fine for candidates with 7+ years / many roles; these are rough estimates, actual fit depends on formatting)
 - The ONLY authoritative check is page_count (and page-2 overflow) from check_content_length
 
 TOOLS:
@@ -125,11 +125,14 @@ STRICT RULES - NEVER VIOLATE:
 `;
 
 /** Builds the system prompt from the two slots. */
-export const buildSystemPrompt = (opts: { noShame: boolean }): string =>
+export const buildSystemPrompt = (opts: { noShame: boolean; targetChars: number; targetWords: number }): string =>
   OPTIMIZER_BASE.replace(
     '{content_rules}',
     opts.noShame ? OPTIMIZER_LENIENT_RULES : OPTIMIZER_STRICT_RULES,
-  ).replace('{resume_guide}', loadResumeGuide());
+  )
+    .replace('{resume_guide}', loadResumeGuide())
+    .replace('{target_chars}', String(opts.targetChars))
+    .replace('{target_words}', String(opts.targetWords));
 
 /** The date line, appended to the system prompt. */
 export const currentDateLine = (now: Date = new Date()): string =>

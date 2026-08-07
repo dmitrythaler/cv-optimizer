@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import process from 'node:process';
 import { loadConfig } from './config.ts';
 import { logger } from './logger.ts';
@@ -103,14 +103,12 @@ const main = async (argv: string[]): Promise<number> => {
       const { parseJobPosting } = await import('./job.ts');
       const { aiSdkProviders } = await import('./providers/ai-sdk.ts');
       const { prepareRun } = await import('./run-output.ts');
-      const { JD_TXT } = await import('./output-path.ts');
 
       const fetched = await fetchJob(url);
-      // One cheap flash call. The folder is named after the company and the
-      // role, so the posting has to be parsed before there is a folder.
       const job = await parseJobPosting(fetched.text, aiSdkProviders(config.models).flash);
-      const { folder } = await prepareRun(values.out ?? 'output', job, config, fetched.text);
-      logger.info(`${fetched.text.length} chars written to ${join(folder, JD_TXT)}`);
+      const { folder } = await prepareRun(values.out ?? '.', job, config);
+      await writeFile(join(folder, 'jd.txt'), `${fetched.text.trimEnd()}\n`, 'utf8');
+      logger.info(`${fetched.text.length} chars written to ${join(folder, 'jd.txt')}`);
       return 0;
     }
 
@@ -169,6 +167,7 @@ const main = async (argv: string[]): Promise<number> => {
       }
 
       const isUrl = /^https?:\/\//i.test(jdPath);
+      const baseOut = values.out ?? (isUrl ? '.' : dirname(jdPath));
       const [cv, fetched] = await Promise.all([
         readFile(cvPath, 'utf8'),
         isUrl
@@ -227,7 +226,12 @@ const main = async (argv: string[]): Promise<number> => {
         // Create the folder and store jd.txt NOW, not at the end. A run that
         // dies after twenty minutes must not also lose the posting it used.
         const { prepareRun, writeRun } = await import('./run-output.ts');
-        const prepared = await prepareRun(values.out ?? 'output', job, runConfig, jd);
+        const prepared = await prepareRun(baseOut, job, runConfig);
+        // Persist the JD only when it came from a URL — for file inputs it
+        // already sits on disk under the name the operator chose.
+        if (isUrl) {
+          await writeFile(join(prepared.folder, 'jd.txt'), `${jd.trimEnd()}\n`, 'utf8');
+        }
         logger.info(`folder: ${prepared.folder}`);
 
         const outcome = await optimize(source, job, {
