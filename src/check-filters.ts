@@ -86,7 +86,7 @@ export const checkFilters = async (
   try {
     const ctx: FilterContext = {
       resume: {
-        html: cv,
+        markdown: cv,
         pdfText: cv,
         pngPage1: null,
         pageCount: null,

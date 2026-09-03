@@ -37,7 +37,7 @@ const trio = (p: ChatProvider): ChatProviders => ({ pro: p, flash: p, vision: p 
 
 const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterContext => ({
   resume: {
-    html: '<p>html</p>',
+    markdown: '<p>html</p>',
     pdfText: 'RESUME TEXT',
     pngPage1: null,
     pageCount: 1,
@@ -162,7 +162,7 @@ test('ai: the CV text is sent, and the system prompt carries the date', async ()
   assert.ok(seen[0]?.system?.includes(currentDateLine()));
 });
 
-test('ai: html is used when there is no pdfText', async () => {
+test('ai: markdown is used when there is no pdfText', async () => {
   const { provider, seen } = fakeChat({
     is_ai_generated: false,
     ai_probability: 0.1,
@@ -171,7 +171,7 @@ test('ai: html is used when there is no pdfText', async () => {
   await aiGenerated.evaluate(
     ctx(provider, {
       resume: {
-        html: '<p>html</p>',
+        markdown: '<p>html</p>',
         pdfText: null,
         pngPage1: null,
         pageCount: 1,

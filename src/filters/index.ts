@@ -24,7 +24,7 @@ register(layoutChecker);
 export { register, all, runAll } from './registry.ts';
 export { skipped } from './base.ts';
 export { contentLength } from './content-length.ts';
-export { dataValidator, validateHtml } from './data-validator.ts';
+export { dataValidator, validateMarkdown } from './data-validator.ts';
 export { hallucination, hallucinationResult } from './hallucination.ts';
 export { keywordMatcher, checkKeywords } from './keyword-matcher.ts';
 export { atsChecker, atsResult, computeAtsScore, SCORE_WEIGHTS } from './ats-checker.ts';

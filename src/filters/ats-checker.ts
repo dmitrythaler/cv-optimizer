@@ -61,7 +61,7 @@ export const atsChecker: Filter = {
       jobDescription: job.description || job.rawText,
       jobRequirements: job.requirements,
       jobKeywords: job.keywords,
-      resumeText: resume.pdfText || resume.html || '(no content)',
+      resumeText: resume.pdfText || resume.markdown || '(no content)',
       languageCode: targetLanguage,
     });
 

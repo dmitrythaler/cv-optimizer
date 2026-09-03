@@ -16,11 +16,11 @@ import type { FilterResult, Iteration, JobPosting, OptimizationOutcome } from '.
  */
 
 const fakeRenderer = (fail = false): Renderer => ({
-  render: (html: string) =>
+  render: (markdown: string) =>
     fail
       ? Promise.reject(new Error('render exploded'))
       : Promise.resolve({
-          pdf: new Uint8Array([1, 2, 3, html.length]),
+          pdf: new Uint8Array([1, 2, 3, markdown.length]),
           text: 'text',
           pngPage1: new Uint8Array([9, 9]),
           pageCount: 2,
@@ -38,9 +38,9 @@ const result = (name: string, passed: boolean): FilterResult => ({
   suggestions: passed ? [] : ['try harder'],
 });
 
-const iteration = (n: number, passed: boolean, html = '<p>cv</p>'): Iteration => ({
+const iteration = (n: number, passed: boolean, markdown = '::: {.summary}\ncv\n:::'): Iteration => ({
   n,
-  resume: { html, pdfText: 'text', pngPage1: null, pageCount: 2, pageTexts: null },
+  resume: { markdown, pdfText: 'text', pngPage1: null, pageCount: 2, pageTexts: null },
   results: [result('KeywordMatcher', true), result('AtsChecker', passed)],
   passed,
 });

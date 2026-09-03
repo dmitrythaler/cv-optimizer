@@ -4,41 +4,68 @@ import type { FilterResult } from '../types.ts';
 const NAME = 'DataValidator';
 const THRESHOLD = 1.0;
 
-const HAS_HEADER = /<header[^>]*class="header"/;
-const HAS_NAME = /<h1[^>]*class="name"[^>]*>/;
-const HAS_SECTION = /<section[^>]*class="section"/;
-const HAS_SCRIPT = /<script/i;
+/**
+ * The pandoc fences the stylesheet needs. A missing fence does NOT make pandoc
+ * fail: it renders the text unstyled, so the CV silently comes out in a default
+ * face with no layout. That is why these are checked as data, not trusted.
+ */
+const HAS_NAME = /\[[^\]]+\]\{\.cv-name\}/;
+const HAS_CONTACTS = /^:::\s*\{?\.contacts\}?\s*$/m;
+const HAS_SUMMARY = /^:::\s*\{?\.summary\}?\s*$/m;
+const HAS_SECTION = /^##\s+\S/m;
+const HAS_HTML_TAG = /<(script|html|head|body|div|section|header)\b/i;
+
+/** Opening fences carry a class; a bare ":::" closes one. */
+const countFences = (md: string): { open: number; close: number } => {
+	let open = 0;
+	let close = 0;
+	for (const line of md.split('\n')) {
+		const t = line.trim();
+		if (!t.startsWith(':::')) continue;
+		if (/^:::+\s*$/.test(t)) close++;
+		else open++;
+	}
+	return { open, close };
+};
 
 /**
- * Structural checks on the generated HTML.
+ * Structural checks on the generated pandoc markdown.
  *
- * Rules
- * and message strings are identical, including the else-if: when the header is
- * missing entirely the name is NOT separately reported.
- *
- * NOT ported: the `validate_resume_data()` branch, which validates a structured
- * ResumeData object (contact fields, experience/education entries). This build
- * has no structured-resume mode - `OptimizedResume` carries HTML only - so
- * there is nothing for it to check. See docs/design-notes.md.
+ * Replaced the HTML checks on 2026-09-03, when the renderer became
+ * pandoc + WeasyPrint. The old rules looked for <header class="header"> and
+ * friends, which no longer exist in the output at all - left in place they
+ * would have failed every CV.
  */
-export const validateHtml = (html: string): string[] => {
-  const issues: string[] = [];
+export const validateMarkdown = (markdown: string): string[] => {
+	const issues: string[] = [];
 
-  if (!HAS_HEADER.test(html)) {
-    issues.push("Missing header element with class='header'");
-  } else if (!HAS_NAME.test(html)) {
-    issues.push("Missing name (h1 with class='name') in header");
-  }
+	if (!HAS_NAME.test(markdown)) {
+		issues.push('Missing the name span, [Name]{.cv-name}');
+	}
+	if (!HAS_CONTACTS.test(markdown)) {
+		issues.push('Missing the ::: {.contacts} block');
+	}
+	if (!HAS_SUMMARY.test(markdown)) {
+		issues.push('Missing the ::: {.summary} block');
+	}
+	if (!HAS_SECTION.test(markdown)) {
+		issues.push('Resume has no content sections (no "## " heading)');
+	}
 
-  if (!HAS_SECTION.test(html)) {
-    issues.push('Resume has no content sections');
-  }
+	const { open, close } = countFences(markdown);
+	if (open !== close) {
+		issues.push(
+			`Unbalanced pandoc fences: ${open} opened, ${close} closed. ` +
+				'An unclosed fence renders unstyled instead of failing.',
+		);
+	}
 
-  if (HAS_SCRIPT.test(html)) {
-    issues.push('Script tags are not allowed');
-  }
+	const tag = HAS_HTML_TAG.exec(markdown);
+	if (tag) {
+		issues.push(`Raw HTML tag <${tag[1]}> is not allowed; the output is markdown`);
+	}
 
-  return issues;
+	return issues;
 };
 
 export const dataValidator: Filter = {
@@ -46,7 +73,7 @@ export const dataValidator: Filter = {
   priority: 1,
 
   evaluate: ({ resume }: FilterContext): Promise<FilterResult> => {
-    const issues = validateHtml(resume.html);
+    const issues = validateMarkdown(resume.markdown);
     const score = issues.length === 0 ? 1.0 : 0.0;
 
     return Promise.resolve({

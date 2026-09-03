@@ -38,7 +38,7 @@ const trio = (p: ChatProvider): ChatProviders => ({ pro: p, flash: p, vision: p 
 
 const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterContext => ({
   resume: {
-    html: '<p>cv</p>',
+    markdown: '<p>cv</p>',
     pdfText: 'RESUME TEXT',
     pngPage1: new Uint8Array([137, 80, 78, 71]),
     pageCount: 2,
@@ -137,7 +137,7 @@ test('layout: no rendered image is a real failure, not a skip', async () => {
   const { provider } = fakeChat(OK);
   const r = await layoutChecker.evaluate(
     ctx(provider, {
-      resume: { html: '<p>x</p>', pdfText: 't', pngPage1: null, pageCount: null, pageTexts: null },
+      resume: { markdown: '<p>x</p>', pdfText: 't', pngPage1: null, pageCount: null, pageTexts: null },
     }),
   );
   assert.equal(r.passed, false);

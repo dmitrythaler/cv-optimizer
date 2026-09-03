@@ -110,7 +110,7 @@ export const optimize = async (
         ];
         iterations.push({
           n: i + 1,
-          resume: { html: '', pdfText: null, pngPage1: null, pageCount: null, pageTexts: null },
+          resume: { markdown: '', pdfText: null, pngPage1: null, pageCount: null, pageTexts: null },
           results,
           passed: false,
         });
@@ -118,15 +118,15 @@ export const optimize = async (
       break;
     }
 
-    lastAttempt = resume.html;
+    lastAttempt = resume.markdown;
 
     // Grade the RENDERED document, not the HTML. What an ATS pulls out of the
     // PDF is what matters, and it differs from what the markup implies.
     logger.info('  rendering PDF …');
     try {
-      const out = await renderer.render(resume.html);
+      const out = await renderer.render(resume.markdown);
       resume = {
-        html: resume.html,
+        markdown: resume.markdown,
         pdfText: out.text,
         pngPage1: out.pngPage1,
         pageCount: out.pageCount,

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { contentLength } from '../src/filters/content-length.ts';
-import { dataValidator, validateHtml } from '../src/filters/data-validator.ts';
+import { dataValidator, validateMarkdown } from '../src/filters/data-validator.ts';
 import { all } from '../src/filters/index.ts';
 import { loadConfig } from '../src/config.ts';
 import type { FilterContext } from '../src/filters/base.ts';
@@ -10,12 +10,26 @@ import type { EmbeddingProvider } from '../src/providers/embeddings.ts';
 import type { ChatProviders } from '../src/providers/ai-sdk.ts';
 import type { ChatProvider } from '../src/providers/llm.ts';
 
-const VALID_HTML =
-  '<header class="header"><h1 class="name">John Dow</h1></header>' +
-  '<section class="section"><p>experience</p></section>';
+const VALID_MD = [
+  '[John Dow]{.cv-name}',
+  '',
+  '::: {.contacts}',
+  'john@dow.dev',
+  ':::',
+  '',
+  '::: {.summary}',
+  'experience',
+  ':::',
+  '',
+  '## Selected Professional Experience',
+  '',
+  '::: {.entry}',
+  '### **Acme** - *Engineer*',
+  ':::',
+].join('\n');
 
 const resume = (over: Partial<OptimizedResume> = {}): OptimizedResume => ({
-  html: VALID_HTML,
+  markdown: VALID_MD,
   pdfText: 'text',
   pngPage1: null,
   pageCount: 1,
@@ -102,42 +116,51 @@ test('contentLength: two pages with a fully empty page 2 passes (len > 0 guard)'
 
 /* ---------- DataValidator ---------- */
 
-test('dataValidator: valid html passes', async () => {
+test('dataValidator: valid markdown passes', async () => {
   const r = await dataValidator.evaluate(ctx());
   assert.equal(r.passed, true);
   assert.deepEqual(r.issues, []);
 });
 
-test('dataValidator: missing header reported, name NOT also reported', () => {
-  // The branches are exclusive: one issue, not two.
-  const issues = validateHtml('<section class="section">x</section>');
-  assert.deepEqual(issues, ["Missing header element with class='header'"]);
+test('dataValidator: a missing name span is reported', () => {
+  const issues = validateMarkdown(VALID_MD.replace('[John Dow]{.cv-name}', 'John Dow'));
+  assert.deepEqual(issues, ['Missing the name span, [Name]{.cv-name}']);
 });
 
-test('dataValidator: header present but name missing', () => {
-  const issues = validateHtml(
-    '<header class="header"></header><section class="section">x</section>',
-  );
-  assert.deepEqual(issues, ["Missing name (h1 with class='name') in header"]);
+test('dataValidator: a missing contacts fence is reported', () => {
+  const issues = validateMarkdown(VALID_MD.replace('::: {.contacts}', ''));
+  // Removing the opening fence also unbalances the count, which is the point:
+  // pandoc does not fail on this, it renders the CV unstyled.
+  assert.ok(issues.includes('Missing the ::: {.contacts} block'));
+  assert.ok(issues.some((i) => i.startsWith('Unbalanced pandoc fences')));
+});
+
+test('dataValidator: an unclosed fence is caught, because pandoc will not fail', () => {
+  const issues = validateMarkdown(`${VALID_MD}\n\n::: {.entry}\n### **X** - *Y*`);
+  assert.deepEqual(issues, [
+    'Unbalanced pandoc fences: 4 opened, 3 closed. ' +
+      'An unclosed fence renders unstyled instead of failing.',
+  ]);
 });
 
 test('dataValidator: missing sections reported', () => {
-  const issues = validateHtml('<header class="header"><h1 class="name">D</h1></header>');
-  assert.deepEqual(issues, ['Resume has no content sections']);
+  const issues = validateMarkdown(
+    VALID_MD.replace('## Selected Professional Experience', 'Selected Professional Experience'),
+  );
+  assert.deepEqual(issues, ['Resume has no content sections (no "## " heading)']);
 });
 
-test('dataValidator: script tags rejected, case-insensitively', () => {
-  const issues = validateHtml(`${VALID_HTML}<SCRIPT>alert(1)</SCRIPT>`);
-  assert.deepEqual(issues, ['Script tags are not allowed']);
+test('dataValidator: raw HTML is rejected, case-insensitively', () => {
+  const issues = validateMarkdown(`${VALID_MD}\n<SCRIPT>alert(1)</SCRIPT>`);
+  assert.deepEqual(issues, ['Raw HTML tag <SCRIPT> is not allowed; the output is markdown']);
 });
 
-test('dataValidator: style tags are allowed', () => {
-  const issues = validateHtml(`${VALID_HTML}<style>.name{color:red}</style>`);
-  assert.deepEqual(issues, []);
+test('dataValidator: a valid document reports nothing', () => {
+  assert.deepEqual(validateMarkdown(VALID_MD), []);
 });
 
 test('dataValidator: failure carries a suggestion, success does not', async () => {
-  const bad = await dataValidator.evaluate(ctx({ html: '<div>nothing</div>' }));
+  const bad = await dataValidator.evaluate(ctx({ markdown: 'nothing' }));
   assert.equal(bad.passed, false);
   assert.equal(bad.suggestions.length, 1);
   const good = await dataValidator.evaluate(ctx());

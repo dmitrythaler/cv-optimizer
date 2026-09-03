@@ -40,7 +40,7 @@ const trio = (p: ChatProvider): ChatProviders => ({ pro: p, flash: p, vision: p 
 
 const ctx = (embeddings: EmbeddingProvider, over: Partial<FilterContext> = {}): FilterContext => ({
   resume: {
-    html: '<p/>',
+    markdown: '<p/>',
     pdfText: 'RESUME TEXT',
     pngPage1: null,
     pageCount: 1,
@@ -141,7 +141,7 @@ test('vector: missing pdfText fails rather than passing vacuously', async () => 
   ]);
   const r = await vectorSimilarity.evaluate(
     ctx(provider, {
-      resume: { html: '<p/>', pdfText: null, pngPage1: null, pageCount: 1, pageTexts: ['p'] },
+      resume: { markdown: '<p/>', pdfText: null, pngPage1: null, pageCount: 1, pageTexts: ['p'] },
     }),
   );
   assert.equal(r.passed, false);

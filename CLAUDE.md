@@ -3,7 +3,8 @@
 # cv-optimizer
 
 Takes a CV and a job description,
-generates a tailored CV, grades it with a set of filters, and retries until it
+generates a tailored CV as pandoc markdown, renders it with pandoc and
+WeasyPrint, grades it with a set of filters, and retries until it
 passes or runs out of iterations.
 
 ## Status
@@ -53,7 +54,8 @@ src/
   providers/local-embeddings.ts  host side: owns the worker
   providers/embedding.worker.ts  the ONLY worker - local ONNX inference
   providers/embedding-protocol.ts  messages shared by both sides
-  render/pdf.ts          HTML -> PDF/text/PNG seam
+  render/pdf.ts          markdown -> PDF/text/PNG seam
+  render/pandoc.ts       pandoc + WeasyPrint, styled by templates/cv.css
   output-path.ts         run folder name + CV_NAME_TEMPLATE
   run-output.ts          writes the run folder
 docs/

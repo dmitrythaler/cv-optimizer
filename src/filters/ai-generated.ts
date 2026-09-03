@@ -59,7 +59,7 @@ export const aiGenerated: Filter = {
     const prompt = buildUserPrompt({
       // Order: pdf_text, then html, then structured data. This
       // port has no structured data, so the last branch cannot occur.
-      resumeText: resume.pdfText || resume.html || '(no content)',
+      resumeText: resume.pdfText || resume.markdown || '(no content)',
       languageCode: targetLanguage,
     });
 

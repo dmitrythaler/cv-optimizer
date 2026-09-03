@@ -1,7 +1,10 @@
 /**
- * HTML -> PDF -> (text, PNG).
+ * Markdown -> PDF -> (text, PNG).
  *
- * Playwright's page.pdf() is the natural fit and is already a dependency.
+ * pandoc renders the markdown through WeasyPrint, styled by templates/cv.css.
+ * Chromium and the HTML wrapper were removed on 2026-09-03: the source CV is
+ * pandoc markdown, so generating HTML meant converting the format twice and
+ * regenerating text that should have been copied.
  *
  * The PNG matters: the vision filter grades the rendered page. When that image
  * fails to reach the model, the filter silently falls back to grading extracted

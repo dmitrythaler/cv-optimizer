@@ -1,0 +1,187 @@
+@font-face {
+  font-family: "CV Carlito";
+  src: url("fonts/Carlito-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "CV Carlito";
+  src: url("fonts/Carlito-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "CV Carlito";
+  src: url("fonts/Carlito-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "CV Carlito";
+  src: url("fonts/Carlito-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+}
+
+@page {
+  size: a4;
+  margin: 0.4in 0.4in 0.35in;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+h1,
+h2,
+h3,
+p,
+ul,
+li {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: #000;
+  font-family: "CV Carlito", Calibri, sans-serif;
+  font-size: 11pt;
+  line-height: 1.25;
+}
+
+a {
+  color: #000;
+  text-decoration: underline;
+}
+
+body > p:first-child {
+  margin-bottom: 4pt;
+  text-align: center;
+}
+
+.cv-name {
+  display: inline-block;
+  font-size: 16pt;
+  font-weight: 700;
+  letter-spacing: 1.5pt;
+  text-transform: uppercase;
+}
+
+.contacts {
+  margin-bottom: 8pt;
+  font-size: 10pt;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.contacts p {
+  margin: 0;
+}
+
+.contacts .sep {
+  margin: 0 6pt;
+  color: #666;
+}
+
+.summary {
+  line-height: 1.3;
+  text-align: justify;
+}
+
+.summary p + p {
+  margin-top: 6pt;
+}
+
+h2 {
+  clear: both;
+  margin-top: 10pt;
+  margin-bottom: 6pt;
+  padding-bottom: 2pt;
+  border-bottom: 1pt solid #000;
+  font-size: 11pt;
+  font-weight: 700;
+  letter-spacing: 0.8pt;
+  line-height: 1.25;
+  text-transform: uppercase;
+  break-after: avoid;
+}
+
+.skills {
+  line-height: 1.3;
+  text-align: justify;
+}
+
+.skills p + p {
+  margin-top: 4pt;
+}
+
+.entry {
+  margin-bottom: 8pt;
+  break-inside: avoid;
+}
+
+.entry::after {
+  display: block;
+  clear: both;
+  content: "";
+}
+
+.entry h3 {
+  float: left;
+  margin: 0 8pt 2pt 0;
+  font-size: 11pt;
+  font-weight: 400;
+  line-height: 1.25;
+  break-after: avoid;
+}
+
+.entry h3 strong {
+  font-weight: 700;
+}
+
+.entry h3 em {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.entry h3 + p {
+  margin: 0 0 2pt;
+  text-align: right;
+  white-space: nowrap;
+  break-after: avoid;
+}
+
+.entry h3 + p strong {
+  font-weight: 400;
+}
+
+.entry ul {
+  clear: both;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  break-inside: avoid;
+}
+
+.entry li {
+  position: relative;
+  margin-bottom: 1pt;
+  padding-left: 12pt;
+  line-height: 1.25;
+  text-align: justify;
+}
+
+.entry li::before {
+  position: absolute;
+  left: 0;
+  content: "\2022";
+}
+
+#earlier-experience + p {
+  line-height: 1.25;
+}

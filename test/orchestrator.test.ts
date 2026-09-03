@@ -61,7 +61,7 @@ const fakeGenerator = (): { gen: Generator; seen: { iteration: number; feedback:
       feedback: input.filterResults.map((r) => r.filterName),
     });
     return Promise.resolve({
-      html: `<p>attempt ${input.iteration}</p>`,
+      markdown: `<p>attempt ${input.iteration}</p>`,
       pdfText: null,
       pngPage1: null,
       pageCount: null,
@@ -204,7 +204,7 @@ test('runAll: a filter that throws becomes a FAILURE, never a pass', async () =>
     evaluate: () => Promise.reject(new Error('boom')),
   });
   const results = await runAll({
-    resume: { html: '', pdfText: '', pngPage1: null, pageCount: 1, pageTexts: [''] },
+    resume: { markdown: '', pdfText: '', pngPage1: null, pageCount: 1, pageTexts: [''] },
     job: JOB,
     source: SOURCE,
     config: cfg(),

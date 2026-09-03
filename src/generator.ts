@@ -2,7 +2,7 @@ import { Output, generateText, stepCountIs, tool } from 'ai';
 import { z } from 'zod';
 import { logger } from './logger.ts';
 import { checkKeywords } from './filters/keyword-matcher.ts';
-import { validateHtml } from './filters/data-validator.ts';
+import { validateMarkdown } from './filters/data-validator.ts';
 import { buildSystemPrompt, buildUserPrompt, currentDateLine } from './prompts/optimizer.ts';
 import type { FilterReport } from './prompts/optimizer.ts';
 import type { Config } from './config.ts';
@@ -11,7 +11,7 @@ import type { Renderer } from './render/pdf.ts';
 import type { JobPosting, OptimizedResume, ResumeSource } from './types.ts';
 
 /**
- * The generator: turns a source CV and a job posting into resume HTML.
+ * The generator: turns a source CV and a job posting into resume markdown.
  *
  * This is the one part of the pipeline that IS an agent. The model calls tools,
  * reads the results and revises, in a loop. That is the right design here: the
@@ -22,16 +22,23 @@ import type { JobPosting, OptimizedResume, ResumeSource } from './types.ts';
  */
 
 export const optimizerOutput = z.object({
-  html: z.string().describe('The HTML body content, no wrapper tags'),
+  markdown: z.string().describe('The pandoc markdown, with the fenced blocks'),
   changes: z.array(z.string()).default([]).describe('List of changes made, for tracking'),
 });
 
 export type OptimizerOutput = z.infer<typeof optimizerOutput>;
 
 /** Rough character and word counts, as `estimate_content_length` computes them. */
-export const estimateLength = (html: string): { chars: number; words: number } => {
-  const text = html
-    .replace(/<[^>]+>/g, '')
+export const estimateLength = (markdown: string): { chars: number; words: number } => {
+  // Strip what pandoc turns into layout rather than words: fences, the class
+  // spans, link targets, heading and list markers, and the emphasis marks.
+  const text = markdown
+    .replace(/^:::.*$/gm, '')
+    .replace(/\[([^\]]*)\]\{[^}]*\}/g, '$1')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^[*-]\s+/gm, '')
+    .replace(/\*\*?/g, '')
     .replace(/\s+/g, ' ')
     .trim();
   return { chars: text.length, words: text.length === 0 ? 0 : text.split(' ').length };
@@ -91,7 +98,7 @@ export const generate = async (
 
   const tools = {
     /**
-     * REQUIRED. Renders the HTML and reports the real page count.
+     * REQUIRED. Renders the markdown and reports the real page count.
      *
      * It mirrors the ContentLengthChecker filter exactly, including the
      * page-2 overflow rule, so the tool's verdict matches the filter that
@@ -100,13 +107,13 @@ export const generate = async (
      */
     check_content_length: tool({
       description:
-        'Check if HTML content fits within the page limit (up to 2 pages) by rendering PDF. Call before finalizing.',
-      inputSchema: z.object({ html: z.string() }),
-      execute: async ({ html }) => {
-        const est = estimateLength(html);
+        'Check if the markdown fits within the page limit (up to 2 pages) by rendering the PDF. Call before finalizing.',
+      inputSchema: z.object({ markdown: z.string() }),
+      execute: async ({ markdown }) => {
+        const est = estimateLength(markdown);
         state.called = true;
         try {
-          const out = await renderer.render(html);
+          const out = await renderer.render(markdown);
           const page2 = (out.pageTexts[1] ?? '').trim();
           const overflow =
             out.pageCount === 2 &&
@@ -154,9 +161,9 @@ export const generate = async (
     check_keywords_tool: tool({
       description:
         'Check keyword coverage vs job posting. Returns missing keywords ranked by TF-IDF importance.',
-      inputSchema: z.object({ html: z.string() }),
-      execute: ({ html }) => {
-        const text = html.replace(/<[^>]+>/g, ' ');
+      inputSchema: z.object({ markdown: z.string() }),
+      execute: ({ markdown }) => {
+        const text = markdown.replace(/^:::.*$/gm, ' ');
         const r = checkKeywords(text, input.job, config.thresholds.keyword, config.keyword);
         return Promise.resolve({
           passed: r.passed,
@@ -167,10 +174,10 @@ export const generate = async (
     }),
 
     validate_structure: tool({
-      description: 'Check HTML structure - headers, sections, no scripts.',
-      inputSchema: z.object({ html: z.string() }),
-      execute: ({ html }) => {
-        const issues = validateHtml(html);
+      description: 'Check the pandoc structure - name span, contacts and summary fences, balanced fences, no raw HTML.',
+      inputSchema: z.object({ markdown: z.string() }),
+      execute: ({ markdown }) => {
+        const issues = validateMarkdown(markdown);
         return Promise.resolve({ valid: issues.length === 0, issues });
       },
     }),
@@ -199,7 +206,7 @@ export const generate = async (
 
     if (state.called && state.fits) {
       return {
-        html: out.html,
+        markdown: out.markdown,
         pdfText: null,
         pngPage1: null,
         pageCount: null,
@@ -208,7 +215,7 @@ export const generate = async (
     }
 
     const retry = !state.called
-      ? 'You must call check_content_length(html) with your final HTML before returning. ' +
+      ? 'You must call check_content_length(markdown) with your final markdown before returning. ' +
         'Call it now to verify the resume fits within the page limit (max 2 pages).'
       : state.overflowIssue !== null
         ? `check_content_length reported: ${state.overflowIssue} ` +
@@ -218,7 +225,7 @@ export const generate = async (
           'Trim content and call check_content_length again until fits_page_limit=True, then return.';
 
     logger.info(`  attempt ${attempt} rejected: ${retry.split('.')[0] ?? ''}`);
-    messages.push({ role: 'assistant', content: out.html });
+    messages.push({ role: 'assistant', content: out.markdown });
     messages.push({ role: 'user', content: retry });
   }
 

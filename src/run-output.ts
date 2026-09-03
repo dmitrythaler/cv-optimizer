@@ -92,9 +92,9 @@ export const writeRun = async (input: WriteRunInput): Promise<WriteRunResult> =>
     let pngFile: string | null = null;
     let pages: number | null = it.resume.pageCount;
 
-    if (it.resume.html !== '') {
+    if (it.resume.markdown !== '') {
       try {
-        const r = await renderer.render(it.resume.html);
+        const r = await renderer.render(it.resume.markdown);
         pdfFile = ITERATION_PDF(it.n);
         pngFile = ITERATION_PNG(it.n);
         pages = r.pageCount;

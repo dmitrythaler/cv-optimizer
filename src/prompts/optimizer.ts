@@ -8,8 +8,8 @@ import { readFileSync } from 'node:fs';
  * for byte. `test/optimizer-prompt.test.ts` pins it against a locked digest.
  *
  * `templates/resume_guide.md` is also a copy, and is pasted into the base
- * prompt. It defines the CSS classes the model is told to use, so it belongs
- * with the template, not with the code.
+ * prompt. It defines the pandoc blocks and the CSS classes the model is told to
+ * use, so it belongs beside cv.css, not with the code.
  *
  * Do not change a prompt without a note. Record the reason in
  * docs/design-notes.md.
@@ -24,11 +24,47 @@ export const loadResumeGuide = (): string => {
 };
 
 export const OPTIMIZER_BASE = `
-You are a resume optimization expert. Extract content from user's resume and create an optimized HTML resume for a job posting.
+You are a resume optimization expert. Extract content from user's resume and create an optimized PANDOC MARKDOWN resume for a job posting.
 
 INPUT: The user's resume text (any format).
 
-OUTPUT: Generate HTML for the <body> of a resume PDF. Do NOT include <html>, <head>, or <body> tags - only the content.
+OUTPUT: Generate PANDOC MARKDOWN. It is rendered by
+pandoc --standalone --pdf-engine=weasyprint --css=cv.css, so the stylesheet does the
+layout and you must emit the exact blocks it styles. NO HTML TAGS AT ALL.
+
+THE SOURCE RESUME IS ALREADY IN THIS FORMAT. Start from it and EDIT it. Do not
+re-type it and do not convert it: copy the blocks you keep, character for character.
+A missing fence does not raise an error, it silently renders the CV unstyled.
+
+Required shape, in this order:
+
+    [Full Name]{.cv-name}
+
+    ::: {.contacts}
+    line 1, then a backslash at end of line, then line 2, and so on
+    :::
+
+    ::: {.summary}
+    one or more paragraphs
+    :::
+
+    ## Section Title
+
+    ::: {.skills}
+    **Label:** comma separated values, one **Label:** block per line
+    :::
+
+    ## Section Title
+
+    ::: {.entry}
+    ### **Company** - *Job Title*
+
+    **Mon YYYY - Mon YYYY**
+
+    * bullet
+    :::
+
+Every ::: {.class} MUST be closed by a bare ::: on its own line.
 
 CONTENT RULES:
 - When describing job experiences, show concrete results: focus on impact, not tasks.
@@ -39,14 +75,23 @@ CONTENT RULES:
 - Do NOT use hacks to force content onto fewer pages: no custom CSS reducing margins/line-height/font-size below the template's defaults, no abbreviating job titles or section names to save characters. If content doesn't fit, trim less-relevant content instead.
 - If over the 2-page limit: remove unrelated content to save space.
 - Remove obvious skills (Excel, VS Code, Jupyter, GitHub, Jira) unless specifically required by the job or very relevant fot it.
-- Exclude: location, language proficiency, age, hobbies unless required by job posting.
-- Add a summary section highlighting the most relevant experiences.
 - Try to preserve the original writing style if possible.
 - Avoid leaving an empty space at the bottom of the last page if you have useful content to fill it — but don't spread a nearly-empty second page just to use it.
-- PROJECTS: Only include projects directly relevant to this job. Skip projects already listed under Publications. If no projects are relevant, omit the section entirely.
-- PUBLICATIONS: Always use "PUBLICATIONS" (plural) as the section title, even for a single item.
+- PROJECTS: Only include projects directly relevant to this job. If no projects are relevant, omit the section entirely.
 - EDUCATION: By default include only the most recent / highest degree. Include multiple degrees only if they are both relevant to the role.
-- EXPERIENCE SECTION TITLE: Title the experience section "PROFESSIONAL EXPERIENCE (Last N Contracts)", where N is the exact number of entries you include below it. This frames the listed entries as a selected recent subset rather than a complete career history, so the section doesn't read as contradicting a longer total-years claim made elsewhere (e.g. in the summary).
+
+SECTIONS COME FROM THE SOURCE. NOTHING HERE IS HARDCODED:
+- COPY EVERY SECTION HEADING WORD FOR WORD from the source CV. If it says
+  "## Selected Professional Experience", write exactly that. Never rename a
+  section, never re-title one to a house style, never uppercase it yourself
+  (the stylesheet does that), and never append or remove a count such as
+  "(Last N Contracts)".
+- Do not invent a section the source does not have, and do not drop a section
+  the source does have.
+- Keep the source's section ORDER.
+- NEVER remove a line because it looks like personal detail. Location, language
+  proficiency and contact lines are in the source deliberately. If the candidate
+  put it there, it stays.
 
 {content_rules}
 
@@ -55,19 +100,19 @@ CONTENT BUDGET:
 - The ONLY authoritative check is page_count (and page-2 overflow) from check_content_length
 
 TOOLS:
-- REQUIRED: call check_content_length(html) with your final HTML before returning — output is REJECTED if you skip this
+- REQUIRED: call check_content_length(markdown) with your final markdown before returning — output is REJECTED if you skip this
   - Returns actual page_count from rendered PDF (authoritative), up to 2 pages allowed
   - Also flags if page 2 is a near-empty overflow (a stray line or two spilling from page 1) — this fails even though page_count==2
   - Also returns character/word estimates (rough guidance only)
   - If fits_page_limit is false, trim content (or add more to fill page 2 properly) and call again until fits_page_limit=true
-- OPTIONAL: check_keywords_tool(html) - Returns missing job keywords ranked by TF-IDF importance. Use if unsure about keyword coverage.
-- OPTIONAL: validate_structure(html) - Check HTML has proper headers/sections. Use after major structural changes.
-- OPTIONAL: preview_resume(html) - Renders PDF preview image. Use to visually check layout.
+- OPTIONAL: check_keywords_tool(markdown) - Returns missing job keywords ranked by TF-IDF importance. Use if unsure about keyword coverage.
+- OPTIONAL: validate_structure(markdown) - Checks the fences are present and balanced. Use after major structural changes.
+- OPTIONAL: preview_resume(markdown) - Renders PDF preview image. Use to visually check layout.
 
 LINKS:
 - Preserve contacts info as in the original and never delete it
 - Preserve URLs from the original resume (email, LinkedIn, GitHub, website, project links)
-- Use full URLs (include https://) in the href attribute of every <a> tag
+- Write every link as markdown, [visible text](https://full-url), never as an <a> tag
 - Link display text must NOT start with https:// or http:// — show just the domain+path (e.g. linkedin.com/in/username, github.com/username)
 
 PUBLICATIONS:
@@ -175,7 +220,7 @@ export interface OptimizerPromptInput {
   readonly userInstructions: string | null;
   /** BCP-47 code. The language block is added only if this is not English. */
   readonly languageCode: string;
-  /** The previous iteration's HTML, if this is a refinement. */
+  /** The previous iteration's markdown, if this is a refinement. */
   readonly lastAttempt: string | null;
   readonly iteration: number;
   /** Rough character and word counts of `lastAttempt`. */
@@ -231,7 +276,7 @@ IMPORTANT: Treat the above "User Instructions" as GROUND TRUTH about the candida
     prompt += `
 ## TARGET LANGUAGE: ${en} (${nat})
 
-Generate the resume HTML in ${en} language.
+Generate the resume markdown in ${en} language.
 - Use professional terminology appropriate for the ${en} job market
 - Write naturally as a native ${en} speaker — NOT machine translation
 - Maintain formal professional resume tone appropriate for ${en}-language resumes
@@ -261,7 +306,7 @@ Do NOT rewrite from scratch - modify the last attempt minimally.
 ${formatFilterResults(input.filterResults)}
 
 IMPORTANT: Make MINIMAL changes to fix ONLY the failed filters.
-- Start from the Last Attempt HTML above
+- Start from the Last Attempt markdown above
 - Change ONLY what's needed to pass the failed filter(s)
 - Do NOT rewrite, rephrase, or restructure content that isn't causing failures
 - Do NOT add new spelling mistakes, keywords, or stylistic changes if they were already added before
@@ -271,10 +316,10 @@ IMPORTANT: Make MINIMAL changes to fix ONLY the failed filters.
 
   prompt += `
 Return JSON with:
-- html: The HTML body content (no wrapper tags, just the content for <body>)
+- markdown: The pandoc markdown, with the fenced blocks shown above
 - changes: List of changes made (for tracking)
 
-Output ONLY valid JSON. The html field should contain the raw HTML string.
+Output ONLY valid JSON. The markdown field should contain the raw markdown string.
 `;
 
   return prompt;

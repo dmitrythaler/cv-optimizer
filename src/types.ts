@@ -37,7 +37,7 @@ export interface JobPosting {
 
 /** One generated candidate CV, before or after rendering. */
 export interface OptimizedResume {
-  readonly html: string;
+  readonly markdown: string;
   /** Text extracted back out of the rendered PDF. Filters grade this, not the HTML. */
   readonly pdfText: string | null;
   /** PNG of the rendered first page, for vision-based filters. */

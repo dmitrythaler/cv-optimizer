@@ -64,7 +64,7 @@ export const hallucination: Filter = {
       sourceInstructions: source.instructions,
       // The fallback chain ends at structured data, then "(no content)". This
       // port is HTML-only, so the fallback cannot arise.
-      optimizedContent: resume.html || '(no content)',
+      optimizedContent: resume.markdown || '(no content)',
       languageCode: targetLanguage,
     });
 

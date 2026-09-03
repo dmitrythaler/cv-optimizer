@@ -1,101 +1,91 @@
 import { after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { playwrightRenderer, wrapHtml } from '../src/render/playwright.ts';
+import { pandocRenderer } from '../src/render/pandoc.ts';
 
 /**
- * Exercises the real renderer: Chromium makes a PDF, poppler reads it back.
+ * Exercises the real renderer: pandoc and WeasyPrint make a PDF, poppler reads
+ * it back.
  *
- * Skipped when Chromium or poppler is missing, so a bare checkout does not
- * fail. One renderer is shared, because a browser launch costs about 200 ms.
+ * Skipped when a tool is missing, so a bare checkout does not fail.
  */
-const has = (tool: string): boolean => {
-  try {
-    execFileSync(tool, ['-v'], { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
+const has = (tool: string, flag = '-v'): boolean => {
+	try {
+		execFileSync(tool, [flag], { stdio: 'ignore' });
+		return true;
+	} catch {
+		return false;
+	}
 };
-let chromiumOk = true;
-try {
-  const { chromium } = await import('playwright');
-  chromiumOk = chromium.executablePath().length > 0;
-} catch {
-  chromiumOk = false;
-}
-const ready = chromiumOk && has('pdftotext') && has('pdftoppm');
-const opts = ready ? {} : { skip: 'needs chromium and poppler-utils' };
+const ready =
+	has('pandoc', '--version') &&
+	has('weasyprint', '--version') &&
+	has('pdftotext') &&
+	has('pdftoppm');
+const opts = ready ? {} : { skip: 'needs pandoc, weasyprint and poppler-utils' };
 
-const renderer = playwrightRenderer();
-after(() => renderer.close());
+const renderer = pandocRenderer();
 
-const HEADER = '<header class="header"><h1 class="name">John Dow</h1></header>';
-const SECTION =
-  '<section class="section"><h2 class="section-title">SUMMARY</h2><p>Node.js.</p></section>';
+const CV = [
+	'[Jane Doe]{.cv-name}',
+	'',
+	'::: {.contacts}',
+	'jane@doe.dev',
+	':::',
+	'',
+	'::: {.summary}',
+	'A backend engineer.',
+	':::',
+	'',
+	'## Selected Professional Experience',
+	'',
+	'::: {.entry}',
+	'### **Acme** - *Engineer*',
+	'',
+	'**Jan 2020 - Jan 2024**',
+	'',
+	'* Built things.',
+	':::',
+].join('\n');
 
-test('wrapHtml: fills both template placeholders', () => {
-  const out = wrapHtml('<body>{{HEADER}}|{{BODY}}</body>', '<p>x</p>');
-  assert.equal(out, '<body>|<p>x</p></body>');
+test('renderer: markdown becomes a real PDF, read back through poppler', opts, async () => {
+	const out = await renderer.render(CV);
+
+	// A PDF, not an HTML blob that happens to be non-empty.
+	assert.equal(new TextDecoder().decode(out.pdf.slice(0, 5)), '%PDF-');
+	assert.equal(out.pageCount, 1);
+	assert.equal(out.pageTexts.length, 1);
+
+	// The text comes out of the PRODUCED PDF, so this also proves the fences
+	// were consumed as markup rather than printed as literal text.
+	assert.match(out.text, /JANE DOE/);
+	assert.match(out.text, /Built things/);
+	assert.doesNotMatch(out.text, /:::/);
+	assert.doesNotMatch(out.text, /\*\*/);
+
+	// The vision filter grades this image. An empty one fails silently.
+	assert.ok(out.pngPage1.length > 1000, 'page image is not empty');
 });
 
-test('renderer: produces a PDF, a page count and page text', opts, async () => {
-  const out = await renderer.render(HEADER + SECTION);
-  assert.ok(out.pdf.length > 1000, 'a real PDF');
-  assert.equal(String.fromCharCode(...out.pdf.slice(0, 4)), '%PDF');
-  assert.equal(out.pageCount, 1);
-  assert.equal(out.pageTexts.length, 1);
-  assert.match(out.pageTexts[0] ?? '', /SUMMARY/);
-  assert.match(out.text, /Node\.js/);
+test('renderer: the Carlito faces from cv.css are embedded', opts, async () => {
+	// If pandoc runs outside templates/, the relative --css and the relative
+	// font url() both resolve to nothing and WeasyPrint quietly falls back to a
+	// default face. The PDF still renders, so only the font table catches it.
+	const { writeFile, mkdtemp, rm } = await import('node:fs/promises');
+	const { tmpdir } = await import('node:os');
+	const { join } = await import('node:path');
+	const out = await renderer.render(CV);
+	const dir = await mkdtemp(join(tmpdir(), 'renderer-test-'));
+	try {
+		const pdf = join(dir, 'r.pdf');
+		await writeFile(pdf, out.pdf);
+		const fonts = execFileSync('pdffonts', [pdf], { encoding: 'utf8' });
+		assert.match(fonts, /Carlito/, `cv.css did not load its fonts:\n${fonts}`);
+	} finally {
+		await rm(dir, { recursive: true, force: true });
+	}
 });
 
-test('renderer: page one image is a real PNG', opts, async () => {
-  const out = await renderer.render(HEADER + SECTION);
-  assert.deepEqual([...out.pngPage1.slice(0, 4)], [137, 80, 78, 71], 'PNG magic bytes');
-  assert.ok(out.pngPage1.length > 5000, 'not an empty image');
-});
-
-test('renderer: counts pages from the real PDF, not from a guess', opts, async () => {
-  const long = SECTION + '<p>filler line.</p>'.repeat(400);
-  const out = await renderer.render(HEADER + long);
-  assert.ok(out.pageCount > 1, `expected several pages, got ${out.pageCount}`);
-  assert.equal(out.pageTexts.length, out.pageCount, 'one text block per page');
-  // Page two must hold its own text. ContentLengthChecker reads exactly this
-  // to tell a real second page from a stray overflow line.
-  assert.ok((out.pageTexts[1] ?? '').trim().length > 0);
-});
-
-test('renderer: the shipped template extracts the name correctly', opts, async () => {
-  // The one field an ATS must read. Guards the .name letter-spacing value in
-  // templates/resume_wrapper.html against being raised again.
-  const out = await renderer.render(HEADER + SECTION);
-  const first = (out.pageTexts[0] ?? '').trim().split('\n')[0];
-  assert.equal(first, 'JOHN DOW', 'name must not extract as separated letters');
-});
-
-test('renderer: letter-spacing above 1.2pt can break name extraction', opts, async () => {
-  // Chromium bakes CSS letter-spacing into wide glyph gaps, and a PDF text
-  // extractor then inserts spaces between the letters - including the one a
-  // real ATS would use. The name is the one field an ATS must read.
-  //
-  // MEASURED, and not as simple as "more spacing is worse". Whether the
-  // extractor splits depends on the gap against the font's own space width,
-  // for these exact glyphs, so it is name-dependent and NOT monotonic:
-  //
-  //   name                1.2pt   1.5pt   2pt     2.5pt
-  //   Jonathan Dowerton   ok      SPLIT   SPLIT   -
-  //   John Dowerton       ok      SPLIT   ok      -
-  //   John Dow            ok      ok      ok      ok
-  //
-  // So 2pt is not safe merely because one short name survives it. 1.2pt is the
-  // value that held for every name tried, which is why the template uses it.
-  // A long name is used here because a short one cannot show the failure.
-  const at = async (ls: string): Promise<string> => {
-    const out = await renderer.render(
-      `<header class="header"><h1 class="name" style="letter-spacing:${ls}">Jonathan Dowerton</h1></header>${SECTION}`,
-    );
-    return (out.pageTexts[0] ?? '').trim().split('\n')[0] ?? '';
-  };
-  assert.equal(await at('1.2pt'), 'JONATHAN DOWERTON', 'parses at the shipped 1.2pt');
-  assert.notEqual(await at('1.5pt'), 'JONATHAN DOWERTON', 'splits once raised');
+after(async () => {
+	await renderer.close();
 });

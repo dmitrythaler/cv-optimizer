@@ -200,19 +200,19 @@ const main = async (argv: string[]): Promise<number> => {
       const [
         { optimize },
         { generate },
-        { playwrightRenderer },
+        { pandocRenderer },
         { aiSdkProviders },
         { localEmbeddings },
       ] = await Promise.all([
         import('./pipeline/orchestrator.ts'),
         import('./generator.ts'),
-        import('./render/playwright.ts'),
+        import('./render/pandoc.ts'),
         import('./providers/ai-sdk.ts'),
         import('./providers/local-embeddings.ts'),
       ]);
       await import('./filters/index.ts');
 
-      const renderer = playwrightRenderer();
+      const renderer = pandocRenderer();
       const embeddings = localEmbeddings(config);
       const runConfig = maxIterations === null ? config : { ...config, maxIterations };
 

@@ -6,7 +6,7 @@ export { logger } from './logger.ts';
 export { optimize } from './pipeline/orchestrator.ts';
 export type { Generator, OptimizeDeps } from './pipeline/orchestrator.ts';
 export { generate } from './generator.ts';
-export { playwrightRenderer } from './render/playwright.ts';
+export { pandocRenderer } from './render/pandoc.ts';
 export { register, all, runAll, skipped } from './filters/index.ts';
 export type { Filter, FilterContext } from './filters/index.ts';
 export { cosine } from './providers/embeddings.ts';

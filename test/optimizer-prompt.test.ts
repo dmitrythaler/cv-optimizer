@@ -25,10 +25,10 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex');
  * change is deliberate, and say so in the commit message.
  */
 const LOCKED = {
-  OPTIMIZER_BASE: 'e0282fb56dfca66a1a99209c41725797c887bd509bc1e627f486f58c35468931',
+  OPTIMIZER_BASE: 'd548e41194bee1866e2ceb292c1eaf06d05ffee01bc2116ab75a8246e2bf0675',
   OPTIMIZER_STRICT_RULES: '354673898f7e9e7f9a6fc93dc9ad4fe91bf51ac07553c1f11a2f22a42e25dee0',
   OPTIMIZER_LENIENT_RULES: 'd18304032285b6a2f502bb7546f8c634060d493be145251718561a93bb2b4949',
-  RESUME_GUIDE: '47082e39ab4ad539176fb1dbebb088365d4793b95824d4c91e6cd57c651426fd',
+  RESUME_GUIDE: '7d7cd994c3f0c4e051bb1a1426a4748c5dcbd0b492bfa2164cc34df4489e84a3',
 };
 
 test('prompt: OPTIMIZER_BASE has not drifted', () => {
@@ -132,10 +132,18 @@ test('prompt: filter report leaves skipped filters out', () => {
   assert.ok(!text.includes('Skipped'), 'a skipped filter must not reach the prompt');
 });
 
-test('estimateLength: strips tags and collapses whitespace', () => {
-  assert.deepEqual(estimateLength('<p>one   two</p>\n<b>three</b>'), {
+test('estimateLength: strips pandoc markup and collapses whitespace', () => {
+  // Fences, class spans, link targets, headings, bullets and emphasis are
+  // layout, not words. Counting them inflated the estimate under the old HTML
+  // tag strip and made the model trim content that fitted.
+  assert.deepEqual(estimateLength('::: {.summary}\none   two\n:::\n\n**three**'), {
     chars: 13,
     words: 3,
+  });
+  assert.deepEqual(estimateLength('[Jane Doe]{.cv-name}'), { chars: 8, words: 2 });
+  assert.deepEqual(estimateLength('## Skills\n\n* [site](https://x.dev)'), {
+    chars: 11,
+    words: 2,
   });
   assert.deepEqual(estimateLength(''), { chars: 0, words: 0 });
 });

@@ -41,7 +41,7 @@ const trio = (p: ChatProvider): ChatProviders => ({ pro: p, flash: p, vision: p 
 
 const ctx = (chat: ChatProvider, over: Partial<FilterContext> = {}): FilterContext => ({
   resume: {
-    html: '<header class="header"><h1 class="name">D</h1></header>',
+    markdown: '<header class="header"><h1 class="name">D</h1></header>',
     pdfText: null,
     pngPage1: null,
     pageCount: 1,
