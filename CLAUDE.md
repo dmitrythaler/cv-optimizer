@@ -30,12 +30,30 @@ for `node src/cli.ts` to work — do not "fix" them to `.js`.
 ## Commands
 
 ```bash
-pnpm start -- optimize ../cv.md ../applications/<job>/jd.txt --dry-run
+pnpm build && pnpm start optimize ../input/cv.md ../applications/<job>/jd.txt
 pnpm test
 pnpm typecheck
 pnpm build
 pnpm fmt
 ```
+
+**`pnpm start` RUNS `dist/`, NOT `src/`.** It is `node dist/cli.js`, so a source
+edit does nothing until `pnpm build` runs. Always build first.
+
+This is not a theoretical trap. On 2026-09-03 the whole renderer was swapped
+from Chromium to pandoc, and the run afterwards passed every filter and printed
+"PASSED - every filter agreed" — from three-week-old compiled code. Nothing in
+the output said so. It was caught only by reading the PDF itself:
+
+```bash
+pdfinfo out.pdf | grep Producer     # WeasyPrint 69.0, not Skia/PDF
+pdffonts out.pdf                    # CV-Carlito, not LiberationSans
+```
+
+`pnpm test` and `pnpm typecheck` read `src/` directly, so they pass while the
+built CLI is stale. A green test run is NOT evidence that the CLI changed.
+
+Check the artifact, never the exit code.
 
 ## Layout
 
