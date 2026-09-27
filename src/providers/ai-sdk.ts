@@ -43,6 +43,24 @@ export const resolveModel = (spec: string): { provider: string; model: LanguageM
   switch (provider) {
     case 'deepseek':
       return { provider, model: createDeepSeek({})(name) };
+    case 'ollama': {
+      // A LOCAL MODEL, THROUGH THE OPENAI-COMPATIBLE ENDPOINT.
+      //
+      // ollama serves /v1 in the OpenAI shape, and createDeepSeek IS an
+      // OpenAI-compatible client with a base URL - so this needs no new
+      // dependency. The key is required by the client and ignored by ollama.
+      //
+      // BUDGET FOR THE THINKING. qwen3 emits a reasoning block before its
+      // answer and it is charged to the SAME output budget: measured
+      // 2026-09-27, "Reply with exactly: OK" spent 179 output tokens and
+      // returned an EMPTY string under a 20-token cap. A caller that sets a
+      // small maxOutputTokens here gets silence, not an error.
+      const host = process.env['OLLAMA_URL'] ?? 'http://localhost:11434';
+      return {
+        provider,
+        model: createDeepSeek({ baseURL: `${host.replace(/\/+$/, '')}/v1`, apiKey: 'ollama' })(name),
+      };
+    }
     case 'gemini':
     case 'google':
       // Accepts GOOGLE_GENERATIVE_AI_API_KEY, and GEMINI_API_KEY as an alias.
