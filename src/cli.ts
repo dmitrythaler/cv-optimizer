@@ -220,7 +220,24 @@ const main = async (argv: string[]): Promise<number> => {
       try {
         const providers = aiSdkProviders(config.models);
         const { parseJobPosting } = await import('./job.ts');
-        const job = await parseJobPosting(jd, providers.flash);
+        const parsed = await parseJobPosting(jd, providers.flash);
+        // THE HEADER WINS OVER THE PROSE.
+        //
+        // The crawler writes the title and the company at the top of jd.txt from
+        // the board's own fields. The parser reads them out of the posting, and
+        // a model reads what the text repeats: The Flex names its product
+        // Base360.ai eleven times and itself three, so the CV was named after
+        // the product. Only the naming is corrected - keywords, requirements and
+        // the summary still come from the posting, which is where they belong.
+        const { parseJdHeader } = await import('./jd-header.ts');
+        const header = parseJdHeader(jd);
+        const job =
+          header === null ? parsed : { ...parsed, title: header.title, company: header.company };
+        if (header !== null && (parsed.company !== header.company || parsed.title !== header.title)) {
+          logger.info(
+            `jd header overrides the parser: "${parsed.title}" at "${parsed.company}" -> "${header.title}" at "${header.company}"`,
+          );
+        }
         const source = { text: cv, path: cvPath, instructions: values.instructions ?? null };
 
         // Create the folder and store jd.txt NOW, not at the end. A run that
