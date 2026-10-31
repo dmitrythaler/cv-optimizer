@@ -169,6 +169,15 @@ export const optimize = async (
         .join(' ')}`,
     );
 
+    // Print what each filter NOTICED, pass or fail. The scores alone hide it:
+    // the ryd run on 2026-10-31 passed HallucinationChecker at exactly 0.90
+    // against a 0.90 threshold, printed "PASSED - every filter agreed", and
+    // filed a CV with four phrases the source does not hold. The filter had
+    // named them in `issues` all along, and only `optimization.json` kept them.
+    for (const r of results) {
+      for (const issue of r.issues) logger.info(`    ${r.filterName}: ${issue}`);
+    }
+
     if (passed) break;
   }
 
