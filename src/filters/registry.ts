@@ -1,4 +1,5 @@
 import { logger } from '../logger.ts';
+import { ProviderUnavailableError, providerFault } from '../providers/provider-error.ts';
 import type { Filter, FilterContext } from './base.ts';
 import type { FilterResult } from '../types.ts';
 
@@ -21,6 +22,10 @@ export const all = (): readonly Filter[] => registry;
  *
  * This is different from `skipped()`, which a filter returns on purpose when it
  * knows it cannot judge, for example when a provider has no vision.
+ *
+ * It is also different from a PROVIDER fault - an empty wallet, a bad key, a
+ * refused call. That error says nothing about the CV, so it must not read as
+ * rejection either. `raise()` sends those up instead. See provider-error.ts.
  */
 const asFailure = (filter: Filter, err: unknown): FilterResult => ({
   filterName: filter.name,
@@ -30,6 +35,16 @@ const asFailure = (filter: Filter, err: unknown): FilterResult => ({
   issues: [`Filter error: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`],
   suggestions: ['Check filter implementation'],
 });
+
+/**
+ * Ends the run when the provider is the thing that broke. Returns a FAILED
+ * result for every other exception, which is a bug in the filter itself.
+ */
+const raise = (filter: Filter, err: unknown): FilterResult => {
+  const fault = providerFault(err);
+  if (fault !== null) throw new ProviderUnavailableError(filter.name, fault, err);
+  return asFailure(filter, err);
+};
 
 export interface RunOptions {
   /** Sequential stops at the first failure. Parallel runs everything. */
@@ -65,7 +80,7 @@ export const runAll = async (
         if (!r.passed) break;
       } catch (err: unknown) {
         logger.error(`Filter ${f.name} raised exception: ${String(err)}`);
-        out.push(asFailure(f, err));
+        out.push(raise(f, err));
         break;
       }
     }
@@ -94,10 +109,12 @@ export const runAll = async (
       }
     }),
   );
+  // Every filter ran, so a provider fault is reported once the whole round is
+  // in. That keeps the log complete: the other filters' scores still print.
   return settled.map((s, i) => {
     const f = registry[i] as Filter;
     if (s.status === 'fulfilled') return s.value;
     logger.error(`Filter ${f.name} raised exception: ${String(s.reason)}`);
-    return asFailure(f, s.reason);
+    return raise(f, s.reason);
   });
 };

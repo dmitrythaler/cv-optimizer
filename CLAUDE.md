@@ -68,6 +68,7 @@ src/
   filters/               base contract + registry
                          ATS screening reads TEXT; only LayoutChecker sees the page
   providers/llm.ts       chat/vision seam (remote)
+  providers/provider-error.ts  tells a broken provider from a bad CV
   providers/embeddings.ts    embedding contract + cosine
   providers/local-embeddings.ts  host side: owns the worker
   providers/embedding.worker.ts  the ONLY worker - local ONNX inference
@@ -133,6 +134,11 @@ full account.
 1. **Never invent a passing score to mask an internal error.** A filter that
    cannot run must say so (`skipped()`), not return `1.0` and `passed: true`.
    That exact fallback hid a completely dead filter for two months.
+   **The same holds in reverse: a broken PROVIDER is not a bad CV.** An empty
+   wallet, a bad key or a refused call ends the run through
+   `ProviderUnavailableError`, and `optimize` exits **3**, never 2. A filter
+   exception that is NOT a provider fault stays a FAILED result, because a bug
+   must not read as approval.
 2. **`score` is diagnostic; `passed` is the decision.** Nothing downstream may
    average, aggregate or threshold on `score`.
 3. **Do not rescale scores into a prettier range.** The original mapped cosine

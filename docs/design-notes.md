@@ -7,7 +7,7 @@ Read this before changing a threshold, a prompt, or a filter's error handling.
 
 ---
 
-## 1. Four rules, and the failures behind them
+## 1. Five rules, and the failures behind them
 
 ### A filter that cannot run must say so
 
@@ -20,6 +20,48 @@ surfaced for _failing_ filters, and this one always reported success.
 
 **Rule:** a filter that cannot run returns `skipped()` with a `NaN` score, and
 the skip is logged at WARN. Never encode failure as a passing score.
+
+### A broken provider must not read as a bad CV
+
+The same rule in the other direction, and it cost a whole batch.
+
+On 2026-11-05 the Gemini prepay balance hit zero. `LayoutChecker` threw
+`AI_APICallError: Your prepayment credits are depleted` on every call.
+`registry.ts` turned each throw into `score 0.0, passed: false`, on the sound
+rule that a bug in a filter must not read as approval. The result:
+
+| what happened                                                | why                                |
+| ------------------------------------------------------------ | ---------------------------------- |
+| no iteration could pass                                      | one filter always reported `false` |
+| all 3 iterations ran, for all 12 jobs                        | `if (passed) break` never fired    |
+| every extra round paid for a generate step                   | the CV could not be graded anyway  |
+| the run reported `FAILED filters: AtsChecker, LayoutChecker` | it read as a verdict on the CV     |
+
+The worst single case: Braver IT (Media). Iteration 2 passed the other seven
+filters at ATS `0.756`. Iteration 3 scored ATS `0.606`. The loop filed
+iteration 3, because `filed` is the last iteration.
+
+That filing rule is **not** the bug, and it was not changed. When a CV passes,
+the loop breaks and the last iteration _is_ the passing one. The rule only
+misbehaves when a pass has been made impossible.
+
+**Rule:** an error that comes from the provider ends the run. It does not grade
+the CV, and it does not buy another iteration. `providerFault()` names it,
+`ProviderUnavailableError` carries it, and `optimize` exits **3**, never 2 — a
+caller that reads 2 as "the CV failed" would drop the job over an empty wallet.
+
+Two guards keep the classifier honest:
+
+- it is consulted for **thrown errors only**, never for a filter's `issues`;
+- every pattern must be wording a CV cannot contain. A Zod error echoes the
+  model's own output, so CV text reaches the classifier. A plain `/billing/` or
+  `/rate limit/` pattern would end a run over a bullet about a billing system.
+  Transport conditions are matched by HTTP status (401, 402, 403, 429), which no
+  document can imitate.
+
+A rate limit is transient, so ending a long run over one looks harsh. It is
+still the cheap choice: the AI SDK already retried before it threw, and the
+alternative pays for another generate step and grades nothing.
 
 ### A score must not be rescaled into a prettier range
 

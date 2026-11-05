@@ -40,6 +40,13 @@ OUTPUT
   comes from CV_NAME_TEMPLATE. fetch-job writes the same folder with jd.txt
   alone.
 
+EXIT CODES (optimize)
+  0   every filter passed
+  2   a filter failed; the CV is still produced
+  3   a model provider broke - no credit, bad key, refused call. The CV was
+      never graded and nothing was filed. Fix the account and run it again.
+  1   bad arguments or any other error
+
 ENVIRONMENT
   PRO_MODEL, FLASH_MODEL, VISION_MODEL, EMBEDDING_MODEL, MAX_ITERATIONS, LOG_LEVEL,
   CV_NAME_TEMPLATE, THRESHOLD_KEYWORD, THRESHOLD_VECTOR, THRESHOLD_HALLUCINATION,
@@ -289,6 +296,22 @@ const main = async (argv: string[]): Promise<number> => {
           return 0;
         }
         return 2;
+      } catch (err: unknown) {
+        // A BROKEN PROVIDER IS NOT A VERDICT ON THE CV.
+        //
+        // Exit 3, never 2, so a caller cannot read "could not grade" as "the CV
+        // failed" - a failed CV drops the job. One catch covers every step that
+        // calls a model: parse, generate, grade. jd.txt is already on disk, so
+        // top the account up and run the job again.
+        const { ProviderUnavailableError, providerFault } =
+          await import('./providers/provider-error.ts');
+        const fault = err instanceof ProviderUnavailableError ? err.fault : providerFault(err);
+        if (fault !== null) {
+          logger.error(err instanceof Error ? err.message : String(err));
+          logger.error(`NOT GRADED: ${fault}. Nothing was filed. Fix it and run the job again.`);
+          return 3;
+        }
+        throw err;
       } finally {
         await Promise.all([renderer.close(), embeddings.close()]);
       }

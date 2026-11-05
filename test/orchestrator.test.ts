@@ -2,7 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { optimize } from '../src/pipeline/orchestrator.ts';
 import { register, all, runAll } from '../src/filters/registry.ts';
+import { ProviderUnavailableError, providerFault } from '../src/providers/provider-error.ts';
 import { loadConfig } from '../src/config.ts';
+import type { FilterContext } from '../src/filters/base.ts';
 import type { Config } from '../src/config.ts';
 import type { Generator, OptimizeDeps } from '../src/pipeline/orchestrator.ts';
 import type { Renderer } from '../src/render/pdf.ts';
@@ -216,6 +218,134 @@ test('runAll: a filter that throws becomes a FAILURE, never a pass', async () =>
   assert.equal(r?.passed, false);
   assert.equal(r?.score, 0);
   assert.match(r?.issues[0] ?? '', /Filter error: Error: boom/);
+});
+
+/* ---------- provider faults ---------- */
+
+/** The real Gemini body, word for word, from the batch of 2026-11-05. */
+const DEPLETED =
+  'Your prepayment credits are depleted. Please go to AI Studio at ' +
+  'https://ai.studio/projects to manage your project and billing.';
+
+const apiError = (message: string, statusCode?: number): Error => {
+  const err = new Error(message);
+  err.name = 'AI_APICallError';
+  if (statusCode !== undefined) Object.assign(err, { statusCode });
+  return err;
+};
+
+const bareCtx = (): FilterContext => ({
+  resume: { markdown: '', pdfText: '', pngPage1: null, pageCount: 1, pageTexts: [''] },
+  job: JOB,
+  source: SOURCE,
+  config: cfg(),
+  chat,
+  embeddings,
+  targetLanguage: 'en',
+});
+
+test('providerFault: names the fault for a provider error, null for a filter bug', () => {
+  assert.match(providerFault(apiError(DEPLETED)) ?? '', /prepay balance is empty/);
+  assert.match(providerFault(apiError('nope', 402)) ?? '', /HTTP 402/);
+  assert.match(providerFault(apiError('nope', 401)) ?? '', /credentials/);
+  assert.match(providerFault(apiError('API key not valid')) ?? '', /API key/);
+  assert.match(providerFault(apiError('You exceeded your current quota')) ?? '', /quota/);
+  // A bug in the filter is not a provider fault, and must stay a FAILURE.
+  assert.equal(providerFault(new Error('boom')), null);
+  assert.equal(providerFault(new TypeError('x is not a function')), null);
+  assert.equal(providerFault(apiError('model produced invalid JSON', 500)), null);
+});
+
+test('providerFault: CV wording cannot fake a provider fault', () => {
+  // A Zod error echoes the model's own output, so CV text reaches the
+  // classifier. A bullet about a billing system must not end the run.
+  const echoed =
+    'Invalid JSON response: {"summary":"Built the billing and rate limit layer ' +
+    'for a payments platform; cut quota overruns and credit card declines."}';
+  assert.equal(providerFault(new Error(echoed)), null);
+  assert.equal(providerFault(apiError(echoed, 422)), null);
+});
+
+test('providerFault: reads the whole cause chain', () => {
+  const inner = apiError(DEPLETED);
+  const outer = new Error('vision call failed', { cause: inner });
+  assert.match(providerFault(outer) ?? '', /prepay balance is empty/);
+});
+
+/* The registry is global and cannot be emptied, so the provider tests share
+   ONE filter. It runs first, which matters: sequential mode stops at the first
+   failure, and the tests above leave failing filters behind. It passes while
+   `providerError` is null, so it disturbs nothing else. */
+const PROVIDER = 'TProvider';
+let providerError: Error | null = null;
+let providerCalls = 0;
+register({
+  name: PROVIDER,
+  priority: -1,
+  evaluate: () => {
+    providerCalls++;
+    if (providerError !== null) return Promise.reject(providerError);
+    return Promise.resolve({
+      filterName: PROVIDER,
+      passed: true,
+      score: 1,
+      threshold: 1,
+      issues: [],
+      suggestions: [],
+    });
+  },
+});
+const withProviderError = (err: Error): void => {
+  providerError = err;
+  providerCalls = 0;
+};
+
+test('runAll: a provider fault ENDS the run, it does not fail the CV', async () => {
+  // MEASURED 2026-11-05: an empty wallet made this throw on every call, every
+  // throw read as "the CV is broken", so no iteration could pass and the loop
+  // spent its whole budget on CVs it could not grade.
+  withProviderError(apiError(DEPLETED));
+  await assert.rejects(() => runAll(bareCtx()), ProviderUnavailableError);
+  await assert.rejects(() => runAll(bareCtx(), { sequential: true }), ProviderUnavailableError);
+  providerError = null;
+});
+
+test('ProviderUnavailableError: says which filter and that nothing was graded', async () => {
+  withProviderError(apiError('nope', 402));
+  await assert.rejects(
+    () => runAll(bareCtx()),
+    (err: unknown) => {
+      assert.ok(err instanceof ProviderUnavailableError);
+      assert.equal(err.filterName, PROVIDER);
+      assert.match(err.message, /was NOT graded/);
+      return true;
+    },
+  );
+  providerError = null;
+});
+
+test('optimize: a provider fault stops the loop instead of buying iterations', async () => {
+  withProviderError(apiError(DEPLETED));
+  const { gen, seen } = fakeGenerator();
+  await assert.rejects(
+    () => optimize(SOURCE, JOB, deps({ generate: gen, config: cfg({ maxIterations: 3 }) })),
+    ProviderUnavailableError,
+  );
+  assert.equal(providerCalls, 1, 'the filter was asked once, not three times');
+  assert.equal(seen.length, 1, 'no second CV was generated and paid for');
+  providerError = null;
+});
+
+test('optimize: a provider fault in the GENERATOR is not called non-convergence', async () => {
+  const failing: Generator = () => Promise.reject(apiError(DEPLETED));
+  await assert.rejects(
+    () => optimize(SOURCE, JOB, deps({ generate: failing })),
+    (err: unknown) => {
+      assert.ok(err instanceof ProviderUnavailableError);
+      assert.match(err.message, /prepay balance is empty/);
+      return true;
+    },
+  );
 });
 
 test('registry: every implemented filter is registered', async () => {

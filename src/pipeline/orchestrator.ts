@@ -1,5 +1,6 @@
 import { logger } from '../logger.ts';
 import { runAll } from '../filters/registry.ts';
+import { ProviderUnavailableError, providerFault } from '../providers/provider-error.ts';
 import type { FilterReport } from '../prompts/optimizer.ts';
 import type { Config } from '../config.ts';
 import type { GenerateInput } from '../generator.ts';
@@ -68,6 +69,12 @@ const toReports = (results: readonly FilterResult[]): FilterReport[] =>
  * `filed` is the LAST iteration, which is the passing one when the loop broke
  * early. It is NOT the best iteration - nothing here tries to pick one. Every
  * iteration is returned, so a caller can look back over them by hand.
+ *
+ * That rule holds only while a pass can actually stop the loop. On 2026-11-05 a
+ * dead provider made one filter throw on every call, no iteration could pass,
+ * the loop ran to the budget, and the last iteration was filed over a better
+ * earlier one. The fix is not to pick a best iteration - it is to end the run
+ * when the provider breaks, which `ProviderUnavailableError` now does.
  */
 export const optimize = async (
   source: ResumeSource,
@@ -95,6 +102,11 @@ export const optimize = async (
         targetLanguage: job.language,
       });
     } catch (err: unknown) {
+      // A provider fault is not a convergence problem. Send it up, so the run
+      // ends with the real reason instead of blaming the instructions.
+      const fault = providerFault(err);
+      if (fault !== null) throw new ProviderUnavailableError('Optimizer', fault, err);
+
       // The generator's own page-fit loop can fail to converge under tight or
       // conflicting instructions. End the run cleanly and keep what the last
       // good iteration produced, rather than throwing the whole run away.
