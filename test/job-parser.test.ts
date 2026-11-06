@@ -1,8 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { SYSTEM_PROMPT, buildUserPrompt } from '../src/prompts/job-parser.ts';
+import { SYSTEM_PROMPT } from '../src/prompts/job-parser.ts';
 import { parseJobPosting } from '../src/job.ts';
 import { htmlToText } from '../src/fetch-job.ts';
 import { naming, renderCvName, runFolderName, sanitize, stamp } from '../src/output-path.ts';

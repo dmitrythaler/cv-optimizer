@@ -1,6 +1,5 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { aiGenerated } from '../src/filters/ai-generated.ts';
 import type { AiGeneratedResult } from '../src/filters/ai-generated.ts';

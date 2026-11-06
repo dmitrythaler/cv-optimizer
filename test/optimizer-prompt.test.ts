@@ -47,14 +47,25 @@ test('prompt: resume_guide.md has not drifted', () => {
   assert.equal(sha(loadResumeGuide()), LOCKED.RESUME_GUIDE);
 });
 
-test('prompt: the system prompt fills both slots and picks rules by mode', () => {
-  const strict = buildSystemPrompt({ noShame: false });
+// The size targets are part of the prompt, so the test states them. A real
+// number here, not a config read: the assertion below checks the value reaches
+// the prompt, and a config default could change under the test silently.
+const TARGETS = { targetChars: 4500, targetWords: 520 };
+
+test('prompt: the system prompt fills every slot and picks rules by mode', () => {
+  const strict = buildSystemPrompt({ noShame: false, ...TARGETS });
   assert.ok(!strict.includes('{content_rules}'), 'no unfilled slot');
   assert.ok(!strict.includes('{resume_guide}'), 'no unfilled slot');
+  // Added with the size targets. An unfilled {target_chars} would reach the
+  // model as literal text and ask it to write a CV of "{target_chars}" chars.
+  assert.ok(!strict.includes('{target_chars}'), 'no unfilled slot');
+  assert.ok(!strict.includes('{target_words}'), 'no unfilled slot');
+  assert.ok(strict.includes('4500'), 'the character target reaches the prompt');
+  assert.ok(strict.includes('520'), 'the word target reaches the prompt');
   assert.ok(strict.includes('NEVER add specific named products'), 'strict rules present');
   assert.ok(strict.includes(loadResumeGuide().slice(0, 60)), 'guide pasted in');
 
-  const lenient = buildSystemPrompt({ noShame: true });
+  const lenient = buildSystemPrompt({ noShame: true, ...TARGETS });
   assert.ok(lenient.includes('You CAN extrapolate skills'), 'lenient rules present');
   assert.ok(!lenient.includes('NEVER add specific named products'), 'strict rules gone');
 });

@@ -1,0 +1,27 @@
+{
+  /* THE TESTS ARE TYPECHECKED HERE, AND NOWHERE ELSE.
+   *
+   * `tsconfig.json` sets `rootDir: "src"` because that is what `pnpm build`
+   * emits, so it cannot also include `test/` - tsc refuses a file outside the
+   * root. The consequence was that `test/` was never typechecked at all, and
+   * `pnpm typecheck` stayed green while the suite was broken:
+   *
+   *   test/job-parser.test.ts imported `runFolderName`, which output-path.ts
+   *   has never exported, so the file died with a SyntaxError on load.
+   *   test/run-output.test.ts called prepareRun() with 4 arguments; it takes 3.
+   *
+   * Both are compile errors. Neither was reported, because tsc never read the
+   * file. A green typecheck must mean the whole repo compiles, not two thirds
+   * of it, so `pnpm typecheck` points here and `pnpm build` keeps the other.
+   */
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    /* Nothing is emitted, so these only slow the check down. */
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  },
+  "include": ["src/**/*", "test/**/*"]
+}
