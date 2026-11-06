@@ -247,8 +247,8 @@ const main = async (argv: string[]): Promise<number> => {
         //
         // The crawler writes the title and the company at the top of jd.txt from
         // the board's own fields. The parser reads them out of the posting, and
-        // a model reads what the text repeats: The Flex names its product
-        // Base360.ai eleven times and itself three, so the CV was named after
+        // a model reads what the text repeats: one posting named its product
+        // eleven times and its employer three, so the CV was named after
         // the product. Only the naming is corrected - keywords, requirements and
         // the summary still come from the posting, which is where they belong.
         const { parseJdHeader } = await import('./jd-header.ts');

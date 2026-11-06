@@ -38,7 +38,7 @@ test('clean: keeps the whole posting body', () => {
 
 test('clean: keeps what the parser needs - title, company, salary', () => {
   const { text } = cleanJobText(RAW);
-  assert.ok(text.includes('Link Group'), 'company');
+  assert.ok(text.includes('Beacon Group'), 'company');
   assert.ok(text.includes('Full-Stack Engineer'), 'title');
   assert.ok(text.includes('25,52 - 29,93 EUR Net per hour'), 'salary');
 });

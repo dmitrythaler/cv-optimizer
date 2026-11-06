@@ -11,7 +11,7 @@ test('parseJdHeader: reads the block the crawler writes', () => {
   const got = parseJdHeader(
     jd(
       'Senior Full-Stack Product Engineer\n' +
-        'The Flex\n' +
+        'Shortstay Group\n' +
         'Remote worldwide except US/Canada\n' +
         'Salary: Not disclosed\n' +
         'Posted: 2026-09-23\n' +
@@ -20,23 +20,23 @@ test('parseJdHeader: reads the block the crawler writes', () => {
   );
   assert.deepEqual(got, {
     title: 'Senior Full-Stack Product Engineer',
-    company: 'The Flex',
+    company: 'Shortstay Group',
     location: 'Remote worldwide except US/Canada',
   });
 });
 
 test('parseJdHeader: the employer wins over a product named all over the posting', () => {
-  // The reason this file exists. The Flex names Base360.ai eleven times and
-  // itself three, so the parser called the company Base360.ai and the CV was
-  // written as CV.base360_ai.pdf.
-  const body = 'Base360.ai is the AI operating system for short stays. '.repeat(11);
+  // The reason this file exists. The posting names its product eleven times and
+  // the employer three, so the parser took the product for the company and the
+  // CV was written under the product's name.
+  const body = 'Northstar.ai is the AI operating system for short stays. '.repeat(11);
   const got = parseJdHeader(
     jd(
-      'Senior Full-Stack Product Engineer\nThe Flex\nRemote\nSalary: -\nPosted: 2026-09-23\nSource: https://x.test/1',
+      'Senior Full-Stack Product Engineer\nShortstay Group\nRemote\nSalary: -\nPosted: 2026-09-23\nSource: https://x.test/1',
       body,
     ),
   );
-  assert.equal(got?.company, 'The Flex');
+  assert.equal(got?.company, 'Shortstay Group');
 });
 
 test('parseJdHeader: a posting with no header returns null, it does not guess', () => {

@@ -47,14 +47,14 @@ test('parseJobPosting: keeps the summary and the full text apart', async () => {
 
 test('naming: run folder is {date}-{time}-{company}-{position}', () => {
   const n = naming(
-    'co.brick Talents',
+    'well.made Talents',
     'Senior Full Stack Developer (Node.js+React)',
     'en',
     stamp(new Date(2026, 7, 5, 9, 12)),
   );
   assert.equal(
     runFolderName(n),
-    '20260805-0912-co_brick_talents-senior_full_stack_developer_node_js_react',
+    '20260805-0912-well_made_talents-senior_full_stack_developer_node_js_react',
   );
 });
 
@@ -73,19 +73,24 @@ test('naming: sanitize collapses runs and trims edges', () => {
 
 /* ---------- CV_NAME_TEMPLATE ---------- */
 
-const NAMED = naming('Link Group', 'Full-Stack Engineer', 'en', stamp(new Date(2026, 7, 5, 9, 12)));
+const NAMED = naming(
+  'Beacon Group',
+  'Full-Stack Engineer',
+  'en',
+  stamp(new Date(2026, 7, 5, 9, 12)),
+);
 
 test('template: fills every documented placeholder', () => {
   assert.equal(
     renderCvName('{date}_{time}_{company}_{position}_{lang}.pdf', NAMED),
-    '20260805_0912_link_group_full_stack_engineer_en.pdf',
+    '20260805_0912_beacon_group_full_stack_engineer_en.pdf',
   );
 });
 
 test('template: static text is kept as written', () => {
   assert.equal(
     renderCvName('John.Dow.CV.{company}.{position}.pdf', NAMED),
-    'John.Dow.CV.link_group.full_stack_engineer.pdf',
+    'John.Dow.CV.beacon_group.full_stack_engineer.pdf',
   );
 });
 
@@ -97,7 +102,7 @@ test('template: _slug aliases mean the same thing', () => {
 });
 
 test('template: .pdf is appended when missing', () => {
-  assert.equal(renderCvName('CV.{company}', NAMED), 'CV.link_group.pdf');
+  assert.equal(renderCvName('CV.{company}', NAMED), 'CV.beacon_group.pdf');
 });
 
 test('template: an unknown placeholder throws, it does not ship as text', () => {

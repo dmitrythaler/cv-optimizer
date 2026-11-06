@@ -3,8 +3,8 @@
  *
  * One run produces one FOLDER, named after the run and the job:
  *
- *   output/20260805-0912-link_group-full_stack_engineer/
- *     John.Dow.CV.link_group.full_stack_engineer.pdf   <- CV_NAME_TEMPLATE
+ *   output/20260805-0912-beacon_group-full_stack_engineer/
+ *     John.Dow.CV.beacon_group.full_stack_engineer.pdf   <- CV_NAME_TEMPLATE
  *     iteration_1.pdf
  *     iteration_1.png
  *     iteration_2.pdf

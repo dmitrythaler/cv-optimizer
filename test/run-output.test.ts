@@ -61,7 +61,7 @@ const outcomeOf = (iterations: Iteration[]): OptimizationOutcome => {
 
 const JOB: JobPosting = {
   title: 'Full-Stack Engineer',
-  company: 'Link Group',
+  company: 'Beacon Group',
   description: 'd',
   rawText: 'raw',
   requirements: ['React'],
@@ -71,7 +71,7 @@ const JOB: JobPosting = {
 
 const SOURCE = { text: 'cv text', path: 'example.cv.md', instructions: null };
 
-const JD = 'Full-Stack Engineer at Link Group. React, Node.js, PostgreSQL.';
+const JD = 'Full-Stack Engineer at Beacon Group. React, Node.js, PostgreSQL.';
 const JOB_SOURCE = {
   from: 'https://example.test/job',
   kind: 'url' as const,
@@ -107,7 +107,7 @@ test('run folder: a passing run writes no errors.log', async () => {
   logger.resetProblems();
   const { files } = await write(outcomeOf([iteration(1, true)]));
   assert.deepEqual(files, [
-    'CV.link_group.full_stack_engineer.pdf',
+    'CV.beacon_group.full_stack_engineer.pdf',
     'iteration_1.pdf',
     'iteration_1.png',
     'jd.txt',
@@ -152,7 +152,7 @@ test('optimization.json: records the verdict and every filter score', async () =
 
   assert.equal(j.passed, true);
   assert.equal(j.filedIteration, 2);
-  assert.equal(j.cvFile, 'CV.link_group.full_stack_engineer.pdf');
+  assert.equal(j.cvFile, 'CV.beacon_group.full_stack_engineer.pdf');
   assert.deepEqual(j.failedFilters, []);
   assert.equal(j.iterations.length, 2);
   assert.equal(j.iterations[0]?.passed, false);
@@ -168,7 +168,7 @@ test('run folder: no CV file when the filed iteration cannot render', async () =
 
   // An empty or absent PDF is honest. A zero-byte file that looks like a result
   // is not - see design rule 6, a produced PDF is never proof of a pass.
-  assert.ok(!files.includes('CV.link_group.full_stack_engineer.pdf'), 'no CV written');
+  assert.ok(!files.includes('CV.beacon_group.full_stack_engineer.pdf'), 'no CV written');
   assert.ok(files.includes('errors.log'), 'and it says why');
 
   const j = JSON.parse(await readFile(join(folder, 'optimization.json'), 'utf8')) as {
@@ -203,7 +203,7 @@ test('prepareRun: with no -o the run gets its own stamped folder', async () => {
   assert.notEqual(folder, dir, 'a subfolder, not the parent');
   assert.match(
     folder,
-    /\/\d{8}-\d{4}-link_group-full_stack_engineer$/,
+    /\/\d{8}-\d{4}-beacon_group-full_stack_engineer$/,
     '{date}-{time}-{company}-{position}',
   );
   // Empty. prepareRun creates the folder; the caller fills it.

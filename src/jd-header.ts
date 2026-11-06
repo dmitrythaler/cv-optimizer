@@ -2,7 +2,7 @@
  * Reads the header block the crawler writes at the top of every `jd.txt`.
  *
  *   Senior Full-Stack Product Engineer     <- title
- *   The Flex                               <- company
+ *   Shortstay Group                        <- company
  *   Remote worldwide except US/Canada      <- location
  *   Salary: Not disclosed
  *   Posted: 2026-09-23
@@ -13,11 +13,11 @@
  *   ...the posting...
  *
  * WHY THIS EXISTS. The title and the company were read out of the posting by a
- * model, and a model reads what the text repeats. The Flex posting names its
- * product `Base360.ai` eleven times and the employer three, so the CV came out
- * as `CV.base360_ai.pdf` - a file named after a company that is not the
- * employer, which is exactly how the wrong PDF gets attached. Both
- * Magpie postings came out with an empty position and collided on one name.
+ * model, and a model reads what the text repeats. One posting named its own
+ * PRODUCT eleven times and its employer three, so the CV came out named after
+ * the product - a file named after a company that is not the employer, which
+ * is exactly how the wrong PDF gets attached. Two postings from one employer
+ * came out with an empty position and collided on a single file name.
  *
  * The header is not a guess. The crawler wrote it from the board's own fields,
  * so when it is there it WINS over anything read out of the prose.

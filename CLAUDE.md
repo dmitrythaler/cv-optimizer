@@ -94,9 +94,9 @@ docs/
 One run writes one folder:
 
 ```
-output/20260805-0912-link_group-full_stack_engineer/
+output/20260805-0912-beacon_group-full_stack_engineer/
   jd.txt                the posting, fetched and cleaned
-  John.Dow.CV.link_group.full_stack_engineer.pdf   <- CV_NAME_TEMPLATE
+  John.Dow.CV.beacon_group.full_stack_engineer.pdf   <- CV_NAME_TEMPLATE
   iteration_1.pdf   iteration_1.png
   iteration_2.pdf   iteration_2.png
   optimization.json     every filter score, per iteration

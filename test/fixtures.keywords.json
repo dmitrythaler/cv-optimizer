@@ -1,155 +1,193 @@
 {
-  "co_brick_talents_senior_full_stack_developer_node_js_react": {
-    "jd": "Senior Full Stack Developer (Node.js+React) - co.brick Talents\nhttps://justjoin.it/job-offer/co-brick-talents-senior-full-stack-developer-node-js-react--gliwice-javascript\nPublished: 30.07.2026 | Remote | B2B | 30,05 - 34,67 EUR net/hour (130-150 PLN/h)\n\nJOB DESCRIPTION (original in Polish; English required at B2+/C1, no Polish requirement stated)\n\nWe are looking for a Senior Fullstack Engineer for a project delivered for a US client in the ConTech / FinTech space. This is a role for people who enjoy demanding technical challenges and take satisfaction from solving complex analytical and mathematical problems.\n\nLocation: remote work\nStart: ASAP\nDuration: until 31.01.2027 (approx. 6 months) with possible extension\nRate: 130-150 PLN/h (B2B)\n\nAbout the project\n\nThe project concerns a system responsible for precise spatial calculations and automatic cost calculation of multi-million construction investments.\n\nThis is not a typical CRUD-based business application. Algorithms, business logic and mathematics play the key role here; Node.js and React are only the tools used to implement them.\n\nScope of work:\napprox. 80% Backend (Node.js / TypeScript)\napprox. 20% Frontend (React)\n\nResponsibilities\n\nanalysis and development of complex business logic\nreverse engineering of existing solutions and analysis of system dependencies\ndesign and optimisation of computational algorithms\nwork with 2D/3D computational geometry, coordinate systems and spatial data transformations\nbackend development and application performance optimisation\nintroducing small React changes related to presentation of computed data\n\nAbout 60% of the work consists of analysis, modelling and solving complex computational problems.\n\nThe WebGL/Canvas-based rendering engine is developed by a separate team. In this role the emphasis is primarily on backend, data logic and mathematical algorithms, not on the graphics layer.\n\nTech Stack\n\nNode.js, TypeScript, React, PostgreSQL, AWS (Amazon Aurora), Docker, CI/CD\n\nRequirements\n\nminimum 7 years of commercial experience as a Software Engineer, with particular emphasis on backend and system logic\nvery good knowledge of Node.js and TypeScript\npractical knowledge of React\nexperience working with distributed architecture (Microservices, Event-driven, REST API)\nexperience in designing and optimising PostgreSQL queries at scale and knowledge of AWS (Amazon Aurora)\npractical knowledge of Docker and CI/CD processes\ncare for code quality through unit tests, integration tests and code review\nEnglish at minimum B2+/C1 level\n\nWho we are looking for\n\nSomeone with very strong analytical abilities, comfortable working with demanding business logic and complex algorithms.\n\nA big advantage will be experience in:\nmodelling multidimensional data structures,\n2D/3D computational geometry,\ncoordinate systems and spatial transformations,\nvector mathematics,\ndesigning algorithms solving complex computational problems.\n\nAdditional information\n\nAvailability required for syncs with the US team several times a week between 17:00-18:00 CET.\n\nTECH STACK\nEnglish C1 | Node Advanced | React Advanced | AWS Advanced | geometry Advanced\n",
-    "score": 0.4150943396226415,
+  "terse_requisition_node_backend": {
+    "jd": "Senior Backend Engineer - requisition\n\nStack: Node.js, TypeScript, PostgreSQL, Redis, Kafka, Docker, Kubernetes,\nTerraform, AWS, GraphQL, REST, OpenTelemetry, microservices.\n\nMust have:\n- Node.js and TypeScript in production, several years.\n- PostgreSQL schema modelling and query tuning.\n- Microservice architecture.\n- Infrastructure as code with Terraform.\n- Observability: tracing and metrics.\n\nNice to have: Fastify, ClickHouse, RabbitMQ, Vault.\n\nRemote. Senior level. Start as soon as possible.",
+    "score": 0.8333333333333333,
     "passed": true,
     "missing": [
-      "algorithms",
-      "complex",
-      "computational",
-      "logic",
-      "advanced",
-      "business",
-      "knowledge",
-      "analysis",
-      "approx",
-      "business logic"
+      "node.js typescript"
     ]
   },
-  "hygraph_senior_fullstack_engineer": {
-    "jd": "Senior Fullstack Engineer (f/m/d) - Berlin I Germany, EMEA I Remote - Hygraph\nhttps://weworkremotely.com/remote-jobs/hygraph-senior-fullstack-engineer-f-m-d-berlin-i-germany-emea-i-remote\nPosted: 31.07.2026 | Full-Time | Remote | Salary not stated\nEligible regions listed on the posting: Czechia, Germany, Spain, Greece, Croatia, Kenya, North Macedonia, Nigeria, Poland, Portugal, Romania, Serbia, South Africa\n\nJOB DESCRIPTION\n\nMichael and Daniel met in 2015 while working for a DAM company. They quickly realized that they share the same mindset on software development, keeping a close eye on the disruptive JavaScript technologies that came to life. A couple of weeks later, the idea of a GraphQL CMS came to their minds, so they built it.\n\nAs the first GraphQL native Headless CMS, our mission is to remove traditional content management pain points by using the power of GraphQL and take the idea of a Headless CMS to the next level. Today we have evolved as a federated content platform.\n\nOur goal is to enable developers and content operators to create, enrich, unify, and deliver content across platforms seamlessly. We are trusted to manage content for teams from over 50,000 organizations like Dr. Oetker, Shure, Samsung, Ashley Furniture, Telenor, Philips, and Gamescom. With over $35M in funding led by One Peak, alongside OpenOcean, Peak, and SquareOne Venture Capital, you will be part of a remote-first and globally distributed team of about 70 team members, committed to working collaboratively, transparently, and passionately.\n\nWith our headquarters in Berlin, Germany, the rest of our team joins in from various parts of the world.\n\nHow will you make an impact?\n\nAs a Senior Full Stack Engineer, you'll work at the intersection of engineering and product to shape how our users build with Hygraph. You'll ship features that solve real customer problems, contribute to our CMS core, extend our platform capabilities, and help bring AI-powered features to life. You won't wait for perfect specs or pixel-perfect designs. You'll use your judgment, collaborate closely with product managers, designers, and customers, and move fast using modern AI-assisted development tools.\n\nThis role is for someone who sees engineering as a team sport, takes ownership without waiting for permission, and thrives in an environment where initiative matters more than instructions.\n\nWhat you will be working on:\n\nCore CMS development: Evolve the GraphQL-native CMS powering enterprise teams worldwide, improving performance, reliability, and developer experience.\nCMS extensions and integrations: Develop and maintain extensions that expand what customers can do with Hygraph.\nAI-powered features: Contribute to our AI roadmap by building intelligent capabilities into the product.\nCustomer-facing improvements: Use monitoring data, customer feedback, and your product instinct to identify and fix problems before they're reported proactively.\n\nSome of your tasks and responsibilities:\n\nCollaborate in a cross-functional, autonomous team to deliver features and continuous improvements, often working from rough prototypes or early concepts rather than polished designs.\nTranslate business needs into technical solutions by working closely with the Product team. Occasionally, participate in customer conversations to validate that what you're building actually solves their problems.\nComfortable using modern AI-assisted development tools (Cursor, Claude, Codex, or similar) to accelerate development.\nProactively identify issues through monitoring and observability data. Then fix them, don't just flag them.\nContribute to architectural decisions that keep our platform scalable, reliable, and maintainable.\nShare what you know, learn from others, and help your teammates grow. Engineering here is collaborative. We win together.\n\nJob requirements\n\nWhat we expect from you:\n\nSignificant experience (typically 6+ years) building and owning production systems, with strong full-stack skills in JavaScript/TypeScript and deep backend expertise, scalability, and performance fundamentals (ideally Node.js).\nExperience building user interfaces, ideally with React.\nExperience developing well-tested APIs with GraphQL.\nSolid knowledge of relational databases (especially PostgreSQL), including schema design and query optimization.\nActive use of AI-assisted development tools (Claude, Cursor, Codex, or similar) in your workflow.\nFamiliarity with cloud-native development (AWS, GCP).\nExperience with monitoring and observability tooling (New Relic, Datadog, or similar).\nOpenness and experience with on-call and operational work (investigations, incident response, etc.).\nAbility to work with ambiguity: rough prototypes, evolving requirements, and imperfect information. You use judgment and experience to fill the gaps.\nStrong product sense. You think about why you're building something, not just how. You care about the customer experience, not just the code.\n\nBonus points\n\nExperience with Golang.\nKnowledge of infrastructure as code tooling (Pulumi, Terraform).\nExperience working directly with customers or in customer-facing roles.\nFamiliarity with headless CMS platforms or content infrastructure.\n\nThe Process\n\nIntro call with People Team\nInterview with the Hiring Manager\nTechnical Interview\nC-Level Call and Reference Check (optional)\nJob Offer\n\nThe response time after application, screening applications, and setting up the first intro call is usually within 1-2 weeks.\n",
-    "score": 0.5492957746478873,
+  "platform_engineer_node_typescript": {
+    "jd": "Senior Platform Engineer (Node.js / TypeScript)\n\nAbout us\n\nWe are forty people across eleven countries, building the analytics layer that\nsubscription businesses use to understand churn. We have been profitable since\n2023 and we are not raising. Engineering is eighteen of us, organised in four\nstream-aligned teams with no separate operations group: the team that builds a\nservice runs it.\n\nThe role\n\nYou will own backend services end to end, from the API surface down to the\ninfrastructure they run on. There is no separate platform team to hand the\ndeployment to, and no separate DBA to blame for a slow query.\n\nWhat you will do\n\n- Design and build services in Node.js and TypeScript, exposed through REST and\n  GraphQL APIs that other product teams depend on.\n- Model and tune data in PostgreSQL: schema design, indexing strategy, and\n  reading a query plan without guessing.\n- Work with ClickHouse for the analytical queries behind our dashboards, and\n  decide what belongs in the request path and what belongs in a rollup.\n- Own the delivery path: Docker, Kubernetes, Terraform, and the CI/CD pipeline.\n- Keep the system observable with OpenTelemetry, and keep cloud spend honest.\n- Use Kafka for event propagation between microservices.\n- Take part in the on-call rotation for the services your team owns.\n\nWhat we are looking for\n\n- Several years of production Node.js and TypeScript in a microservice\n  architecture.\n- Strong PostgreSQL. This is the first thing we will talk about.\n- Comfortable owning infrastructure as code, not only application code.\n- Experience with AWS. We use ECS/Fargate, RDS, SNS/SQS and KMS.\n- Redis for caching and for presence.\n- You write tests, and you can explain what you chose not to test and why.\n- English at a level where you can disagree with a colleague in writing.\n\nNice to have\n\n- GraphQL schema design where the schema outlived the first team that wrote it.\n- Observability practice: tracing, metrics, structured logging, and alerts a\n  human will act on.\n- Fastify or Express internals, not just their documentation.\n\nWhat we offer\n\n- Fully remote within Europe, with a yearly company gathering.\n- Thirty days of paid leave, plus local public holidays.\n- A learning budget of 2000 EUR a year, and the time to use it.\n- Home-office allowance and a hardware refresh every three years.\n- Private health insurance where we can arrange it locally.\n\nHow we hire\n\nAn intro call with a recruiter, a technical conversation with two engineers, a\npaid take-home exercise of about four hours, and a final call with the team\nlead. Four steps, three weeks, and we tell you where you stand after each one.\nWe do not ask for unpaid work and we do not run live algorithm interviews.",
+    "score": 0.5666666666666667,
     "passed": true,
     "missing": [
-      "cms",
-      "content",
-      "working",
-      "customer",
+      "use",
+      "design",
+      "node.js typescript",
+      "schema",
+      "separate",
+      "belongs",
+      "paid",
+      "query",
+      "schema design",
+      "teams"
+    ]
+  },
+  "fullstack_engineer_ai_assisted_delivery": {
+    "jd": "Senior Full-Stack Engineer - AI-Assisted Delivery\n\nAbout us\n\nWe build internal developer tooling, sold to engineering organisations between\n200 and 5000 people. Series A, fifty-five people, remote since founding. Our\nown engineers are the first users of everything we ship, which shortens the\nfeedback loop and removes most of the arguing.\n\nThe role\n\nWe practise what we sell: LLM-assisted development is part of how this team\nships, and part of what we build. You will work on both sides of that.\n\nWhat you will do\n\n- Build and maintain full-stack features in TypeScript: Node.js on the backend,\n  React on the front end.\n- Integrate LLM provider APIs into product features, including streaming\n  responses and tool calling.\n- Extend our own development workflow: AI-assisted code generation, refactoring,\n  test authoring and documentation.\n- Own and improve the prompt library the team shares, and the evaluation\n  harness that keeps it honest.\n- Work with PostgreSQL and Redis. Ship through Docker and CI/CD.\n\nRequirements\n\n- Strong JavaScript and TypeScript, on the server and in the browser.\n- Production Node.js with REST API design.\n- Hands-on experience with LLM-assisted development and prompt engineering, and\n  a clear view of where it helps and where it wastes everybody's afternoon.\n- Familiarity with React and a modern state-management approach.\n- Git, code review, and the habit of leaving the documentation better than you\n  found it.\n\nNice to have\n\n- Direct integration against a model provider API rather than through a\n  framework.\n- Observability tooling.\n- Vue.js, which one of our products still uses.\n- An opinion about evaluation that you can defend with numbers.\n\nWhat we offer\n\n- Fully remote within Europe, with a yearly company gathering.\n- Thirty days of paid leave, plus local public holidays.\n- A learning budget of 2000 EUR a year, and the time to use it.\n- Home-office allowance and a hardware refresh every three years.\n- Private health insurance where we can arrange it locally.\n\nHow we hire\n\nAn intro call with a recruiter, a technical conversation with two engineers, a\npaid take-home exercise of about four hours, and a final call with the team\nlead. Four steps, three weeks, and we tell you where you stand after each one.\nWe do not ask for unpaid work and we do not run live algorithm interviews.",
+    "score": 0.6481481481481478,
+    "passed": true,
+    "missing": [
+      "build",
+      "engineers",
+      "evaluation",
       "features",
-      "use"
+      "paid",
+      "people",
+      "provider",
+      "ship",
+      "tooling"
     ]
   },
-  "inuits_senior_full_stack_engineer": {
-    "jd": "Senior Full Stack Engineer - Inuits\nhttps://justjoin.it/job-offer/inuits-senior-full-stack-engineer-krakow-javascript-0492e3fa\nPublished: 31.07.2026 | Remote | B2B | 32,63 - 36,13 EUR net/hour\n\nJOB DESCRIPTION\n\nWe are looking for a Senior Full Stack Engineer (React + TypeScript) to join a small, senior team building next-generation tools for the global renewable energy transition. You will own features end to end, from concept to production, on a platform used by leading solar and energy companies worldwide. This role suits a strong full stack developer who writes clean, well-tested code, cares about scalability and maintainability, and is comfortable shaping both technical solutions and product direction alongside engineering peers and product managers.\n\nAbout the Project:\nSitemark is a Belgian technology company accelerating the shift to renewable energy through data and AI. Its platform helps solar and energy companies monitor, analyze, and optimize renewable energy assets using drone data and AI driven insights, and has supported more than 10,000 projects across 82 countries. You will work on the next generation of this platform, combining cloud native infrastructure, full stack development, and modern engineering practices to deliver a scalable, data driven system that powers decision making for sustainable energy infrastructure.\n\nResponsibilities:\n\nLead end to end development of new platform features, from planning and prioritization through implementation, testing, and deployment;\nContribute to architectural decisions, ensuring high performance, maintainability, and scalability;\nCollaborate closely with product managers and engineering peers to shape technical solutions and product direction;\nWrite clean, efficient, well tested code following established best practices;\nParticipate in product brainstorming, refinement, and continuous improvement sessions;\nShare knowledge and mentor peers within a small, agile team.\n\nQualifications:\n\nStrong fluency in JavaScript and TypeScript, with solid experience in React and Node.js;\nProven track record of building scalable, production grade applications;\nWorking knowledge of relational databases (PostgreSQL) and containerization (Docker);\nExperience with or strong interest in cloud infrastructure on Azure or AWS;\nPassion for clean, maintainable, reusable code with a strong focus on testing;\nCollaborative mindset, self driven approach to problem solving, and ability to pick up new technologies quickly;\nExperience with Python or Machine Learning is a plus.\n\nRecruitment Process:\n\nHR screening (30 minute Zoom call);\nTechnical challenge: coding round, problem solving round, brainstorming round;\nOffer call.\n\nInuits Sp. z o.o. is registered in the National Register of Employment Agencies (KRAZ) under number 35420.\n\nTECH STACK\nEnglish C1 | TypeScript Master | JavaScript Master | AWS Advanced | PostgreSQL Advanced | Node.js Advanced | AI Advanced | Docker Advanced | React Advanced\n",
-    "score": 0.6707317073170735,
+  "backend_engineer_payments_platform": {
+    "jd": "Backend Engineer - Payments Platform\n\nAbout us\n\nWe hold an e-money licence and process payments for marketplaces across the\nEuropean Economic Area. Ninety people, headquartered in Amsterdam, regulated by\nthe Dutch central bank. Our volumes doubled last year and the platform did not,\nwhich is why this role exists.\n\nThe role\n\nWe are rebuilding the service layer between our product and the payment\nnetworks. You will work on the part of the system where a mistake is not a bug\nreport, it is a reconciliation problem with somebody's money in it.\n\nResponsibilities\n\n- Build and maintain payment gateway adapters behind a single internal API.\n- Treat idempotency, retry semantics and reconciliation as design problems, not\n  as error handling added at the end.\n- Work in Node.js and TypeScript with PostgreSQL as the system of record.\n- Use RabbitMQ for asynchronous work and event delivery.\n- Document the API with OpenAPI/Swagger and keep the document true.\n- Share the on-call rotation for the services you build.\n- Work with our compliance team on audit and reporting requirements.\n\nRequirements\n\n- Solid production Node.js and TypeScript.\n- PostgreSQL, including transactions and isolation levels you can reason about\n  out loud.\n- Experience integrating a third-party payment provider such as Stripe, PayPal\n  or Square.\n- REST API design for consumers you cannot deploy alongside.\n- AWS, particularly RDS and KMS.\n- Care about correctness under partial failure. \"Mostly works\" is not a state\n  this system is allowed to be in.\n\nNice to have\n\n- Prior work inside a regulated licence holder.\n- Message broker experience beyond using a queue as a to-do list.\n- Double-entry bookkeeping, or a willingness to learn it properly.\n\nWhat we offer\n\n- Permanent employment with a salary band published in the offer.\n- Hybrid: two days a week in the office, three at home.\n- Pension contribution and commuter allowance.\n- Twenty-eight days of leave.\n- A budget for conferences, with one speaking slot a year if you want it.\n\nHow we hire\n\nA short call, a technical interview, a system-design conversation, and a\nmeeting with the team. No take-home exercise.",
+    "score": 0.5294117647058827,
     "passed": true,
     "missing": [
-      "advanced",
-      "energy",
-      "clean",
-      "peers",
-      "renewable",
-      "renewable energy",
-      "technical"
-    ]
-  },
-  "link_group_full_stack_engineer": {
-    "jd": "Full-Stack Engineer - Link Group\nhttps://justjoin.it/job-offer/link-group-full-stack-engineer-bialystok-javascript\nPublished: 30.07.2026 | Remote | B2B | 25,52 - 29,93 EUR net/hour\n\nJOB DESCRIPTION\n\nSenior Fullstack Engineer (React & Node.js)\n\nAbout the Role\n\nWe are looking for a Senior Fullstack Engineer to join a product team building modern, scalable web applications and digital experiences.\n\nYou will work across the entire application stack, from user-facing interfaces to backend services and integrations. The role has a strong focus on frontend engineering while also involving backend development, API design, and data management.\n\nYou will collaborate closely with product, design, and engineering teams to deliver high-quality, accessible, and performant applications.\n\nResponsibilities\n\nDevelop and maintain modern web applications using React, Node.js, and TypeScript.\nBuild scalable and reusable UI components integrated with a design system.\nDevelop and maintain backend services and APIs using Node.js and Fastify.\nIntegrate applications with CMS platforms and third-party services.\nWork with PostgreSQL and Redis to support application functionality and performance.\nWrite and maintain automated tests, including unit and end-to-end tests.\nEnsure high standards of accessibility, performance, and code quality.\nParticipate in architectural discussions and contribute to engineering best practices.\n\nRequirements\n\nStrong commercial experience in fullstack development using React and Node.js.\nSolid experience with modern frontend technologies, including React Router and TanStack Query.\nExperience integrating with Headless CMS platforms, preferably Contentful.\nGood understanding of API design and backend development principles.\nExperience with PostgreSQL and Redis.\nExperience with automated testing frameworks such as Vitest and Playwright.\nStrong understanding of accessibility standards (WCAG) and performance optimisation.\nAbility to work across the entire software development lifecycle in a product-oriented environment.\n\nNice to Have\n\nExperience with authentication and identity platforms such as SAP Gigya.\nExperience integrating Salesforce products or loyalty platforms.\nExperience in highly scalable, customer-facing digital products.\nExperience working in agile, cross-functional product teams.\n\nTECH STACK\nReact Advanced | Node.js Advanced | PostgreSQL Advanced\n",
-    "score": 0.7261904761904758,
-    "passed": true,
-    "missing": [
-      "applications",
+      "build",
+      "days",
       "design",
-      "advanced",
-      "fullstack",
-      "maintain",
-      "modern",
-      "react node.js"
+      "document",
+      "licence",
+      "node.js typescript",
+      "offer",
+      "regulated",
+      "requirements",
+      "role"
     ]
   },
-  "link_group_senior_fullstack_engineer_node_react_typescript": {
-    "jd": "Senior Fullstack Engineer - Node, React, Typescript - Link Group\nhttps://justjoin.it/job-offer/link-group-senior-fullstack-engineer---node-react-typescript-warszawa-javascript\nPublished: 31.07.2026 | Remote | Permanent | 5 800,87 - 8 585,28 EUR gross/month\n\nJOB DESCRIPTION\n\nSenior Full Stack Engineer\n\nWe are looking for a Senior Full Stack Engineer with strong software engineering fundamentals and excellent algorithmic and problem-solving skills. You'll play a key role in designing scalable applications, solving complex technical challenges and driving architectural decisions in a modern product environment.\n\nResponsibilities\n\nDesign, develop and maintain high-performance web applications.\nTranslate complex business requirements into efficient technical solutions.\nBuild scalable frontend and backend services using modern technologies.\nContribute to system architecture, code quality and technical improvements.\nCollaborate with cross-functional teams and take ownership of features from design to deployment.\n\nRequirements\n\n5+ years of experience in Full Stack Software Engineering.\nStrong algorithmic thinking and solid understanding of data structures, software design principles and performance optimization.\nExperience with TypeScript, React, Node.js and SQL databases.\nAbility to quickly learn new technologies and solve complex technical problems.\nExperience working across frontend, backend and cloud environments.\nExcellent communication skills and fluent English.\n\nWhat We Offer\n\nRemote work model with flexible working hours.\nOpportunity to work with modern technologies and influence technical decisions.\nHigh-quality equipment provided.\nFast-paced environment with multiple innovative projects and excellent growth opportunities.\nCollaborative team where ownership, initiative and continuous learning are highly valued.\n\nTECH STACK\nEnglish C1 | TypeScript Advanced | React Advanced | SQL Advanced | Node.js Advanced\n\nNOTE: the board tags this offer's seniority as \"Team Leader / Manager\" but the description contains no leadership duties. Contract form is Polish permanent employment (gross), not B2B.\n",
-    "score": 0.4782608695652175,
+  "fullstack_developer_vue_analytics": {
+    "jd": "Full-Stack Developer (Vue.js + Node.js)\n\nAbout us\n\nWe are a twelve-person product studio building reporting tools for grocery and\nfashion retail. Our customers are category managers, not engineers, so the bar\nfor clarity in the interface is high and the bar for jargon is low.\n\nThe role\n\nYou will work across a reporting product: the dashboards our customers read\nevery morning, and the services that compute what those dashboards show.\n\nWhat the job involves\n\n- Front-end work in Vue.js with Pinia for state, styled with Tailwind and\n  PostCSS.\n- Backend services in Node.js and TypeScript exposing a GraphQL API.\n- Analytical queries over large event tables. We use ClickHouse and OLAP\n  modelling for the heavy aggregations.\n- Caching with Redis to keep dashboard load times under a second.\n- Deployment through Docker.\n- Sitting with category managers to watch them use what you built, which is\n  uncomfortable and the fastest feedback available.\n\nWe are looking for\n\n- Commercial Vue.js experience, ideally Vue 3 and the composition API.\n- Node.js and TypeScript on the server.\n- SQL you are comfortable with: joins, window functions, and reading a plan.\n- GraphQL, as a consumer or an author.\n- Willingness to work across the stack instead of guarding one half of it.\n- Patience with ambiguous requirements from non-technical users.\n\nNice to have\n\n- ClickHouse or another column store.\n- Performance profiling in the browser.\n- Elasticsearch.\n- Data-visualisation judgement: knowing when a number beats a chart.\n\nWhat we offer\n\n- Fully remote within Europe, with a yearly company gathering.\n- Thirty days of paid leave, plus local public holidays.\n- A learning budget of 2000 EUR a year, and the time to use it.\n- Home-office allowance and a hardware refresh every three years.\n- Private health insurance where we can arrange it locally.\n\nHow we hire\n\nAn intro call with a recruiter, a technical conversation with two engineers, a\npaid take-home exercise of about four hours, and a final call with the team\nlead. Four steps, three weeks, and we tell you where you stand after each one.\nWe do not ask for unpaid work and we do not run live algorithm interviews.",
+    "score": 0.5333333333333333,
     "passed": true,
     "missing": [
-      "technical",
-      "advanced",
-      "complex",
-      "design",
-      "excellent",
-      "modern",
-      "technologies"
+      "use",
+      "bar",
+      "category",
+      "category managers",
+      "customers",
+      "dashboards",
+      "engineers",
+      "managers",
+      "node.js typescript",
+      "paid"
     ]
   },
-  "netguru_senior_fullstack_developer_with_node_js_freelance": {
-    "jd": "(Senior) Fullstack Developer with Node.js - Freelance - Netguru\nhttps://justjoin.it/job-offer/netguru--senior-fullstack-developer-with-node-js---freelance-poznan-javascript\nPublished: 29.07.2026 | Remote (based in European Union) | B2B Freelance | 26 - 35 EUR net/hour\n\nJOB DESCRIPTION\n\nNetguru is a trusted partner in digital commerce. The company helps leading brands modernize B2B solutions, marketplaces, and retail ecosystems. Since 2008, it has empowered businesses with cutting-edge technology, AI-powered personalization, and world-class engineering and design teams. A certified B Corporation, Netguru is trusted by major brands including IKEA, VW, OLX, Delivery Hero, Zabka, Wolt, Careem, and Vinted.\n\nHow freelancing works at Netguru?\n\nAs a freelancer, you can choose what works well for you. You decide when, where, and how you work on projects and tasks.\n\nWe match you with work that fits your skills. Plus, you have access to various opportunities across different industries and companies. That means you will not only gain more experience, but also develop various skills.\n\nBut there's more. Netguru freelancers can benefit from full-time collaboration and really be a part of the team.\n\nSo, are you ready to make an impact? Join Netguru, and let's build beautiful software together.\n\nWe are looking for a (Senior) Fullstack Developer with Node.js\n\nFreelance assignment: full-time, B2B contract.\nStart: July\nDuration: 3 months with the possibility of extension\nWorking hours: CET\nLocation: Remote (based in European Union)\nSalary brackets: 26-35 EUR/h\n\nRequirements\n\nStrong proficiency in Node.js and TypeScript.\nExperience building and maintaining REST APIs and WebSocket-based applications.\nHands-on experience with Strapi and Medusa.js.\nExperience with message brokers and asynchronous architectures (RabbitMQ, AMQP, Kafka, etc.).\nSolid understanding of SQL and NoSQL databases.\nExperience with microservices and distributed systems.\nKnowledge of system design, scalability, and performance optimization.\nProficiency with Git, Docker, and CI/CD pipelines.\nExperience with AWS, Azure or other cloud platforms.\nStrong understanding of software architecture, design patterns, and best practices.\nStrong problem-solving and communication skills.\nWritten and spoken English at C1 level\n\nBenefits\n\nIn return, we offer:\n\nFlexibility: 100% remote work.\nProfessionality: dev-friendly processes, like Continuous Integration and Code Review, work in line with Agile methodology.\nDiversity: projects from various industries like fintech, healthcare, insurance, or education.\nGrowth: work with a team of experts and continuous development of your hard and soft skills.\nKnowledge: knowledge sharing sessions, internal knowledge base.\n\nTECH STACK\nEnglish B2 | Polish C1 | Node.js Advanced | TypeScript Advanced | REST APIs Regular | strapi Regular | SQL Regular\n\nNOTE: the requirements list states English C1 only, but the structured tech-stack panel also tags Polish C1. Verify before applying.\n",
-    "score": 0.5614035087719297,
+  "senior_node_developer_b2b_contract": {
+    "jd": "Senior Node.js Developer - B2B contract\n\nAbout us\n\nWe are a software consultancy of 180 engineers, placing senior people onto\nlong-running client engagements. Most of our clients are product companies in\nGermany, the Netherlands and the Nordics. We do not do short projects and we do\nnot do body-leasing by the week.\n\nProfile\n\n- Five or more years of commercial backend development, most of it in Node.js.\n- TypeScript, and the discipline to keep the types meaningful rather than\n  decorative.\n- Express or Fastify, and REST API design.\n- Relational databases, PostgreSQL preferred.\n- Docker, and working familiarity with at least one cloud provider.\n- Good spoken and written English. You will talk to the client directly, every\n  week, without us in the room.\n\nWhat the engagements look like\n\nOur clients are mid-sized product companies. The work is usually extending a\nsystem that already has users, not starting from an empty repository. Expect\nexisting code you did not write, decisions you would not have made, and a team\nthat needs you to be diplomatic about both.\n\nWhat we ask\n\n- You turn up to the calls you agreed to.\n- You raise a problem while it is still small.\n- You leave the client better off than when you arrived, including the\n  documentation.\n\nTerms\n\n- B2B contract, invoiced monthly in EUR, net thirty.\n- Fully remote. The client sets core hours, usually 10:00 to 16:00 CET.\n- Engagements typically run twelve months and most are extended.\n- Rate depends on the client and your seniority. We tell you the rate before\n  the client interview, not after.\n\nProcess\n\nA screening call with us, then one or two interviews with the client. We brief\nyou properly before each one, including what went wrong in the last round.",
+    "score": 0.4722222222222224,
     "passed": true,
     "missing": [
-      "netguru",
-      "knowledge",
+      "engagements",
       "b2b",
-      "design",
-      "freelance",
-      "regular",
-      "various"
+      "b2b contract",
+      "clients",
+      "companies",
+      "contract",
+      "product companies",
+      "usually",
+      "week"
     ]
   },
-  "netguru_senior_node_js_developer_freelance": {
-    "jd": "(Senior) Node.js Developer - Freelance - Netguru\nhttps://justjoin.it/job-offer/netguru--senior-node-js-developer---freelance-poznan-javascript-2628379e\nPublished: 31.07.2026 | Remote | B2B Freelance | 32,71 - 48,84 EUR net/hour\n\nJOB DESCRIPTION\n\nDescription\n\nNetguru is a trusted partner in digital commerce. The company helps leading brands modernize B2B solutions, marketplaces, and retail ecosystems. Since 2008, it has empowered businesses with cutting-edge technology, AI-powered personalization, and world-class engineering and design teams. A certified B Corporation, Netguru is trusted by major brands including IKEA, VW, OLX, Delivery Hero, Zabka, Wolt, Careem, and Vinted.\n\nHow freelancing works at Netguru?\n\nAs a freelancer, you can choose what works well for you. You decide when, where, and how you work on projects and tasks.\n\nWe match you with work that fits your skills. Plus, you have access to various opportunities across different industries and companies. That means you will not only gain more experience, but also develop various skills.\n\nBut there's more. Netguru freelancers can benefit from full-time collaboration and really be a part of the team.\n\nSo, are you ready to make an impact? Join Netguru, and let's build beautiful software together.\n\nWe are looking for a Senior and Regular Developer with Node.js\n\nFreelance assignment: full-time, B2B contract.\nStart: mid July 2026\nDuration: 2 months with the possibility of extension\nWorking hours: CET + Potential need for US Texas partial overlap\nLocation: Remote\nSalary: up to USD 37,5 for Regular and USD 56 for Senior\n\nRequirements\n\nAt least 3+ (regular) or 5+ (senior) years of experience with Node.js\nProven experience with React\nDay-to-day experience and knowledge of AI-native - agentic workflows using Claude Code\nExperience with microservices and distributed systems\nExcellent English skills - min. C1 level\nStrong problem-solving and communication skills\n\nNice to have:\n\nExperience working in AWS-based projects\n\nBenefits\n\nIn return, we offer:\n\nFlexibility: 100% remote work.\nProfessionality: dev-friendly processes, like Continuous Integration and Code Review, work in line with Agile methodology.\nDiversity: projects from various industries like fintech, healthcare, insurance, or education.\nGrowth: work with a team of experts and continuous development of your hard and soft skills.\nKnowledge: knowledge sharing sessions, internal knowledge base.\n\nTECH STACK\nEnglish C1 | Node.js Regular | React Regular | AI Regular | Claude Code Regular\n",
-    "score": 0.5084745762711864,
+  "senior_backend_engineer_kubernetes": {
+    "jd": "Senior Backend Engineer - Infrastructure-Heavy\n\nAbout us\n\nWe run a multi-tenant compliance platform used by mid-market insurers. Thirty\nengineers, offices in Berlin and Lisbon, remote-friendly. We have a real\non-call rotation, a real error budget, and a blameless post-incident process\nthat we actually follow.\n\nThe role\n\nWe are looking for a backend engineer who is comfortable living between the\napplication and the cluster, and who does not think of the second one as\nsomebody else's problem.\n\nYou will\n\n- Build backend services in Node.js and TypeScript.\n- Own their deployment: Kubernetes, Helm, Terraform, and the pipeline that gets\n  them there.\n- Instrument everything. OpenTelemetry traces, metrics, and alerts somebody\n  will act on at three in the morning.\n- Tune PostgreSQL and Redis under real production load.\n- Take part in capacity planning and in keeping the cloud bill predictable\n  enough to forecast.\n- Join the on-call rotation and the post-incident reviews that follow.\n\nRequirements\n\n- Production Node.js and TypeScript.\n- Real Kubernetes experience, not one tutorial cluster on a laptop.\n- Infrastructure as code. We use Terraform and we mean it.\n- Linux fluency: you can read a stack trace and a system log.\n- Experience with a message broker, Kafka or RabbitMQ.\n- An instinct for where distributed systems go wrong, earned the hard way.\n\nNice to have\n\n- Nomad and Consul, which we still run in one corner of the estate.\n- Vault for secret management.\n- Ansible.\n- Experience migrating a service between orchestrators without downtime.\n\nWhat we offer\n\n- Fully remote within Europe, with a yearly company gathering.\n- Thirty days of paid leave, plus local public holidays.\n- A learning budget of 2000 EUR a year, and the time to use it.\n- Home-office allowance and a hardware refresh every three years.\n- Private health insurance where we can arrange it locally.\n\nHow we hire\n\nAn intro call with a recruiter, a technical conversation with two engineers, a\npaid take-home exercise of about four hours, and a final call with the team\nlead. Four steps, three weeks, and we tell you where you stand after each one.\nWe do not ask for unpaid work and we do not run live algorithm interviews.",
+    "score": 0.4716981132075474,
     "passed": true,
     "missing": [
-      "regular",
-      "netguru",
-      "knowledge",
-      "b2b",
-      "freelance",
-      "projects",
-      "various"
+      "real",
+      "backend engineer",
+      "budget",
+      "cluster",
+      "engineers",
+      "follow",
+      "node.js typescript",
+      "paid",
+      "post-incident",
+      "production"
     ]
   },
-  "remodevs_senior_fullstack_engineer_ai_assisted_coding": {
-    "jd": "Senior Fullstack Engineer (AI-assisted coding) - Remodevs\nhttps://justjoin.it/job-offer/remodevs-senior-fullstack-engineer-ai-assisted-coding--warszawa-javascript-2e44232f\nPublished: 29.07.2026 | Remote | B2B | 7 016,39 - 8 770,49 EUR net/month\n\nJOB DESCRIPTION\n\nPlease Note: Overlap with Central US Time required (until 20-21:00 CEST)\n\nWe are a health technology company that helps older people and their families apply for important eldercare benefits, including Medicaid, Medicare, and VA programs. We work with healthcare, government systems, and people's daily lives, so accuracy, reliability, and trust are very important.\n\nAs the number of patients grows from hundreds to thousands, manual work is no longer enough. We are building AI-powered systems to automate routine tasks while keeping people involved for quality checks, difficult cases, and patient safety. Our goal is to make healthcare operations more scalable without losing the human connection.\n\nThe Role\n\nWe are looking for a Senior Software Engineer to lead the design and development of systems that combine AI automation with human workflows. This is an important role close to the core business. It is a fully hands-on position with no management duties or direct reports.\n\nYou will not only build features, but also design systems, define best practices, and guide technical decisions as we grow. You should feel comfortable solving unclear problems, working closely with operations and product teams, and making smart decisions in a regulated environment.\n\nThis role is a good fit for someone who enjoys system design, building reliable infrastructure, and taking ownership of their work.\n\nWhat You'll Work On\n\nDesigning workflow and orchestration systems for complex operations.\nCreating AI automations that handle routine tasks safely and send difficult cases to humans.\nBuilding systems where AI supports human work before, during, and after tasks.\nManaging long-running workflows that can last days or weeks.\nConnecting with external systems such as EVV platforms, insurers, government portals, and older messaging tools.\nDesigning confidence scoring, auditing, and rollback systems for AI processes.\nImproving system reliability, monitoring, and error handling in production.\n\nResponsibilities\n\nLead the technical design and development of scalable backend systems.\nMake and document architecture decisions with clear trade-offs.\nCreate patterns for collaboration between AI systems and human workers.\nWork closely with operations teams to understand real-world issues and edge cases.\nMake sure systems are observable, auditable, and safe to run at scale.\nIdentify technical risks early and suggest solutions.\nMaintain high standards for code quality, testing, and system design.\nShare knowledge and help improve the team's technical standards through reviews and collaboration.\n\nWhat We're Looking For\n\nRequired\n\n6+ years of experience building and maintaining production software systems.\nStrong experience designing and owning complex backend systems.\nStrong backend engineering skills (we use TypeScript and Node.js, but other languages are welcome).\nExperience with asynchronous, event-driven, or workflow-based distributed systems.\nAbility to work with a daily 4-5 hour overlap with the US team (until 20:00 or 21:00 Polish time).\nComfortable working with unclear problems and incomplete information.\nStrong spoken and written English communication skills.\nSelf-motivated with a strong sense of ownership and responsibility.\nExperience working with AI or LLM-based systems and process automation, such as using Anthropic's API (Claude) or similar tools in business workflows.\n\nNice to Have\n\nExperience in healthtech or other regulated industries.\nKnowledge of HIPAA and healthcare data privacy and security rules.\nExperience building systems with strict compliance or audit requirements.\nExperience with human review workflows.\nExperience integrating with unstable or legacy third-party APIs.\nMaster's or PhD in Computer Science, Engineering, or a related field.\n\nHow We Work\n\nRemote-first company.\nSmall, experienced teams with high trust and independence.\nStrong focus on system accuracy, reliability, and long-term maintenance.\nPractical and thoughtful use of AI, both for internal development and within our product.\nDirect connection to real users and operational impact.\n\nTECH STACK\nEnglish B2 | TypeScript Advanced | Node.js Advanced | AI Regular | React Regular\n",
-    "score": 0.7105263157894737,
+  "frontend_leaning_fullstack_react_saas": {
+    "jd": "Full-Stack Engineer (React-Leaning)\n\nAbout us\n\nWe are a Series B company selling workforce-scheduling software to hospitality\ngroups. One hundred and ten people. The product is used on a phone in a kitchen\nby somebody who has thirty seconds, which shapes every front-end decision we\nmake.\n\nThe role\n\nMost of the remaining work on this product is in the browser, and we would\nrather say so than discover it with you in month two. Expect roughly seventy\nper cent front-end work.\n\nThe work\n\n- Build and refine the React front end: component architecture, state with\n  Redux, styling with Tailwind and PostCSS.\n- Own the design-system components, their documentation and their\n  accessibility. We are held to WCAG 2.2 AA by several customers.\n- Browser performance work: bundle size, render cost, Core Web Vitals, and\n  behaviour on a four-year-old Android phone on a weak connection.\n- Offline-tolerant behaviour, because the kitchen has no signal.\n- End-to-end tests in Playwright, and visual regression tests that do not cry\n  wolf.\n- Write the thin backend layer the interface needs, in Node.js and TypeScript.\n\nWe want\n\n- Deep React experience. This is the centre of the role.\n- TypeScript throughout.\n- CSS you can reason about without a framework holding your hand.\n- Enough Node.js to build and maintain an API route and read a server log.\n- An eye for interface detail, and the stubbornness to fix the small things.\n\nNice to have\n\n- Design-system or component-library ownership.\n- Interaction and animation work.\n- Figma fluency, enough to argue with a designer productively.\n- Mobile web performance at scale.\n\nWhat we offer\n\n- Fully remote within Europe, with a yearly company gathering.\n- Thirty days of paid leave, plus local public holidays.\n- A learning budget of 2000 EUR a year, and the time to use it.\n- Home-office allowance and a hardware refresh every three years.\n- Private health insurance where we can arrange it locally.\n\nHow we hire\n\nAn intro call with a recruiter, a technical conversation with two engineers, a\npaid take-home exercise of about four hours, and a final call with the team\nlead. Four steps, three weeks, and we tell you where you stand after each one.\nWe do not ask for unpaid work and we do not run live algorithm interviews.",
+    "score": 0.45454545454545464,
     "passed": true,
     "missing": [
-      "design",
-      "human",
-      "operations",
-      "s",
-      "technical"
+      "behaviour",
+      "browser",
+      "build",
+      "design-system",
+      "front-end",
+      "interface",
+      "kitchen",
+      "paid",
+      "phone",
+      "role"
     ]
   },
-  "sigma_software_senior_javascript_node_js_mcp_developer_fintech_project": {
-    "jd": "Senior JavaScript/Node.js MCP Developer (FinTech Project) - Sigma Software\nhttps://justjoin.it/job-offer/sigma-software-senior-javascript-node-js-mcp-developer-fintech-project--krakow-javascript\nPublished: 28.07.2026 | Remote | B2B | Undisclosed salary\n(Same role also posted for Bucharest: /job-offer/sigma-software-senior-javascript-node-js-mcp-developer-fintech-project--bucharest-javascript)\n\nJOB DESCRIPTION\n\nWe are seeking a highly skilled Node.js expert, who excels as a collaborative team member. The role goes beyond coding, encompassing responsibilities such as handling feature aspects, specifications, technical design, development, testing, documentation, and maintenance.\n\nCustomer\n\nOur client has rapidly become one of Europe's most swiftly expanding FinTech companies. They oversee all aspects of financial operations, from generating virtual cards to facilitating wire transfers and maintaining customer account balances. As a payment institution, our client provides a platform that integrates financial services into its product, offering features such as account management, card payments, bank transfers, and additional services.\n\nRequirements\n\nOver 5 years of experience in Back-End software development\nAt least 3 years of experience with TypeScript\nOver 4 years of experience working with Node.js\nPractical understanding of MCP architecture and agentic system design\nExperience with security aspects of AI Agentic systems and MCP integrations\nStrong experience in designing distributed and secure systems\nGood Front-end development skills\nGood understanding of microservices architectures\nExperience in designing, building, and maintaining APIs\nExperience in building and consuming REST and/or GraphQL APIs\nFamiliarity with DevOps practices\nStrong experience working with AWS\nGood knowledge of testing best practices\nAt least an Upper-Intermediate level of English\n\nWould be a plus\n\nExperience with modern JavaScript and ES6 libraries\n\nResponsibilities\n\nDesign and implement large-scale software solutions and components using multiple technologies, with a primary focus on Node.js and ReactJS\nMaintain a consistently high level of quality throughout all stages of the development\nCommunicate effectively to collaborate closely with the team and gain full context for complex tasks\nFollow the best engineering practices, as well as company and client guidelines\nPlay supervisory, advisory, and coaching roles for less-experienced engineers on the team\nPromote clean code, as well as design patterns and principles\n\nTECH STACK\nJavaScript Advanced | TypeScript Advanced | Node.js Advanced | AWS Advanced | MCP Advanced | React Regular\n",
-    "score": 0.5689655172413793,
+  "data_engineer_streaming_pipelines": {
+    "jd": "Data Engineer - Streaming Pipelines\n\nAbout us\n\nWe are the data platform team inside a logistics group of 4000 people. We serve\ninternal analysts and the machine-learning team, and we own everything from\ningestion to the semantic layer.\n\nThe role\n\nYou will build and own the ingestion side of the platform: everything between\nan event leaving a source system and a trustworthy row in the warehouse.\n\nResponsibilities\n\n- Build streaming pipelines in Python over Kafka.\n- Model and maintain the warehouse. We use ClickHouse, with dbt for\n  transformations and a documented semantic layer on top.\n- Own the Airflow DAGs and their reliability, including backfills nobody\n  enjoys.\n- Work with Spark for the batch jobs that genuinely cannot stream.\n- Build the data-quality checks that stop a bad row reaching an analyst, and\n  the alerting that names the pipeline rather than the symptom.\n- Work with the machine-learning team on feature pipelines and their\n  reproducibility.\n\nRequirements\n\n- Strong Python. This is a Python role and we are not flexible on that.\n- SQL at depth: window functions, query plans, partitioning strategy.\n- Kafka or another streaming platform, in production, with its failure modes.\n- Warehouse modelling: star schemas, slowly changing dimensions, grain.\n- dbt and Airflow.\n- Docker and Kubernetes for deployment.\n\nNice to have\n\n- Spark tuning, beyond adding executors until it finishes.\n- Parquet and Iceberg.\n- A column store at scale.\n- Data-contract or schema-registry experience.\n\nWhat we offer\n\n- Fully remote within Europe, with a yearly company gathering.\n- Thirty days of paid leave, plus local public holidays.\n- A learning budget of 2000 EUR a year, and the time to use it.\n- Home-office allowance and a hardware refresh every three years.\n- Private health insurance where we can arrange it locally.\n\nHow we hire\n\nAn intro call with a recruiter, a technical conversation with two engineers, a\npaid take-home exercise of about four hours, and a final call with the team\nlead. Four steps, three weeks, and we tell you where you stand after each one.\nWe do not ask for unpaid work and we do not run live algorithm interviews.",
+    "score": 0.33333333333333326,
     "passed": true,
     "missing": [
-      "advanced",
+      "build",
+      "pipelines",
+      "python",
+      "streaming",
+      "airflow",
+      "dbt",
+      "ingestion",
+      "machine-learning",
+      "machine-learning team",
+      "paid"
+    ]
+  },
+  "senior_engineer_mcp_tooling_fintech": {
+    "jd": "Senior Engineer - AI Tooling (Fintech)\n\nAbout us\n\nWe are a consultancy of twenty-five engineers building AI tooling for financial\ninstitutions. Our work is mostly internal agents: systems that query regulated\ndata and draft operational output a human then signs off.\n\nThe role\n\nYou will build the tool layer these agents call: the services that expose\nfinancial data to a model safely, and the harness that proves the result is\ngood enough to put in front of a regulator.\n\nResponsibilities\n\n- Build services in Node.js and TypeScript that expose tools to LLM clients\n  over MCP, the Model Context Protocol.\n- Integrate LLM provider APIs, and manage prompts, context windows and cost\n  with the same seriousness as any other production dependency.\n- Work with PostgreSQL for the operational data behind the tools.\n- Build the evaluation harness. An agent nobody can measure is an agent nobody\n  should ship.\n- Design the audit trail: which model, which prompt, which data, which answer.\n- Deploy through Docker and CI/CD.\n\nRequirements\n\n- Strong Node.js and TypeScript.\n- Direct experience integrating an LLM API, including streaming and tool\n  calling.\n- REST and JSON-RPC API design.\n- PostgreSQL.\n- A sceptical attitude to model output, and the testing habits to back it up.\n- Comfort working where the requirement is \"defensible\", not \"clever\".\n\nNice to have\n\n- An MCP server or client you have actually implemented.\n- Financial domain exposure, particularly reporting or reconciliation.\n- Prompt engineering at a level you could teach to a junior.\n- Experience with model-output evaluation beyond eyeballing it.\n\nTerms\n\n- B2B contract, invoiced monthly in EUR, net thirty.\n- Fully remote. The client sets core hours, usually 10:00 to 16:00 CET.\n- Engagements typically run twelve months and most are extended.\n- Rate depends on the client and your seniority. We tell you the rate before\n  the client interview, not after.\n\nProcess\n\nA screening call with us, then one or two interviews with the client. We brief\nyou properly before each one, including what went wrong in the last round.",
+    "score": 0.5675675675675675,
+    "passed": true,
+    "missing": [
+      "build",
+      "financial",
+      "agent",
+      "agents",
+      "ai tooling",
+      "context",
       "design",
-      "mcp",
-      "aspects",
-      "good",
-      "practices",
-      "years experience"
+      "evaluation",
+      "expose",
+      "mcp"
     ]
   },
   "_with_keywords": {
-    "title": "Senior Node.js Engineer",
-    "description": "We need Node.js and TypeScript and PostgreSQL experience.",
+    "title": "Senior Backend Engineer",
+    "description": "Backend services in Node.js and TypeScript, with PostgreSQL and Kafka. You will own deployment through Terraform and keep the services observable.",
     "requirements": [
-      "Node.js",
-      "TypeScript"
+      "Production Node.js and TypeScript",
+      "PostgreSQL schema modelling and query tuning",
+      "Kafka or another message broker",
+      "Terraform and infrastructure as code"
     ],
     "keywords": [
-      "Node.js",
-      "Kubernetes",
-      "COBOL"
+      "nodejs",
+      "typescript",
+      "postgresql",
+      "kafka",
+      "terraform",
+      "erlang"
     ],
-    "score": 0.4750959217449798,
+    "score": 0.3657294669253698,
     "passed": true,
     "missing": [
       "node.js typescript",
-      "engineer need",
-      "experience node.js",
-      "need",
-      "need node.js",
-      "node.js engineer",
-      "postgresql experience",
-      "senior node.js",
       "typescript postgresql",
-      "cobol"
+      "backend engineer",
+      "backend services",
+      "broker",
+      "broker terraform",
+      "deployment terraform",
+      "engineer backend",
+      "infrastructure code",
+      "kafka deployment"
     ]
   }
 }

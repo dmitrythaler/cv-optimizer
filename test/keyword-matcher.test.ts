@@ -31,7 +31,7 @@ const fixtures: Record<string, Case> = JSON.parse(
  * in the corpus, and these assertions compared to 1e-9. That proved the port
  * was faithful, and it was worth having while the port was in progress.
  *
- * It cannot stay that, for two reasons found on 2026-11-06:
+ * It cannot stay that, for three reasons found on 2026-11-06:
  *
  * 1. The CV it needs is not here and must not be. The file read
  *    `../../cv.md`, which has not existed for some time, so this file died on
@@ -43,12 +43,26 @@ const fixtures: Record<string, Case> = JSON.parse(
  *    names an employer's internal tooling. Anonymising the contact block alone
  *    was measured and does NOT move any score, so it was technically possible
  *    and still wrong.
+ * 3. Neither could the JDs. The nine in the corpus were real postings the
+ *    owner had applied to, named by company. Publishing them publishes a
+ *    job-search history, which is his business and not the repository's.
  *
- * So the corpus is now `../example.cv.md`, an invented CV with a real stack,
- * and the expected numbers were regenerated from THIS implementation. The
- * test's job changed with them: it no longer proves the scores are right, it
- * proves they have not drifted. Any edit to checkKeywords that moves a score
- * fails here and has to be justified.
+ * So BOTH SIDES of the corpus are now invented: `../example.cv.md` for the CV,
+ * and ten written-for-this-repo job descriptions in `fixtures.keywords.json`.
+ * The expected numbers were regenerated from THIS implementation. The test's
+ * job changed with them: it no longer proves the scores are right, it proves
+ * they have not drifted. Any edit to checkKeywords that moves a score fails
+ * here and has to be justified.
+ *
+ * The corpus is built to span the range the filter actually meets. One terse
+ * internal requisition at 0.83, seven full adverts between 0.45 and 0.65, and
+ * a Python data-engineering role at 0.33 that is in the corpus precisely
+ * because it should score badly. The first draft of the invented JDs ran
+ * 750-1350 characters and scored 0.36-0.89 with a Vue role on top: short
+ * adverts inflate this filter, because TF-IDF keeps fewer significant terms
+ * and a broad skills block covers nearly all of them. Real adverts carry an
+ * about-us, a benefits list and a hiring process, all of which bring
+ * vocabulary no CV contains, so the JDs were rewritten at full length.
  *
  * The Python parity evidence is not lost - it is in the git history and in
  * docs/design-notes.md. It is simply no longer re-run, because the thing it
@@ -82,7 +96,7 @@ const job = (over: Partial<JobPosting> = {}): JobPosting => ({
 });
 
 /**
- * One locked score per JD in the corpus, against `fixtures.cv.md`.
+ * One locked score per JD in the corpus, against `../example.cv.md`.
  *
  * SCORE is asserted exactly - it is what drives `passed` and the pipeline.
  *
@@ -110,7 +124,7 @@ for (const [name, c] of Object.entries(fixtures)) {
 }
 
 test('keywords: missing-keyword output is deterministic across runs', () => {
-  const jd = fixtures.inuits_senior_full_stack_engineer?.jd ?? '';
+  const jd = fixtures.platform_engineer_node_typescript?.jd ?? '';
   const runs = Array.from({ length: 5 }, () =>
     checkKeywords(cv, job({ description: jd }), 0.25, OPTS).missingKeywords.join('|'),
   );
@@ -174,7 +188,7 @@ test('keywordMatcher: missing pdfText fails rather than passing vacuously', asyn
 });
 
 test('keywordMatcher: a strong match passes and reports no issues', async () => {
-  const jd = fixtures.remodevs_senior_fullstack_engineer_ai_assisted_codin?.jd ?? '';
+  const jd = fixtures.terse_requisition_node_backend?.jd ?? '';
   const r = await keywordMatcher.evaluate(ctx(cv, jd));
   assert.equal(r.passed, true);
   assert.ok(r.score > 0.7);
