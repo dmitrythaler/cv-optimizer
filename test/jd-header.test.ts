@@ -28,10 +28,13 @@ test('parseJdHeader: reads the block the crawler writes', () => {
 test('parseJdHeader: the employer wins over a product named all over the posting', () => {
   // The reason this file exists. The Flex names Base360.ai eleven times and
   // itself three, so the parser called the company Base360.ai and the CV was
-  // written as Dmitry.Thaler.CV.base360_ai.pdf.
+  // written as CV.base360_ai.pdf.
   const body = 'Base360.ai is the AI operating system for short stays. '.repeat(11);
   const got = parseJdHeader(
-    jd('Senior Full-Stack Product Engineer\nThe Flex\nRemote\nSalary: -\nPosted: 2026-09-23\nSource: https://x.test/1', body),
+    jd(
+      'Senior Full-Stack Product Engineer\nThe Flex\nRemote\nSalary: -\nPosted: 2026-09-23\nSource: https://x.test/1',
+      body,
+    ),
   );
   assert.equal(got?.company, 'The Flex');
 });
@@ -40,7 +43,10 @@ test('parseJdHeader: a posting with no header returns null, it does not guess', 
   // A hand-written or pasted posting must fall through to the parsed values.
   // Taking its first two lines as a title and a company would be worse than
   // reading the prose.
-  assert.equal(parseJdHeader('We are hiring a Senior Engineer\n\nAbout us\n\nWe use Node.js.'), null);
+  assert.equal(
+    parseJdHeader('We are hiring a Senior Engineer\n\nAbout us\n\nWe use Node.js.'),
+    null,
+  );
   assert.equal(parseJdHeader(''), null);
 });
 

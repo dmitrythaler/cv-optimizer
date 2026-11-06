@@ -112,7 +112,13 @@ export const pandocRenderer = (opts: PandocRendererOptions = {}): Renderer => {
         ]);
         const pngPage1 = new Uint8Array(await readFile(join(dir, 'page-1.png')));
 
-        return { pdf, text: pageTexts.join('\n'), pngPage1, pageCount: pageTexts.length, pageTexts };
+        return {
+          pdf,
+          text: pageTexts.join('\n'),
+          pngPage1,
+          pageCount: pageTexts.length,
+          pageTexts,
+        };
       } finally {
         await rm(dir, { recursive: true, force: true });
       }

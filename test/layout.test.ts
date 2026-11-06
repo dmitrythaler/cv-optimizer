@@ -137,7 +137,13 @@ test('layout: no rendered image is a real failure, not a skip', async () => {
   const { provider } = fakeChat(OK);
   const r = await layoutChecker.evaluate(
     ctx(provider, {
-      resume: { markdown: '<p>x</p>', pdfText: 't', pngPage1: null, pageCount: null, pageTexts: null },
+      resume: {
+        markdown: '<p>x</p>',
+        pdfText: 't',
+        pngPage1: null,
+        pageCount: null,
+        pageTexts: null,
+      },
     }),
   );
   assert.equal(r.passed, false);

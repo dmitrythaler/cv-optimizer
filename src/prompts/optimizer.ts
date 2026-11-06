@@ -170,7 +170,11 @@ STRICT RULES - NEVER VIOLATE:
 `;
 
 /** Builds the system prompt from the two slots. */
-export const buildSystemPrompt = (opts: { noShame: boolean; targetChars: number; targetWords: number }): string =>
+export const buildSystemPrompt = (opts: {
+  noShame: boolean;
+  targetChars: number;
+  targetWords: number;
+}): string =>
   OPTIMIZER_BASE.replace(
     '{content_rules}',
     opts.noShame ? OPTIMIZER_LENIENT_RULES : OPTIMIZER_STRICT_RULES,

@@ -15,8 +15,8 @@
  * WHY THIS EXISTS. The title and the company were read out of the posting by a
  * model, and a model reads what the text repeats. The Flex posting names its
  * product `Base360.ai` eleven times and the employer three, so the CV came out
- * as `Dmitry.Thaler.CV.base360_ai.pdf` - a file named after a company that is
- * not the employer, which is exactly how the wrong PDF gets attached. Both
+ * as `CV.base360_ai.pdf` - a file named after a company that is not the
+ * employer, which is exactly how the wrong PDF gets attached. Both
  * Magpie postings came out with an empty position and collided on one name.
  *
  * The header is not a guess. The crawler wrote it from the board's own fields,
@@ -53,13 +53,21 @@ export function parseJdHeader(text: string): JdHeader | null {
     const hit = head.find((l) => new RegExp(`^${name}:`, 'i').test(l));
     return hit ? hit.slice(hit.indexOf(':') + 1).trim() : null;
   };
-  if (labelled('Salary') === null || labelled('Posted') === null || labelled('Source') === null) return null;
+  if (labelled('Salary') === null || labelled('Posted') === null || labelled('Source') === null)
+    return null;
 
   const [title, company, location] = head;
   if (!title || !company) return null;
   // A labelled line in either slot means the block is not shaped as expected.
-  if (/^(salary|posted|source|location):/i.test(title) || /^(salary|posted|source|location):/i.test(company)) {
+  if (
+    /^(salary|posted|source|location):/i.test(title) ||
+    /^(salary|posted|source|location):/i.test(company)
+  ) {
     return null;
   }
-  return { title, company, location: location && !/^(salary|posted|source):/i.test(location) ? location : null };
+  return {
+    title,
+    company,
+    location: location && !/^(salary|posted|source):/i.test(location) ? location : null,
+  };
 }

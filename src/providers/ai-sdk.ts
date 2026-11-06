@@ -58,7 +58,9 @@ export const resolveModel = (spec: string): { provider: string; model: LanguageM
       const host = process.env['OLLAMA_URL'] ?? 'http://localhost:11434';
       return {
         provider,
-        model: createDeepSeek({ baseURL: `${host.replace(/\/+$/, '')}/v1`, apiKey: 'ollama' })(name),
+        model: createDeepSeek({ baseURL: `${host.replace(/\/+$/, '')}/v1`, apiKey: 'ollama' })(
+          name,
+        ),
       };
     }
     case 'gemini':

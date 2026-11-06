@@ -17,15 +17,15 @@ const HAS_HTML_TAG = /<(script|html|head|body|div|section|header)\b/i;
 
 /** Opening fences carry a class; a bare ":::" closes one. */
 const countFences = (md: string): { open: number; close: number } => {
-	let open = 0;
-	let close = 0;
-	for (const line of md.split('\n')) {
-		const t = line.trim();
-		if (!t.startsWith(':::')) continue;
-		if (/^:::+\s*$/.test(t)) close++;
-		else open++;
-	}
-	return { open, close };
+  let open = 0;
+  let close = 0;
+  for (const line of md.split('\n')) {
+    const t = line.trim();
+    if (!t.startsWith(':::')) continue;
+    if (/^:::+\s*$/.test(t)) close++;
+    else open++;
+  }
+  return { open, close };
 };
 
 /**
@@ -37,35 +37,35 @@ const countFences = (md: string): { open: number; close: number } => {
  * would have failed every CV.
  */
 export const validateMarkdown = (markdown: string): string[] => {
-	const issues: string[] = [];
+  const issues: string[] = [];
 
-	if (!HAS_NAME.test(markdown)) {
-		issues.push('Missing the name span, [Name]{.cv-name}');
-	}
-	if (!HAS_CONTACTS.test(markdown)) {
-		issues.push('Missing the ::: {.contacts} block');
-	}
-	if (!HAS_SUMMARY.test(markdown)) {
-		issues.push('Missing the ::: {.summary} block');
-	}
-	if (!HAS_SECTION.test(markdown)) {
-		issues.push('Resume has no content sections (no "## " heading)');
-	}
+  if (!HAS_NAME.test(markdown)) {
+    issues.push('Missing the name span, [Name]{.cv-name}');
+  }
+  if (!HAS_CONTACTS.test(markdown)) {
+    issues.push('Missing the ::: {.contacts} block');
+  }
+  if (!HAS_SUMMARY.test(markdown)) {
+    issues.push('Missing the ::: {.summary} block');
+  }
+  if (!HAS_SECTION.test(markdown)) {
+    issues.push('Resume has no content sections (no "## " heading)');
+  }
 
-	const { open, close } = countFences(markdown);
-	if (open !== close) {
-		issues.push(
-			`Unbalanced pandoc fences: ${open} opened, ${close} closed. ` +
-				'An unclosed fence renders unstyled instead of failing.',
-		);
-	}
+  const { open, close } = countFences(markdown);
+  if (open !== close) {
+    issues.push(
+      `Unbalanced pandoc fences: ${open} opened, ${close} closed. ` +
+        'An unclosed fence renders unstyled instead of failing.',
+    );
+  }
 
-	const tag = HAS_HTML_TAG.exec(markdown);
-	if (tag) {
-		issues.push(`Raw HTML tag <${tag[1]}> is not allowed; the output is markdown`);
-	}
+  const tag = HAS_HTML_TAG.exec(markdown);
+  if (tag) {
+    issues.push(`Raw HTML tag <${tag[1]}> is not allowed; the output is markdown`);
+  }
 
-	return issues;
+  return issues;
 };
 
 export const dataValidator: Filter = {

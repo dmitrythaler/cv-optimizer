@@ -174,7 +174,8 @@ export const generate = async (
     }),
 
     validate_structure: tool({
-      description: 'Check the pandoc structure - name span, contacts and summary fences, balanced fences, no raw HTML.',
+      description:
+        'Check the pandoc structure - name span, contacts and summary fences, balanced fences, no raw HTML.',
       inputSchema: z.object({ markdown: z.string() }),
       execute: ({ markdown }) => {
         const issues = validateMarkdown(markdown);
