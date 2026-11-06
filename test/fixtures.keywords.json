@@ -9,52 +9,52 @@
   },
   "platform_engineer_node_typescript": {
     "jd": "Senior Platform Engineer (Node.js / TypeScript)\n\nAbout us\n\nWe are forty people across eleven countries, building the analytics layer that\nsubscription businesses use to understand churn. We have been profitable since\n2023 and we are not raising. Engineering is eighteen of us, organised in four\nstream-aligned teams with no separate operations group: the team that builds a\nservice runs it.\n\nThe role\n\nYou will own backend services end to end, from the API surface down to the\ninfrastructure they run on. There is no separate platform team to hand the\ndeployment to, and no separate DBA to blame for a slow query.\n\nWhat you will do\n\n- Design and build services in Node.js and TypeScript, exposed through REST and\n  GraphQL APIs that other product teams depend on.\n- Model and tune data in PostgreSQL: schema design, indexing strategy, and\n  reading a query plan without guessing.\n- Work with ClickHouse for the analytical queries behind our dashboards, and\n  decide what belongs in the request path and what belongs in a rollup.\n- Own the delivery path: Docker, Kubernetes, Terraform, and the CI/CD pipeline.\n- Keep the system observable with OpenTelemetry, and keep cloud spend honest.\n- Use Kafka for event propagation between microservices.\n- Take part in the on-call rotation for the services your team owns.\n\nWhat we are looking for\n\n- Several years of production Node.js and TypeScript in a microservice\n  architecture.\n- Strong PostgreSQL. This is the first thing we will talk about.\n- Comfortable owning infrastructure as code, not only application code.\n- Experience with AWS. We use ECS/Fargate, RDS, SNS/SQS and KMS.\n- Redis for caching and for presence.\n- You write tests, and you can explain what you chose not to test and why.\n- English at a level where you can disagree with a colleague in writing.\n\nNice to have\n\n- GraphQL schema design where the schema outlived the first team that wrote it.\n- Observability practice: tracing, metrics, structured logging, and alerts a\n  human will act on.\n- Fastify or Express internals, not just their documentation.\n\nWhat we offer\n\n- Fully remote within Europe, with a yearly company gathering.\n- Thirty days of paid leave, plus local public holidays.\n- A learning budget of 2000 EUR a year, and the time to use it.\n- Home-office allowance and a hardware refresh every three years.\n- Private health insurance where we can arrange it locally.\n\nHow we hire\n\nAn intro call with a recruiter, a technical conversation with two engineers, a\npaid take-home exercise of about four hours, and a final call with the team\nlead. Four steps, three weeks, and we tell you where you stand after each one.\nWe do not ask for unpaid work and we do not run live algorithm interviews.",
-    "score": 0.5666666666666667,
+    "score": 0.6499999999999999,
     "passed": true,
     "missing": [
-      "use",
-      "design",
       "node.js typescript",
       "schema",
       "separate",
       "belongs",
       "paid",
       "query",
+      "run",
       "schema design",
       "teams"
     ]
   },
   "fullstack_engineer_ai_assisted_delivery": {
     "jd": "Senior Full-Stack Engineer - AI-Assisted Delivery\n\nAbout us\n\nWe build internal developer tooling, sold to engineering organisations between\n200 and 5000 people. Series A, fifty-five people, remote since founding. Our\nown engineers are the first users of everything we ship, which shortens the\nfeedback loop and removes most of the arguing.\n\nThe role\n\nWe practise what we sell: LLM-assisted development is part of how this team\nships, and part of what we build. You will work on both sides of that.\n\nWhat you will do\n\n- Build and maintain full-stack features in TypeScript: Node.js on the backend,\n  React on the front end.\n- Integrate LLM provider APIs into product features, including streaming\n  responses and tool calling.\n- Extend our own development workflow: AI-assisted code generation, refactoring,\n  test authoring and documentation.\n- Own and improve the prompt library the team shares, and the evaluation\n  harness that keeps it honest.\n- Work with PostgreSQL and Redis. Ship through Docker and CI/CD.\n\nRequirements\n\n- Strong JavaScript and TypeScript, on the server and in the browser.\n- Production Node.js with REST API design.\n- Hands-on experience with LLM-assisted development and prompt engineering, and\n  a clear view of where it helps and where it wastes everybody's afternoon.\n- Familiarity with React and a modern state-management approach.\n- Git, code review, and the habit of leaving the documentation better than you\n  found it.\n\nNice to have\n\n- Direct integration against a model provider API rather than through a\n  framework.\n- Observability tooling.\n- Vue.js, which one of our products still uses.\n- An opinion about evaluation that you can defend with numbers.\n\nWhat we offer\n\n- Fully remote within Europe, with a yearly company gathering.\n- Thirty days of paid leave, plus local public holidays.\n- A learning budget of 2000 EUR a year, and the time to use it.\n- Home-office allowance and a hardware refresh every three years.\n- Private health insurance where we can arrange it locally.\n\nHow we hire\n\nAn intro call with a recruiter, a technical conversation with two engineers, a\npaid take-home exercise of about four hours, and a final call with the team\nlead. Four steps, three weeks, and we tell you where you stand after each one.\nWe do not ask for unpaid work and we do not run live algorithm interviews.",
-    "score": 0.6481481481481478,
+    "score": 0.6296296296296293,
     "passed": true,
     "missing": [
-      "build",
+      "engineering",
       "engineers",
       "evaluation",
-      "features",
+      "llm-assisted development",
       "paid",
       "people",
       "provider",
+      "remote",
       "ship",
       "tooling"
     ]
   },
   "backend_engineer_payments_platform": {
     "jd": "Backend Engineer - Payments Platform\n\nAbout us\n\nWe hold an e-money licence and process payments for marketplaces across the\nEuropean Economic Area. Ninety people, headquartered in Amsterdam, regulated by\nthe Dutch central bank. Our volumes doubled last year and the platform did not,\nwhich is why this role exists.\n\nThe role\n\nWe are rebuilding the service layer between our product and the payment\nnetworks. You will work on the part of the system where a mistake is not a bug\nreport, it is a reconciliation problem with somebody's money in it.\n\nResponsibilities\n\n- Build and maintain payment gateway adapters behind a single internal API.\n- Treat idempotency, retry semantics and reconciliation as design problems, not\n  as error handling added at the end.\n- Work in Node.js and TypeScript with PostgreSQL as the system of record.\n- Use RabbitMQ for asynchronous work and event delivery.\n- Document the API with OpenAPI/Swagger and keep the document true.\n- Share the on-call rotation for the services you build.\n- Work with our compliance team on audit and reporting requirements.\n\nRequirements\n\n- Solid production Node.js and TypeScript.\n- PostgreSQL, including transactions and isolation levels you can reason about\n  out loud.\n- Experience integrating a third-party payment provider such as Stripe, PayPal\n  or Square.\n- REST API design for consumers you cannot deploy alongside.\n- AWS, particularly RDS and KMS.\n- Care about correctness under partial failure. \"Mostly works\" is not a state\n  this system is allowed to be in.\n\nNice to have\n\n- Prior work inside a regulated licence holder.\n- Message broker experience beyond using a queue as a to-do list.\n- Double-entry bookkeeping, or a willingness to learn it properly.\n\nWhat we offer\n\n- Permanent employment with a salary band published in the offer.\n- Hybrid: two days a week in the office, three at home.\n- Pension contribution and commuter allowance.\n- Twenty-eight days of leave.\n- A budget for conferences, with one speaking slot a year if you want it.\n\nHow we hire\n\nA short call, a technical interview, a system-design conversation, and a\nmeeting with the team. No take-home exercise.",
-    "score": 0.5294117647058827,
+    "score": 0.6078431372549024,
     "passed": true,
     "missing": [
-      "build",
       "days",
-      "design",
       "document",
       "licence",
       "node.js typescript",
       "offer",
       "regulated",
       "requirements",
-      "role"
+      "role",
+      "typescript postgresql",
+      "year"
     ]
   },
   "fullstack_developer_vue_analytics": {
@@ -62,7 +62,7 @@
     "score": 0.5333333333333333,
     "passed": true,
     "missing": [
-      "use",
+      "vue.js",
       "bar",
       "category",
       "category managers",
@@ -76,9 +76,10 @@
   },
   "senior_node_developer_b2b_contract": {
     "jd": "Senior Node.js Developer - B2B contract\n\nAbout us\n\nWe are a software consultancy of 180 engineers, placing senior people onto\nlong-running client engagements. Most of our clients are product companies in\nGermany, the Netherlands and the Nordics. We do not do short projects and we do\nnot do body-leasing by the week.\n\nProfile\n\n- Five or more years of commercial backend development, most of it in Node.js.\n- TypeScript, and the discipline to keep the types meaningful rather than\n  decorative.\n- Express or Fastify, and REST API design.\n- Relational databases, PostgreSQL preferred.\n- Docker, and working familiarity with at least one cloud provider.\n- Good spoken and written English. You will talk to the client directly, every\n  week, without us in the room.\n\nWhat the engagements look like\n\nOur clients are mid-sized product companies. The work is usually extending a\nsystem that already has users, not starting from an empty repository. Expect\nexisting code you did not write, decisions you would not have made, and a team\nthat needs you to be diplomatic about both.\n\nWhat we ask\n\n- You turn up to the calls you agreed to.\n- You raise a problem while it is still small.\n- You leave the client better off than when you arrived, including the\n  documentation.\n\nTerms\n\n- B2B contract, invoiced monthly in EUR, net thirty.\n- Fully remote. The client sets core hours, usually 10:00 to 16:00 CET.\n- Engagements typically run twelve months and most are extended.\n- Rate depends on the client and your seniority. We tell you the rate before\n  the client interview, not after.\n\nProcess\n\nA screening call with us, then one or two interviews with the client. We brief\nyou properly before each one, including what went wrong in the last round.",
-    "score": 0.4722222222222224,
+    "score": 0.27777777777777785,
     "passed": true,
     "missing": [
+      "client",
       "engagements",
       "b2b",
       "b2b contract",
@@ -92,10 +93,11 @@
   },
   "senior_backend_engineer_kubernetes": {
     "jd": "Senior Backend Engineer - Infrastructure-Heavy\n\nAbout us\n\nWe run a multi-tenant compliance platform used by mid-market insurers. Thirty\nengineers, offices in Berlin and Lisbon, remote-friendly. We have a real\non-call rotation, a real error budget, and a blameless post-incident process\nthat we actually follow.\n\nThe role\n\nWe are looking for a backend engineer who is comfortable living between the\napplication and the cluster, and who does not think of the second one as\nsomebody else's problem.\n\nYou will\n\n- Build backend services in Node.js and TypeScript.\n- Own their deployment: Kubernetes, Helm, Terraform, and the pipeline that gets\n  them there.\n- Instrument everything. OpenTelemetry traces, metrics, and alerts somebody\n  will act on at three in the morning.\n- Tune PostgreSQL and Redis under real production load.\n- Take part in capacity planning and in keeping the cloud bill predictable\n  enough to forecast.\n- Join the on-call rotation and the post-incident reviews that follow.\n\nRequirements\n\n- Production Node.js and TypeScript.\n- Real Kubernetes experience, not one tutorial cluster on a laptop.\n- Infrastructure as code. We use Terraform and we mean it.\n- Linux fluency: you can read a stack trace and a system log.\n- Experience with a message broker, Kafka or RabbitMQ.\n- An instinct for where distributed systems go wrong, earned the hard way.\n\nNice to have\n\n- Nomad and Consul, which we still run in one corner of the estate.\n- Vault for secret management.\n- Ansible.\n- Experience migrating a service between orchestrators without downtime.\n\nWhat we offer\n\n- Fully remote within Europe, with a yearly company gathering.\n- Thirty days of paid leave, plus local public holidays.\n- A learning budget of 2000 EUR a year, and the time to use it.\n- Home-office allowance and a hardware refresh every three years.\n- Private health insurance where we can arrange it locally.\n\nHow we hire\n\nAn intro call with a recruiter, a technical conversation with two engineers, a\npaid take-home exercise of about four hours, and a final call with the team\nlead. Four steps, three weeks, and we tell you where you stand after each one.\nWe do not ask for unpaid work and we do not run live algorithm interviews.",
-    "score": 0.4716981132075474,
+    "score": 0.45283018867924546,
     "passed": true,
     "missing": [
       "real",
+      "run",
       "backend engineer",
       "budget",
       "cluster",
@@ -103,8 +105,7 @@
       "follow",
       "node.js typescript",
       "paid",
-      "post-incident",
-      "production"
+      "post-incident"
     ]
   },
   "frontend_leaning_fullstack_react_saas": {
@@ -114,25 +115,25 @@
     "missing": [
       "behaviour",
       "browser",
-      "build",
+      "company",
       "design-system",
-      "front-end",
       "interface",
       "kitchen",
       "paid",
       "phone",
-      "role"
+      "role",
+      "tests"
     ]
   },
   "data_engineer_streaming_pipelines": {
     "jd": "Data Engineer - Streaming Pipelines\n\nAbout us\n\nWe are the data platform team inside a logistics group of 4000 people. We serve\ninternal analysts and the machine-learning team, and we own everything from\ningestion to the semantic layer.\n\nThe role\n\nYou will build and own the ingestion side of the platform: everything between\nan event leaving a source system and a trustworthy row in the warehouse.\n\nResponsibilities\n\n- Build streaming pipelines in Python over Kafka.\n- Model and maintain the warehouse. We use ClickHouse, with dbt for\n  transformations and a documented semantic layer on top.\n- Own the Airflow DAGs and their reliability, including backfills nobody\n  enjoys.\n- Work with Spark for the batch jobs that genuinely cannot stream.\n- Build the data-quality checks that stop a bad row reaching an analyst, and\n  the alerting that names the pipeline rather than the symptom.\n- Work with the machine-learning team on feature pipelines and their\n  reproducibility.\n\nRequirements\n\n- Strong Python. This is a Python role and we are not flexible on that.\n- SQL at depth: window functions, query plans, partitioning strategy.\n- Kafka or another streaming platform, in production, with its failure modes.\n- Warehouse modelling: star schemas, slowly changing dimensions, grain.\n- dbt and Airflow.\n- Docker and Kubernetes for deployment.\n\nNice to have\n\n- Spark tuning, beyond adding executors until it finishes.\n- Parquet and Iceberg.\n- A column store at scale.\n- Data-contract or schema-registry experience.\n\nWhat we offer\n\n- Fully remote within Europe, with a yearly company gathering.\n- Thirty days of paid leave, plus local public holidays.\n- A learning budget of 2000 EUR a year, and the time to use it.\n- Home-office allowance and a hardware refresh every three years.\n- Private health insurance where we can arrange it locally.\n\nHow we hire\n\nAn intro call with a recruiter, a technical conversation with two engineers, a\npaid take-home exercise of about four hours, and a final call with the team\nlead. Four steps, three weeks, and we tell you where you stand after each one.\nWe do not ask for unpaid work and we do not run live algorithm interviews.",
-    "score": 0.33333333333333326,
+    "score": 0.3684210526315788,
     "passed": true,
     "missing": [
-      "build",
       "pipelines",
       "python",
       "streaming",
+      "warehouse",
       "airflow",
       "dbt",
       "ingestion",
@@ -146,16 +147,16 @@
     "score": 0.5675675675675675,
     "passed": true,
     "missing": [
-      "build",
+      "client",
       "financial",
       "agent",
       "agents",
       "ai tooling",
       "context",
-      "design",
       "evaluation",
       "expose",
-      "mcp"
+      "mcp",
+      "node.js typescript"
     ]
   },
   "_with_keywords": {

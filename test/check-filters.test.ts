@@ -17,7 +17,7 @@ import { loadConfig } from '../src/config.ts';
  * suite down in test/keyword-matcher.test.ts. A path that cannot be checked is
  * a path that drifts.
  */
-const CV = new URL('../example.cv.md', import.meta.url).pathname;
+const CV = new URL('../templates/example.cv.md', import.meta.url).pathname;
 const JD = new URL('./fixtures.raw-jd.txt', import.meta.url).pathname;
 
 test('check-filters: an unknown name gives exit code 1', async () => {

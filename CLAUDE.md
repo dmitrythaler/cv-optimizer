@@ -30,8 +30,8 @@ for `node src/cli.ts` to work — do not "fix" them to `.js`.
 ## Commands
 
 ```bash
-# Standalone. example.cv.md is committed, so this works in a fresh clone.
-pnpm build && pnpm start optimize example.cv.md path/to/jd.txt
+# Standalone. templates/example.cv.md is committed, so this works in a fresh clone.
+pnpm build && pnpm start optimize templates/example.cv.md path/to/jd.txt
 
 # Inside the job-crawling pipeline, where the crawler already wrote jd.txt.
 pnpm build && pnpm start optimize ../input/cv.md ../applications/<job>/jd.txt
@@ -166,7 +166,7 @@ full account.
 
 **It is self-contained.** A fresh clone installs, typechecks, tests and builds
 with nothing outside it. Nothing in `src/`, `test/` or CI reaches past the repo
-root, and nothing may start to. The corpus is `example.cv.md` here; the JD
+root, and nothing may start to. The corpus is `templates/example.cv.md` here; the JD
 fixtures are in `test/`.
 
 That rule was not free. Until 2026-11-06 a test read `../../cv.md`, which had

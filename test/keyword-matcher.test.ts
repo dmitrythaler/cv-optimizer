@@ -47,7 +47,7 @@ const fixtures: Record<string, Case> = JSON.parse(
  *    owner had applied to, named by company. Publishing them publishes a
  *    job-search history, which is his business and not the repository's.
  *
- * So BOTH SIDES of the corpus are now invented: `../example.cv.md` for the CV,
+ * So BOTH SIDES of the corpus are now invented: `templates/example.cv.md` for the CV,
  * and ten written-for-this-repo job descriptions in `fixtures.keywords.json`.
  * The expected numbers were regenerated from THIS implementation. The test's
  * job changed with them: it no longer proves the scores are right, it proves
@@ -69,7 +69,7 @@ const fixtures: Record<string, Case> = JSON.parse(
  * compared against is not in this repository.
  *
  * WHY THE CORPUS IS THE PUBLISHED EXAMPLE, not a fixture of its own. One file,
- * two jobs, on purpose: the README hands `example.cv.md` to a new user as the
+ * two jobs, on purpose: the README hands `templates/example.cv.md` to a new user
  * input to try, and these tests keep it working. An example nobody runs rots,
  * and a fixture nobody reads is dead weight. The cost is that editing the
  * example moves these numbers, and CI says so at once - which is the right
@@ -80,7 +80,7 @@ const fixtures: Record<string, Case> = JSON.parse(
  * for every case from the new implementation, and say in the commit message
  * which scores moved and why.
  */
-const cv = readFileSync(new URL('../example.cv.md', import.meta.url), 'utf8');
+const cv = readFileSync(new URL('../templates/example.cv.md', import.meta.url), 'utf8');
 
 const OPTS = { maxFeatures: 200, cutoff: 0.1, maxMissingDisplay: 10 };
 
@@ -96,7 +96,7 @@ const job = (over: Partial<JobPosting> = {}): JobPosting => ({
 });
 
 /**
- * One locked score per JD in the corpus, against `../example.cv.md`.
+ * One locked score per JD in the corpus, against `templates/example.cv.md`.
  *
  * SCORE is asserted exactly - it is what drives `passed` and the pipeline.
  *

@@ -12,7 +12,7 @@ the generator and it tries again.
 Every run writes one folder holding the posting, the CV, every iteration, and a
 full record of what each filter scored.
 
-It runs standalone — `example.cv.md` is committed, so a fresh clone works. It is
+It runs standalone — `templates/example.cv.md` is committed, so a fresh clone works. It is
 also one stage of a larger AI job-crawling pipeline, which is where nearly all
 its mileage comes from: there a crawler judges a posting, fetches it, translates
 it and writes `jd.txt` into a folder per job, and this tool is run against that
@@ -103,26 +103,26 @@ measured against, not used.
 
 ## Use
 
-`example.cv.md` is a committed example CV — invented companies, real stack — in
-the pandoc markdown this tool expects. Copy it, put your own history in it, and
-keep the shape.
+`templates/example.cv.md` is a committed example CV — invented companies, real
+stack. Copy it, put your own history in it, and **keep the markup**: the next
+section explains why that matters.
 
 ```bash
 # from a saved posting. THE PREFERRED ROUTE - see the note at the top
-pnpm start -- optimize example.cv.md path/to/jd.txt
+pnpm start -- optimize templates/example.cv.md path/to/jd.txt
 
 # straight from a job URL. It fetches and cleans the page itself, which is the
 # one step that can quietly hand a filter a page of navigation instead of a job
-pnpm start -- optimize example.cv.md https://example.com/jobs/12345
+pnpm start -- optimize templates/example.cv.md https://example.com/jobs/12345
 
 # fetch and clean a posting into its own run folder, nothing else
 pnpm start -- fetch-job https://example.com/jobs/12345
 
 # score one CV against one job with chosen filters (diagnostic)
-pnpm start -- check-filters example.cv.md path/to/jd.txt KeywordMatcher,VectorSimilarityMatcher
+pnpm start -- check-filters templates/example.cv.md path/to/jd.txt KeywordMatcher,VectorSimilarityMatcher
 
 # measure THRESHOLD_VECTOR for the configured embedding model
-pnpm start -- calibrate-vector example.cv.md other-path/to/applications
+pnpm start -- calibrate-vector templates/example.cv.md other-path/to/applications
 
 pnpm start -- --help
 ```
@@ -147,6 +147,53 @@ folder.
 
 **A produced PDF is not a pass.** The exit code and `optimization.json` carry
 the verdict; a failing run still writes its best attempt so you can look at it.
+
+## How the CV is formatted
+
+The source CV is **pandoc markdown**, not plain markdown, and the layout comes
+from fenced divs paired with `templates/cv.css`. pandoc turns each `::: {.name}`
+block into a `<div class="name">`, WeasyPrint styles it, and the result is the
+PDF. Drop the markup and the file still converts — into an unstyled wall of
+text that the layout filter will fail.
+
+Five class names carry the whole design:
+
+| markup                  | what it is                               |
+| ----------------------- | ---------------------------------------- |
+| `[Your Name]{.cv-name}` | the centred heading at the top           |
+| `::: {.contacts}`       | the contact block under it               |
+| `::: {.summary}`        | the opening paragraphs                   |
+| `::: {.skills}`         | the skills list, one bold label per line |
+| `::: {.entry}`          | one job. Repeat it per role              |
+| `[•]{.sep}`             | the separator inside the contact line    |
+
+One `.entry` looks like this, and the date is pulled to the right margin by the
+stylesheet, not by spaces:
+
+```markdown
+::: {.entry}
+
+### **Company Name** - _Job Title_
+
+**Jan 2024 - Present**
+
+- What you built, and what it was built with.
+- A number, where you have one.
+  :::
+```
+
+Every `:::` must be closed by its own `:::` on its own line. An unclosed block
+swallows the rest of the document.
+
+**The generator is held to the same rules.** `templates/resume_guide.md` is the
+full specification — no HTML, every fence closed, one `.entry` per job — and it
+is pasted verbatim into the system prompt, so a tailored CV comes back with the
+same structure as the source. Read that file before changing the markup;
+`test/optimizer-prompt.test.ts` hashes it, so an edit there is an edit to the
+prompt and the test will say so.
+
+To change the look, edit `templates/cv.css`. Do not invent class names in the
+markdown — nothing styles them.
 
 ## Develop
 

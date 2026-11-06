@@ -21,7 +21,8 @@
     "cv-optimizer": "./dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "templates"
   ],
   "type": "module",
   "main": "./dist/index.js",
