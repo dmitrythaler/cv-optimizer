@@ -68,10 +68,10 @@ two engineering roles. Raw cosine, never rescaled.
 Its threshold has **no default** — `THRESHOLD_VECTOR` resolves to `NaN`, so every
 comparison is false and the filter cannot silently pass. An inherited value of
 `0.55` was measured against hosted `gemini-embedding-001` at 768 dimensions and
-does not transfer to a different model. Measure your own: embed the real corpus
-under `../applications/*/jd.txt` against `../cv.md`, add an off-topic control,
-and put the threshold between the two clusters. Record the numbers in
-`design-notes.md`.
+does not transfer to a different model. Measure your own: embed a corpus of real
+postings, one `jd.txt` per folder, against your CV, add an off-topic control,
+and put the threshold between the two clusters. `calibrate-vector <cv> <dir>`
+does the work. Record the numbers in `design-notes.md`.
 
 **AiGenerated** — an LLM judges if a machine wrote the text.
 

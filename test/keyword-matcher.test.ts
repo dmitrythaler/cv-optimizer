@@ -44,7 +44,7 @@ const fixtures: Record<string, Case> = JSON.parse(
  *    was measured and does NOT move any score, so it was technically possible
  *    and still wrong.
  *
- * So the corpus is now `fixtures.cv.md`, a synthetic CV written for this repo,
+ * So the corpus is now `../example.cv.md`, an invented CV with a real stack,
  * and the expected numbers were regenerated from THIS implementation. The
  * test's job changed with them: it no longer proves the scores are right, it
  * proves they have not drifted. Any edit to checkKeywords that moves a score
@@ -54,11 +54,19 @@ const fixtures: Record<string, Case> = JSON.parse(
  * docs/design-notes.md. It is simply no longer re-run, because the thing it
  * compared against is not in this repository.
  *
+ * WHY THE CORPUS IS THE PUBLISHED EXAMPLE, not a fixture of its own. One file,
+ * two jobs, on purpose: the README hands `example.cv.md` to a new user as the
+ * input to try, and these tests keep it working. An example nobody runs rots,
+ * and a fixture nobody reads is dead weight. The cost is that editing the
+ * example moves these numbers, and CI says so at once - which is the right
+ * alarm, not a nuisance. `oxfmt` ignores the file for the same reason it
+ * ignores `templates/`: reformatting the corpus would silently re-score it.
+ *
  * TO RE-LOCK after an intended change: regenerate score, passed and missing
  * for every case from the new implementation, and say in the commit message
  * which scores moved and why.
  */
-const cv = readFileSync(new URL('./fixtures.cv.md', import.meta.url), 'utf8');
+const cv = readFileSync(new URL('../example.cv.md', import.meta.url), 'utf8');
 
 const OPTS = { maxFeatures: 200, cutoff: 0.1, maxMissingDisplay: 10 };
 

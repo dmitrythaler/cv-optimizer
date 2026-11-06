@@ -30,7 +30,12 @@ for `node src/cli.ts` to work — do not "fix" them to `.js`.
 ## Commands
 
 ```bash
+# Standalone. example.cv.md is committed, so this works in a fresh clone.
+pnpm build && pnpm start optimize example.cv.md path/to/jd.txt
+
+# Inside the job-crawling pipeline, where the crawler already wrote jd.txt.
 pnpm build && pnpm start optimize ../input/cv.md ../applications/<job>/jd.txt
+
 pnpm test
 pnpm typecheck
 pnpm build
@@ -157,8 +162,36 @@ full account.
 8. **Changing the embedding model invalidates `THRESHOLD_VECTOR`.** It has no
    default on purpose; re-measure and write the numbers down.
 
-## Parent project
+## This repo stands alone, and it also has a host
 
-`../results.json` and `../applications/` belong to the job-scanning side of the
-repo — see `../task.md`. Use the real JDs under `../applications/*/jd.txt` as
-test fixtures.
+**It is self-contained.** A fresh clone installs, typechecks, tests and builds
+with nothing outside it. Nothing in `src/`, `test/` or CI reaches past the repo
+root, and nothing may start to. The corpus is `example.cv.md` here; the JD
+fixtures are in `test/`.
+
+That rule was not free. Until 2026-11-06 a test read `../../cv.md`, which had
+stopped existing, so the file died on load and took the suite red — and hid
+four other failures behind it. A path that leaves the repo is a path that
+breaks for everybody who is not sitting in the host checkout.
+
+**It is also one stage of a job-crawling pipeline**, and that is where the
+mileage is. In the host, a crawler judges a posting, fetches it, translates it
+and writes `jd.txt` into a folder per job; this tool is then run against that
+file, and the batch runner passes `-o <that folder>` so the run writes beside
+the posting it came from. The host's state lives in `../results.json` and
+`../applications/`, and `../task.md` describes it.
+
+When this repo runs inside that host, these paths exist:
+
+```bash
+pnpm start optimize ../input/cv.md ../applications/<job>/jd.txt
+```
+
+Use them for manual runs and for calibration, never from a committed test.
+
+**Prefer a text JD over a URL, in both worlds.** `optimize` accepts a URL and
+will fetch and clean the page itself, but cleaning is the weakest step in the
+chain: `job-ld.ts` reads schema.org JSON-LD when a board publishes it, and when
+it does not, `job-text.ts` falls back to word lists that only cover the
+languages somebody added. Give it text that is already extracted and already in
+English and the whole run gets better. See `docs/design-notes.md`.

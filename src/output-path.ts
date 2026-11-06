@@ -13,7 +13,7 @@
  *     errors.log                                            <- only if errors
  *
  * The folder name carries no personal name, and matches the convention the
- * job-scanning side uses for `../applications/*`. The CV file name inside is
+ * host pipeline uses for its own per-job folders. The CV file name inside is
  * fully under the operator's control through CV_NAME_TEMPLATE, because that is
  * the name a recruiter sees once the file leaves the folder.
  */

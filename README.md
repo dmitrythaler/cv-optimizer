@@ -12,6 +12,20 @@ the generator and it tries again.
 Every run writes one folder holding the posting, the CV, every iteration, and a
 full record of what each filter scored.
 
+It runs standalone — `example.cv.md` is committed, so a fresh clone works. It is
+also one stage of a larger AI job-crawling pipeline, which is where nearly all
+its mileage comes from: there a crawler judges a posting, fetches it, translates
+it and writes `jd.txt` into a folder per job, and this tool is run against that
+file.
+
+**Feed it a text JD, not a URL.** Both work, but a saved posting gives better
+results every time. Page cleaning is the weakest step in the chain: schema.org
+JSON-LD is read when a board publishes it, and when none is there the fallback
+is word lists that only cover the languages somebody added, so a German or
+Polish page keeps much of its navigation and legal boilerplate. That junk
+reaches the keyword and similarity filters as if it were the job. Text that is
+already extracted, and already in English, skips the whole problem.
+
 > Based on [**hr-breaker**](https://github.com/btseytlin/hr-breaker), an
 > earlier Python tool. This is a reimplementation in TypeScript, not a wrapper:
 > no code is shared, and the filter roster, the thresholds, the renderer and the
@@ -89,21 +103,26 @@ measured against, not used.
 
 ## Use
 
-```bash
-# the whole thing, straight from a job URL
-pnpm start -- optimize path/to/cv.md https://example.com/jobs/12345
+`example.cv.md` is a committed example CV — invented companies, real stack — in
+the pandoc markdown this tool expects. Copy it, put your own history in it, and
+keep the shape.
 
-# or from a saved posting
-pnpm start -- optimize path/to/cv.md path/to/jd.txt
+```bash
+# from a saved posting. THE PREFERRED ROUTE - see the note at the top
+pnpm start -- optimize example.cv.md path/to/jd.txt
+
+# straight from a job URL. It fetches and cleans the page itself, which is the
+# one step that can quietly hand a filter a page of navigation instead of a job
+pnpm start -- optimize example.cv.md https://example.com/jobs/12345
 
 # fetch and clean a posting into its own run folder, nothing else
 pnpm start -- fetch-job https://example.com/jobs/12345
 
 # score one CV against one job with chosen filters (diagnostic)
-pnpm start -- check-filters path/to/cv.md path/to/jd.txt KeywordMatcher,VectorSimilarityMatcher
+pnpm start -- check-filters example.cv.md path/to/jd.txt KeywordMatcher,VectorSimilarityMatcher
 
 # measure THRESHOLD_VECTOR for the configured embedding model
-pnpm start -- calibrate-vector path/to/cv.md other-path/to/applications
+pnpm start -- calibrate-vector example.cv.md other-path/to/applications
 
 pnpm start -- --help
 ```

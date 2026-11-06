@@ -11,5 +11,12 @@
   "bracketSpacing": true,
   "insertFinalNewline": true,
   "endOfLine": "lf",
-  "ignorePatterns": ["dist/**", "node_modules/**", "output/**", "templates/**", "test/fixtures.*"]
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    "output/**",
+    "templates/**",
+    "example.cv.md",
+    "test/fixtures.*"
+  ]
 }

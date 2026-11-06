@@ -217,7 +217,8 @@ running on one provider.
 ### VectorSimilarityMatcher (6)
 
 **Calibrated 2026-08-04, `Xenova/bge-m3` @ 1024 dims**, via
-`cv-optimizer calibrate-vector ../cv.md ../applications`:
+`cv-optimizer calibrate-vector <cv> <dir-of-job-folders>`, run against a real
+CV and 21 real postings in the host pipeline:
 
 | set                              | cosine        |
 | -------------------------------- | ------------- |

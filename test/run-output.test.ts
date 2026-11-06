@@ -69,7 +69,7 @@ const JOB: JobPosting = {
   language: 'en',
 };
 
-const SOURCE = { text: 'cv text', path: '../cv.md', instructions: null };
+const SOURCE = { text: 'cv text', path: 'example.cv.md', instructions: null };
 
 const JD = 'Full-Stack Engineer at Link Group. React, Node.js, PostgreSQL.';
 const JOB_SOURCE = {
