@@ -9,6 +9,7 @@ import {
   OPTIMIZATION_JSON,
   naming,
   renderCvName,
+  runFolderName,
 } from './output-path.ts';
 import type { CleanReport } from './job-text.ts';
 import type { Config } from './config.ts';
@@ -29,23 +30,37 @@ export interface PreparedRun {
 }
 
 /**
- * Creates the run folder and stores the job description in it, BEFORE the run
- * starts.
+ * Creates the run folder, BEFORE the run starts.
  *
  * Order matters. The folder is named after the company and the role, so the
- * posting has to be fetched and parsed first. Once it is, `jd.txt` is written
- * at once - a run that dies after twenty minutes must not also lose the text it
- * was working from.
+ * posting has to be fetched and parsed first. Once it is, the caller writes
+ * `jd.txt` at once - a run that dies after twenty minutes must not also lose
+ * the text it was working from.
+ *
+ * WHO NAMES THE FOLDER. Whoever was more specific.
+ *
+ *   `exactFolder: false` (no -o)  -> outputDir/{date}-{time}-{company}-{position}/
+ *   `exactFolder: true`  (-o given) -> outputDir, verbatim
+ *
+ * The default has to be the stamped subfolder, because the alternative loses
+ * data. Without it, two runs under the same `--out` overwrite each other's
+ * `jd.txt`, `optimization.json` and every iteration, and nothing says so. An
+ * operator who passes `-o` has already chosen a folder per job and must not get
+ * a second level inside it.
  */
 export const prepareRun = async (
   outputDir: string,
   job: JobPosting,
   config: Config,
+  exactFolder = false,
 ): Promise<PreparedRun> => {
   const n = naming(job.company || 'unknown', job.title || null, job.language);
   const cvName = renderCvName(config.cvNameTemplate, n);
-  await mkdir(outputDir, { recursive: true });
-  return { folder: outputDir, cvName };
+  // renderCvName throws on an unknown placeholder. It runs BEFORE mkdir on
+  // purpose: a bad CV_NAME_TEMPLATE must not leave an empty folder behind.
+  const folder = exactFolder ? outputDir : join(outputDir, runFolderName(n));
+  await mkdir(folder, { recursive: true });
+  return { folder, cvName };
 };
 
 export interface WriteRunInput {

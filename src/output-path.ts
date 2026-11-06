@@ -61,8 +61,30 @@ export const naming = (
   lang: lang ?? 'en',
 });
 
-/** The job description the run actually worked from, after cleaning. */
+/**
+ * `{date}-{time}-{company}-{position}`, and the position is dropped when the
+ * posting did not give one. The company is never dropped.
+ *
+ * RESTORED 2026-11-06. It was deleted in c4525a7 as dead code, which it was:
+ * `prepareRun` had stopped calling it, so every run wrote straight into the
+ * `--out` directory and a second run silently overwrote the first one's
+ * `jd.txt`, `optimization.json` and every iteration. Nothing caught it because
+ * the only caller in practice - the job-scanning batch runner - passes a fresh
+ * `-o <appFolder>` per job, so each run already had a folder to itself.
+ *
+ * Deleting the function was the symptom. The missing call was the fault.
+ */
+export const runFolderName = (n: RunNaming): string => {
+  const parts = [n.date, n.time, n.company];
+  if (n.position) parts.push(n.position);
+  return parts.join('-');
+};
 
+/**
+ * Placeholders CV_NAME_TEMPLATE accepts. `*_slug` are aliases, because a
+ * company or a position in a file name is always a slug - there is no unslugged
+ * form to choose instead.
+ */
 const VARS = ['date', 'time', 'company', 'company_slug', 'position', 'position_slug', 'lang'];
 
 export const renderCvName = (template: string, n: RunNaming): string => {

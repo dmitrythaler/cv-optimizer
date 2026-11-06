@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, readdir } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { prepareRun, writeRun } from '../src/run-output.ts';
@@ -38,7 +38,11 @@ const result = (name: string, passed: boolean): FilterResult => ({
   suggestions: passed ? [] : ['try harder'],
 });
 
-const iteration = (n: number, passed: boolean, markdown = '::: {.summary}\ncv\n:::'): Iteration => ({
+const iteration = (
+  n: number,
+  passed: boolean,
+  markdown = '::: {.summary}\ncv\n:::',
+): Iteration => ({
   n,
   resume: { markdown, pdfText: 'text', pngPage1: null, pageCount: 2, pageTexts: null },
   results: [result('KeywordMatcher', true), result('AtsChecker', passed)],
@@ -81,7 +85,11 @@ const write = async (
   const dir = await mkdtemp(join(tmpdir(), 'cvopt-'));
   const base = loadConfig();
   const config = { ...base, cvNameTemplate: opts.template ?? 'CV.{company}.{position}.pdf' };
-  const prepared = await prepareRun(dir, JOB, config, JD);
+  // No -o here, so the run gets its own stamped folder under `dir`.
+  const prepared = await prepareRun(dir, JOB, config);
+  // The CLI writes jd.txt immediately after prepareRun and before the loop, so
+  // a run that dies mid-way keeps the posting. This mirrors that order.
+  await writeFile(join(prepared.folder, 'jd.txt'), `${JD}\n`, 'utf8');
   const { folder } = await writeRun({
     prepared,
     outcome,
@@ -173,29 +181,53 @@ test('run folder: an unknown placeholder stops the run before anything is writte
   logger.resetProblems();
   const dir = await mkdtemp(join(tmpdir(), 'cvopt-'));
   const config = { ...loadConfig(), cvNameTemplate: 'CV.{compnay}.pdf' };
-  await assert.rejects(prepareRun(dir, JOB, config, JD), /unknown placeholder/i);
+  await assert.rejects(prepareRun(dir, JOB, config), /unknown placeholder/i);
   // Not even an empty folder: the name is resolved before anything is created.
   assert.deepEqual(await readdir(dir), []);
 });
 
-test('jd.txt: the posting is stored before the run, not after', async () => {
+/**
+ * The run folder, and why these two cases differ.
+ *
+ * `prepareRun` once returned `--out` unchanged, so NO stamped folder was ever
+ * created and a second run overwrote the first one's jd.txt, optimization.json
+ * and every iteration. Nothing caught it, because the batch runner passes a
+ * fresh `-o` per job, so every run already had a folder of its own. These two
+ * tests pin both halves of the contract down.
+ */
+test('prepareRun: with no -o the run gets its own stamped folder', async () => {
   logger.resetProblems();
   const dir = await mkdtemp(join(tmpdir(), 'cvopt-'));
-  const config = loadConfig();
-  const { folder } = await prepareRun(dir, JOB, config, JD);
+  const { folder } = await prepareRun(dir, JOB, loadConfig());
 
-  // Written by prepareRun alone. No optimize, no writeRun, no CV yet.
-  assert.deepEqual((await readdir(folder)).sort(), ['jd.txt']);
-  assert.equal(await readFile(join(folder, 'jd.txt'), 'utf8'), `${JD}\n`);
+  assert.notEqual(folder, dir, 'a subfolder, not the parent');
+  assert.match(
+    folder,
+    /\/\d{8}-\d{4}-link_group-full_stack_engineer$/,
+    '{date}-{time}-{company}-{position}',
+  );
+  // Empty. prepareRun creates the folder; the caller fills it.
+  assert.deepEqual(await readdir(folder), []);
+});
+
+test('prepareRun: with -o that exact folder is used, with no second level', async () => {
+  logger.resetProblems();
+  const dir = await mkdtemp(join(tmpdir(), 'cvopt-'));
+  const { folder } = await prepareRun(dir, JOB, loadConfig(), true);
+
+  assert.equal(folder, dir, 'verbatim');
+  assert.deepEqual(await readdir(dir), [], 'no stamped folder inside it');
 });
 
 test('optimization.json: records where the posting came from', async () => {
   logger.resetProblems();
   const { folder } = await write(outcomeOf([iteration(1, true)]));
   const j = JSON.parse(await readFile(join(folder, 'optimization.json'), 'utf8')) as {
-    job: { file: string; source: { from: string; kind: string; method: string } };
+    job: { source: { from: string; kind: string; method: string } };
   };
-  assert.equal(j.job.file, 'jd.txt');
+  // `job.file` is not recorded and must not be asserted: the posting is always
+  // `jd.txt` in the run folder, so the name carries no information. What the
+  // report has to answer is where that text CAME from.
   assert.equal(j.job.source.kind, 'url');
   assert.equal(j.job.source.from, 'https://example.test/job');
   assert.equal(j.job.source.method, 'request');

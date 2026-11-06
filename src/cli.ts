@@ -27,18 +27,21 @@ COMMANDS
   filters       list registered filters
 
 OPTIONS
-  -o, --out <path>        parent folder for run folders  (default: ./output)
+  -o, --out <path>        write into THIS exact folder, no subfolder
   -i, --instructions <s>  extra instructions for the optimizer
   -n, --max-iterations <n>  override MAX_ITERATIONS
       --seq               run filters sequentially, stop at first failure
       --dry-run           parse inputs and exit without calling any model
 
 OUTPUT
-  One run writes one folder: {date}-{time}-{company}-{position}/
-  holding jd.txt, the CV, iteration_N.pdf/.png for every pass,
-  optimization.json, and errors.log when anything went wrong. The CV file name
-  comes from CV_NAME_TEMPLATE. fetch-job writes the same folder with jd.txt
-  alone.
+  One run writes one folder, holding jd.txt, the CV, iteration_N.pdf/.png for
+  every pass, optimization.json, and errors.log when anything went wrong. The
+  CV file name comes from CV_NAME_TEMPLATE. fetch-job writes the same folder
+  with jd.txt alone.
+
+  The folder is named {date}-{time}-{company}-{position}/ ONLY when nothing
+  else named one - that is, a job URL with no -o. Pass -o, or a path to a
+  saved jd.txt, and that folder is used exactly as given.
 
 EXIT CODES (optimize)
   0   every filter passed
@@ -113,7 +116,9 @@ const main = async (argv: string[]): Promise<number> => {
 
       const fetched = await fetchJob(url);
       const job = await parseJobPosting(fetched.text, aiSdkProviders(config.models).flash);
-      const { folder } = await prepareRun(values.out ?? '.', job, config);
+      // `-o` means "this exact folder". Without it the posting names its own,
+      // exactly as `optimize` names it, so the two commands cannot disagree.
+      const { folder } = await prepareRun(values.out ?? '.', job, config, values.out !== undefined);
       await writeFile(join(folder, 'jd.txt'), `${fetched.text.trimEnd()}\n`, 'utf8');
       logger.info(`${fetched.text.length} chars written to ${join(folder, 'jd.txt')}`);
       return 0;
@@ -175,6 +180,16 @@ const main = async (argv: string[]): Promise<number> => {
 
       const isUrl = /^https?:\/\//i.test(jdPath);
       const baseOut = values.out ?? (isUrl ? '.' : dirname(jdPath));
+      // THE FOLDER IS STAMPED ONLY WHEN NOBODY ELSE NAMED ONE.
+      //
+      //   -o <dir>            the operator named it      -> used verbatim
+      //   <job>/jd.txt        the JD's folder names it   -> used verbatim
+      //   a URL, no -o        nothing names it           -> {date}-{time}-{company}-{position}
+      //
+      // Without the last case two runs overwrite each other in silence. With it
+      // applied to the first two, a job folder would gain a pointless second
+      // level and every stored cv_file path would break.
+      const exactFolder = values.out !== undefined || !isUrl;
       const [cv, fetched] = await Promise.all([
         readFile(cvPath, 'utf8'),
         isUrl
@@ -240,7 +255,10 @@ const main = async (argv: string[]): Promise<number> => {
         const header = parseJdHeader(jd);
         const job =
           header === null ? parsed : { ...parsed, title: header.title, company: header.company };
-        if (header !== null && (parsed.company !== header.company || parsed.title !== header.title)) {
+        if (
+          header !== null &&
+          (parsed.company !== header.company || parsed.title !== header.title)
+        ) {
           logger.info(
             `jd header overrides the parser: "${parsed.title}" at "${parsed.company}" -> "${header.title}" at "${header.company}"`,
           );
@@ -250,7 +268,7 @@ const main = async (argv: string[]): Promise<number> => {
         // Create the folder and store jd.txt NOW, not at the end. A run that
         // dies after twenty minutes must not also lose the posting it used.
         const { prepareRun, writeRun } = await import('./run-output.ts');
-        const prepared = await prepareRun(baseOut, job, runConfig);
+        const prepared = await prepareRun(baseOut, job, runConfig, exactFolder);
         // Persist the JD only when it came from a URL — for file inputs it
         // already sits on disk under the name the operator chose.
         if (isUrl) {
