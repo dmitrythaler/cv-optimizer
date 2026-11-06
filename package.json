@@ -9,7 +9,14 @@
     "llm",
     "resume"
   ],
-  "license": "MIT",
+  "homepage": "https://github.com/dmitrythaler/cv-optimizer#readme",
+  "bugs": "https://github.com/dmitrythaler/cv-optimizer/issues",
+  "license": "WTFPL",
+  "author": "Dmitry Thaler <dmitry@thaler.dev> (https://thaler.dev)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dmitrythaler/cv-optimizer.git"
+  },
   "bin": {
     "cv-optimizer": "./dist/cli.js"
   },
@@ -46,7 +53,6 @@
   "devDependencies": {
     "@types/node": "^26.1.2",
     "oxfmt": "^0.62.0",
-    "pdfjs-dist": "^6.2.108",
     "typescript": "^7.0.2"
   },
   "engines": {

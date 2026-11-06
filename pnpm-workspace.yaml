@@ -1,0 +1,38 @@
+# This file exists for ONE setting, and there is no workspace here.
+#
+# WHY IT IS NEEDED. pnpm will not run a dependency's install script unless that
+# package is listed, and from pnpm 10 the refusal FAILS the whole install:
+#
+#   Error: ERR_PNPM_IGNORED_BUILDS
+#     Ignored build scripts: onnxruntime-node, protobufjs, sharp
+#
+# So a fresh clone could not install, and neither could CI. The decision has to
+# be recorded somewhere; this is where pnpm reads it. The key is `allowBuilds`,
+# a map. It was `onlyBuiltDependencies` under "pnpm" in package.json until
+# pnpm 10 moved it, and pnpm now ignores that spelling with a warning that is
+# easy to miss. Verified with pnpm 12.11.2 on 2026-11-06.
+#
+# WHY ALL THREE ARE false. Because that is the state the tool has always run
+# in. All three were sitting in pnpm's ignored list, no install script had ever
+# executed, and the pipeline worked for months. Turning them on changed that
+# for the worse, measured 2026-11-06:
+#
+#   sharp             FAILED. No prebuilt binary matched, so it fell back to a
+#                     node-gyp build from source and stopped with "Please add
+#                     node-addon-api to your dependencies".
+#   onnxruntime-node  succeeded, and downloaded ~400MB of CUDA and TensorRT
+#                     providers from NuGet. Embeddings run on CPU in a worker
+#                     thread, so none of it is ever loaded.
+#   protobufjs        succeeded, and did nothing we depend on.
+#
+# So the scripts are not needed: the npm tarballs already carry what the code
+# uses. Denying them is not a workaround, it is a statement of what has been
+# true all along, and it makes the install deterministic on every machine.
+#
+# IF EMBEDDINGS EVER BREAK ON A NEW PLATFORM, this is the first place to look -
+# a platform with no prebuilt onnxruntime binary would need its build. Flip the
+# one entry, do not flip all three, and write down what changed.
+allowBuilds:
+  onnxruntime-node: false
+  protobufjs: false
+  sharp: false

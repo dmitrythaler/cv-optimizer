@@ -1,0 +1,57 @@
+# CI runs what a contributor can run, and nothing that needs a key.
+#
+# No step here calls a model provider. Every test in the suite either stubs the
+# provider or skips when the fixture is absent, so CI needs no DEEPSEEK_API_KEY
+# and no GEMINI_API_KEY. If a test ever needs one, that test is wrong: see
+# docs/design-notes.md, "a filter that cannot run says skipped()".
+#
+# pandoc and WeasyPrint ARE installed, because src/render/pandoc.ts checks for
+# both at startup and the renderer tests exercise it.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # The renderer shells out to four binaries and refuses to start without
+      # them. WeasyPrint comes from apt, not pip, so its native deps come too.
+      - name: Install pandoc, WeasyPrint and poppler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pandoc weasyprint poppler-utils
+          pandoc --version | head -1
+          weasyprint --version
+          pdftotext -v
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v5
+        with:
+          # Must match "engines.node" in package.json. The sources are run
+          # directly through native type stripping, which needs 24 or newer.
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Order is deliberate: the cheap checks fail first.
+      # typecheck reads tsconfig.typecheck.json, which covers test/ as well as
+      # src/. Do not point it back at tsconfig.json - that excludes the tests
+      # and a broken suite then typechecks clean.
+      - run: pnpm fmt:check
+      - run: pnpm typecheck
+      - run: pnpm test
+
+      # `pnpm start` runs dist/, so a build that breaks is a broken CLI even
+      # when every test passes. See CLAUDE.md.
+      - run: pnpm build
