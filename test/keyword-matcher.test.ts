@@ -23,13 +23,50 @@ interface Case {
 const fixtures: Record<string, Case> = JSON.parse(
   readFileSync(new URL('./fixtures.keywords.json', import.meta.url), 'utf8'),
 );
-const cv = readFileSync(new URL('../../cv.md', import.meta.url), 'utf8');
+/**
+ * A REGRESSION LOCK, NOT A PARITY CHECK. The difference matters.
+ *
+ * It began as a parity check: the numbers in `fixtures.keywords.json` came from
+ * running the Python reference implementation over ONE source CV and every JD
+ * in the corpus, and these assertions compared to 1e-9. That proved the port
+ * was faithful, and it was worth having while the port was in progress.
+ *
+ * It cannot stay that, for two reasons found on 2026-11-06:
+ *
+ * 1. The CV it needs is not here and must not be. The file read
+ *    `../../cv.md`, which has not existed for some time, so this file died on
+ *    load with ENOENT and took the whole suite red - which is how five broken
+ *    tests went unnoticed. The real CV at `../../input/cv.md` no longer
+ *    reproduces the numbers either: it has been edited since August, and only
+ *    the revisions from 2026-08-11 to 2026-08-17 still match all nine.
+ * 2. That CV cannot be committed. It carries a real employment history and
+ *    names an employer's internal tooling. Anonymising the contact block alone
+ *    was measured and does NOT move any score, so it was technically possible
+ *    and still wrong.
+ *
+ * So the corpus is now `fixtures.cv.md`, a synthetic CV written for this repo,
+ * and the expected numbers were regenerated from THIS implementation. The
+ * test's job changed with them: it no longer proves the scores are right, it
+ * proves they have not drifted. Any edit to checkKeywords that moves a score
+ * fails here and has to be justified.
+ *
+ * The Python parity evidence is not lost - it is in the git history and in
+ * docs/design-notes.md. It is simply no longer re-run, because the thing it
+ * compared against is not in this repository.
+ *
+ * TO RE-LOCK after an intended change: regenerate score, passed and missing
+ * for every case from the new implementation, and say in the commit message
+ * which scores moved and why.
+ */
+const cv = readFileSync(new URL('./fixtures.cv.md', import.meta.url), 'utf8');
+
 const OPTS = { maxFeatures: 200, cutoff: 0.1, maxMissingDisplay: 10 };
 
 const job = (over: Partial<JobPosting> = {}): JobPosting => ({
   title: '',
   company: '',
   description: '',
+  rawText: '',
   requirements: [],
   keywords: [],
   language: 'en',
@@ -37,24 +74,24 @@ const job = (over: Partial<JobPosting> = {}): JobPosting => ({
 });
 
 /**
- * Reference scores. They were produced by running
- * a reference implementation over a source CV and every JD in the corpus.
+ * One locked score per JD in the corpus, against `fixtures.cv.md`.
  *
  * SCORE is asserted exactly - it is what drives `passed` and the pipeline.
  *
- * The ORDER of missing_keywords is deliberately NOT asserted against Python,
- * because Python cannot reproduce it either: `significant_keywords` is a set,
- * CPython randomizes string hashing per process, and `sorted(..., reverse=True)`
- * is stable - so it preserves an arbitrary order among equal-weight terms.
- * Three consecutive runs of the same input gave three different orders. Where
- * there are more than `maxMissingDisplay` ties the slice even differs in
- * membership. This build is deterministic instead. See docs/design-notes.md.
+ * The ORDER of the missing keywords is NOT asserted, and that is inherited
+ * from the original reference: `significant_keywords` was a set there, CPython
+ * randomizes string hashing per process, and a stable reverse sort preserves an
+ * arbitrary order among equal-weight terms. Three consecutive runs of the same
+ * input gave three different orders, and where there are more ties than
+ * `maxMissingDisplay` the slice differed in membership too. This build is
+ * deterministic, which the next test proves, so only the COUNT is pinned here.
+ * See docs/design-notes.md.
  */
 for (const [name, c] of Object.entries(fixtures)) {
   if (name.startsWith('_')) continue;
-  test(`keywords: matches the reference scores exactly on ${name}`, () => {
+  test(`keywords: score is locked for ${name}`, () => {
     const got = checkKeywords(cv, job({ description: c.jd ?? '' }), 0.25, OPTS);
-    assert.ok(Math.abs(got.score - c.score) < 1e-9, `score ${got.score} vs python ${c.score}`);
+    assert.ok(Math.abs(got.score - c.score) < 1e-9, `score ${got.score} vs locked ${c.score}`);
     assert.equal(got.passed, c.passed);
     assert.equal(
       got.missingKeywords.length,
@@ -72,7 +109,7 @@ test('keywords: missing-keyword output is deterministic across runs', () => {
   assert.equal(new Set(runs).size, 1, 'identical every time');
 });
 
-test('keywords: matches the reference with explicit job.keywords, including one outside the vocabulary', () => {
+test('keywords: score is locked with explicit job.keywords, including one outside the vocabulary', () => {
   const c = fixtures._with_keywords;
   assert.ok(c);
   const got = checkKeywords(
@@ -86,7 +123,7 @@ test('keywords: matches the reference with explicit job.keywords, including one 
     0.25,
     OPTS,
   );
-  assert.ok(Math.abs(got.score - c.score) < 1e-9, `score ${got.score} vs python ${c.score}`);
+  assert.ok(Math.abs(got.score - c.score) < 1e-9, `score ${got.score} vs locked ${c.score}`);
   assert.equal(got.missingKeywords.length, c.missing.length);
 });
 
@@ -110,7 +147,9 @@ const stubEmbeddings: EmbeddingProvider = {
 const trio = (p: ChatProvider): ChatProviders => ({ pro: p, flash: p, vision: p });
 
 const ctx = (pdfText: string | null, description: string): FilterContext => ({
-  resume: { html: '<p/>', pdfText, pngPage1: null, pageCount: 1, pageTexts: ['p'] },
+  // `markdown`, not `html`: the generator emits pandoc markdown and the
+  // renderer turns that into the PDF. Filters grade `pdfText`.
+  resume: { markdown: '# CV', pdfText, pngPage1: null, pageCount: 1, pageTexts: ['p'] },
   job: job({ description }),
   source: { text: cv, path: 'cv.md', instructions: null },
   config: loadConfig(),
